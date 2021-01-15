@@ -1,0 +1,249 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "extends": [
+    "airbnb",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "env": {
+    "browser": true
+  },
+  "globals": {},
+  "rules": {
+    "yoda": "warn",
+    "import/no-named-as-default": 0,
+    "@typescript-eslint/no-use-before-define": [
+      "error",
+      {
+        "functions": false
+      }
+    ],
+    "@typescript-eslint/no-empty-function": [
+      "off"
+    ],
+    "@typescript-eslint/no-explicit-any": [
+      "warn"
+    ],
+    "@typescript-eslint/interface-name-prefix": [
+      "off"
+    ],
+    "@typescript-eslint/explicit-function-return-type": [
+      "off",
+      {
+        "allowTypedFunctionExpressions": true,
+        "allowExpressions": true
+      }
+    ],
+    "jsx-a11y/label-has-for": [
+      2,
+      {
+        "components": [
+          "Label"
+        ],
+        "required": {
+          "every": [
+            "nesting",
+            "id"
+          ]
+        },
+        "allowChildren": true
+      }
+    ],
+    "jsx-a11y/label-has-associated-control": [
+      2,
+      {
+        "labelAttributes": [
+          "label"
+        ],
+        "controlComponents": [
+          "Input"
+        ],
+        "depth": 3
+      }
+    ],
+    "jsx-a11y/click-events-have-key-events": "warn",
+    "jsx-a11y/anchor-is-valid": "warn",
+    "dot-location": [
+      1,
+      "property"
+    ],
+    "camelcase": [
+      2,
+      {
+        "properties": "always",
+        "allow": [
+          "UNSAFE_componentWillReceiveProps",
+          "UNSAFE_componentWillMount",
+          "UNSAFE_componentWillUpdate"
+        ]
+      }
+    ],
+    "max-len": [
+      "error",
+      {
+        "code": 100,
+        "ignoreStrings": true,
+        "ignoreComments": true,
+        "tabWidth": 2,
+        "ignoreTemplateLiterals": true
+      }
+    ],
+    "no-underscore-dangle": 0,
+    "no-return-assign": [
+      "error",
+      "except-parens"
+    ],
+    "key-spacing": 0,
+    "arrow-parens": [
+      1,
+      "always"
+    ],
+    "generator-star-spacing": [
+      "error",
+      "both"
+    ],
+    "no-confusing-arrow": [
+      "error",
+      {
+        "allowParens": true
+      }
+    ],
+    "no-param-reassign": [
+      "error",
+      {
+        "props": false
+      }
+    ],
+    "no-nested-ternary": [
+      "warn"
+    ],
+    "func-names": [
+      "error",
+      "as-needed"
+    ],
+    "react/sort-comp": 0,
+    "react/jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [
+          ".jsx",
+          ".tsx"
+        ]
+      }
+    ],
+    "react/destructuring-assignment": 0,
+    "no-use-before-define": [
+      "error",
+      "nofunc"
+    ],
+    "import/first": [
+      "off"
+    ],
+    "jsx-a11y/no-static-element-interactions": 0,
+    "no-mixed-operators": [
+      "error",
+      {
+        "allowSamePrecedence": true
+      }
+    ],
+    "newline-per-chained-call": [
+      "error"
+    ],
+    "react/no-access-state-in-setstate": "warn",
+    "react-hooks/rules-of-hooks": "warn",
+    "react-hooks/exhaustive-deps": "warn",
+    "react/prefer-stateless-function": [
+      "warn"
+    ],
+    "react/no-unused-state": [
+      "error"
+    ],
+    "import/no-named-as-default-member": [
+      "warn"
+    ],
+    "prefer-arrow-callback": "off",
+    "prefer-destructuring": [
+      "warn",
+      {
+        "VariableDeclarator": {
+          "array": false,
+          "object": true
+        },
+        "AssignmentExpression": {
+          "array": true,
+          "object": false
+        }
+      }
+    ],
+    "no-plusplus": [
+      "error",
+      {
+        "allowForLoopAfterthoughts": true
+      }
+    ],
+    "no-unused-expressions": [
+      "error",
+      {
+        "allowTernary": true
+      }
+    ],
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "error",
+          "warn"
+        ]
+      }
+    ],
+    "no-only-tests/no-only-tests": "error"
+  },
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "tools/config/webpack.config.js"
+      },
+      "node": {
+        "extensions": [
+          ".js",
+          ".jsx",
+          ".ts",
+          ".tsx"
+        ]
+      }
+    }
+  },
+  "plugins": [
+    "jsx-a11y",
+    "react",
+    "react-hooks",
+    "no-only-tests",
+    "@typescript-eslint"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
+      "rules": {
+        "max-len": [
+          "error",
+          {
+            "code": 120,
+            "ignoreStrings": true,
+            "ignoreComments": true,
+            "tabWidth": 2,
+            "ignoreTemplateLiterals": true
+          }
+        ],
+        "camelcase": [
+          "off"
+        ], // handled by @typescript/camelcase
+        "semi": [
+          "off"
+        ] // handled by @typescript/semi
+      }
+    }
+  ]
+}
