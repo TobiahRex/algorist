@@ -25,7 +25,7 @@
             "program": "${workspaceFolder}/node_modules/.bin/jest",
             "args": [
                 "${workspaceFolder}/**/${fileBasenameNoExtension}.js",
-                
+
             ],
             "console": "integratedTerminal",
             "internalConsoleOptions": "neverOpen",
