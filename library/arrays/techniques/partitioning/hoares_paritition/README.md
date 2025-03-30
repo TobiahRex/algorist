@@ -1,3 +1,4 @@
+# Hoares Partition
 
 ```mermaid
 sequenceDiagram
@@ -45,6 +46,47 @@ Imagine you have a line of people waiting to enter a theater. Each person has a 
 6. Finally, you have the VIP person in their rightful spot, with all the people with smaller ticket numbers on their left and those with larger ticket numbers on their right.
 
 This analogy represents the core mechanics of Hoare's partition algorithm, where you are partitioning elements in an array based on a chosen pivot value to eventually sort the entire array using QuickSort.
+
+
+```mermaid
+flowchart TD
+    Start[Start] --> Init[Initialize left and right pointers]
+    Init --> ChoosePivot[Choose pivot from middle]
+    ChoosePivot --> MainLoop[While left <= right]
+    
+    MainLoop --> LeftCheck[Move left until element >= pivot]
+    LeftCheck --> RightCheck[Move right until element <= pivot]
+    RightCheck --> SwapCheck{left <= right?}
+    
+    SwapCheck --> |Yes| Swap[Swap elements]
+    Swap --> UpdatePointers[Increment left, Decrement right]
+    UpdatePointers --> MainLoop
+    
+    SwapCheck --> |No| Return[Return right index]
+    
+    %% Style definitions
+    classDef decision fill:#ffff00,stroke:#333,stroke-width:2px,color:#000
+    classDef yes fill:#98FB98,stroke:#333,stroke-width:2px,color:#000
+    classDef no fill:#FF4444,stroke:#333,stroke-width:2px,color:#000
+    classDef loop fill:#87CEEB,stroke:#333,stroke-width:2px,color:#000
+    
+    %% Apply styles to decision points
+    class SwapCheck decision
+    
+    %% Apply styles to Yes paths and boxes
+    class Swap,UpdatePointers yes
+    
+    %% Apply styles to No paths and boxes
+    class Return no
+    
+    %% Apply styles to loop elements
+    class MainLoop,LeftCheck,RightCheck loop
+    
+    %% Style the edges
+    linkStyle 6 stroke:#98FB98,stroke-width:2px  %% Yes path
+    linkStyle 7 stroke:#FF4444,stroke-width:2px  %% No path
+    linkStyle 0,1,2,3,4,5,8,9 stroke:#87CEEB,stroke-width:2px  %% Loop paths
+```
 
 ```python
 # Psuedocode
