@@ -1,4 +1,46 @@
-Here's a simple example of a binary min-heap in Python without using classes:
+# Max Heap
+Here's a simple example of a max-heap in Python.
+Converting to a min-heap is as simple as negating the values.
+
+```mermaid
+flowchart TD
+    %% Main Operations
+    A[Build Heap] --> B[Heapify]
+    
+    %% Heapify Process
+    B --> C{Is left child > largest?}
+    C -->|Yes| D[Update largest to left]
+    C -->|No| E{Is right child > largest?}
+    D --> E
+    E -->|Yes| F[Update largest to right]
+    E -->|No| G{Is largest != root?}
+    F --> G
+    G -->|Yes| H[Swap root with largest]
+    H --> I[Recursive Heapify]
+    G -->|No| J[Done]
+    
+    %% Insert Operation
+    K[Insert] --> L[Add value to end]
+    L --> M{Is new value > parent?}
+    M -->|Yes| N[Swap with parent]
+    N --> M
+    M -->|No| O[Done]
+    
+    %% Extract Max Operation
+    P[Extract Max] --> Q{Is heap empty?}
+    Q -->|Yes| R[Return null]
+    Q -->|No| S{Size = 1?}
+    S -->|Yes| T[Pop last element]
+    S -->|No| U[Store root value]
+    U --> V[Move last element to root]
+    V --> W[Heapify from root]
+    
+    %% Styling with more contrast
+    style A fill:#FF4444,stroke:#333,stroke-width:2px,color:#fff
+    style K fill:#4444FF,stroke:#333,stroke-width:2px,color:#fff
+    style P fill:#44FF44,stroke:#333,stroke-width:2px,color:#000
+    style B fill:#FF8800,stroke:#333,stroke-width:2px,color:#fff
+```
 
 ```python
 # Define functions for heap operations
@@ -86,3 +128,4 @@ max_element = -heapq.heappop(max_heap)
 print("Max Element:", max_element)  # Output: Max Element: 10
 ```
 This code snippet demonstrates how to use the `heapq` library to create a max-heap and extract the maximum element from it. Note that we negate the values before inserting them into the heap and negate the maximum element after extracting it to get the original value.
+
