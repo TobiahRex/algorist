@@ -14,20 +14,18 @@ def kruskal_algorithm(vertices, edges):
         return parent[x]
 
     def union(x, y):
-        root_x = find(x)
-        root_y = find(y)
+        p1 = find(x)
+        p2 = find(y)
 
-        if root_x == root_y:
+        if p1 == p2:
             return
 
-        # Union by rank
-        if rank[root_x] < rank[root_y]:
-            parent[root_x] = root_y
-        elif rank[root_x] > rank[root_y]:
-            parent[root_y] = root_x
-        else:
-            parent[root_y] = root_x
-            rank[root_x] += 1
+        # Union by rank using a swap pattern
+        if rank[p1] < rank[p2]:
+            p1, p2 = p2, p1
+        parent[p2] = p1
+        if rank[p1] == rank[p2]:
+            rank[p1] += 1
 
     # Sort edges by weight
     edges.sort(key=lambda x: x[2])
