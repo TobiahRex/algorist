@@ -9,20 +9,20 @@ Ordering vertices such that for every directed edge (u, v), vertex u comes befor
 
 def topological_sort(graph):
     visited = set()
-    result = []
+    topo = []
     
     def dfs(node):
         visited.add(node)
         for neighbor in graph.get(node, []):
             if neighbor not in visited:
                 dfs(neighbor)
-        result.append(node)
+        topo.append(node)
     
     for node in graph:
         if node not in visited:
             dfs(node)
     
-    return result[::-1]  # Reverse to get correct topological order
+    return topo[::-1]  # Reverse to get correct topological order
 
 # Example usage:
 graph = {

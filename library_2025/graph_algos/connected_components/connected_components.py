@@ -3,24 +3,22 @@
 # Final: O(V+E)
 
 
-def find_connected_components(graph):
-    visited = set()
-    components = []
+def find_connected_components(g):
+    visited, comps = set(), []
 
-    def dfs(node, component):
-        visited.add(node)
-        component.append(node)
-        for neighbor in graph[node]:
-            if neighbor not in visited:
-                dfs(neighbor, component)
+    def dfs(u, c):
+        visited.add(u)
+        c.append(u)
+        for v in g.get(u, []):
+            if v not in visited:
+                dfs(v, c)
 
-    for node in graph:
-        if node not in visited:
-            component = []
-            dfs(node, component)
-            components.append(component)
-
-    return components
+    for v in g:
+        if v not in visited:
+            c = []
+            dfs(v, c)
+            comps.append(c)
+    return comps
 
 
 # Example usage:
@@ -36,3 +34,32 @@ graph = {
 print(
     find_connected_components(graph)
 )  # Output: [['A', 'B', 'C'], ['D', 'E', 'F'], ['G']]
+
+
+from collections import deque
+
+
+def find_cc_bfs(edges):
+    g = {}
+    for u, v in edges:
+        g.setdefault(u, []).append(v)
+        g.setdefault(v, []).append(u)
+
+    visited, comps = set(), []
+
+    def bfs(node):
+        c = []
+        q = deque([node])
+        while q:
+            u = q.pop()
+            c.append(u)
+            for v in g.get(u):
+                if v not in visited:
+                    visited.add(u)
+                    q.appendleft(v)
+        return c
+
+    for v in g:
+        if v not in visited:
+            comps.append(bfs(v))
+    return comps
