@@ -34,16 +34,31 @@ export const binarySearchProblems: PatternProblem[] = [
     mnemonicAction: 'Halving search space repeatedly',
     mnemonicStory:
       'Open dictionary in middle. Is target before or after? Discard half. Repeat. Find in log(n) steps instead of n. Each comparison halves possibilities.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '📖',
-        title: 'Dictionary Search',
-        description: 'Find words in sorted dictionary in milliseconds',
+        icon: "🏥",
+        title: "Medical Diagnostic Range Lookup",
+        description: "Doctors use binary search on reference ranges to interpret lab results. When a patient's glucose level is 145 mg/dL, the lab system binary searches on sorted reference ranges (normal: 70-100, prediabetic: 100-125, diabetic: >125) to instantly categorize. Runs millions of times daily across all lab results worldwide.",
       },
       {
-        icon: '🎮',
-        title: 'Game Asset Loading',
-        description: 'Binary search asset ID mappings for O(log n) lookups',
+        icon: "🎮",
+        title: "Game Leaderboard Rank Lookup",
+        description: "Gaming platforms maintain sorted leaderboards of billions of players. When a player checks their rank, binary search finds position in O(log n). Fortnite processes millions of rank lookups per minute without sequential scanning.",
+      },
+      {
+        icon: "📦",
+        title: "Package Weight Classification",
+        description: "Shipping companies classify packages by weight bins. UPS binary searches [0-5lb, 5-20lb, 20-70lb, 70+lb] to route each package to correct conveyor. Processing 50M packages/day requires O(log 4) efficiency.",
+      },
+      {
+        icon: "💰",
+        title: "Forex Volatility Band Detection",
+        description: "Forex trading systems detect volatility bands by binary searching exchange rate ranges. If USD/EUR is 1.05, binary search determines strategy (low/medium/high volatility). Done 1000x per second per currency pair.",
+      },
+      {
+        icon: "🌡️",
+        title: "IoT Temperature Sensor Calibration",
+        description: "Thermometer firmware binary searches calibration lookup tables converting raw readings to temperatures. Thermistor reads 512 (of 1024), system finds corresponding °C. Billions of IoT devices do this millions of times daily.",
       },
     ],
   },
@@ -75,11 +90,31 @@ export const binarySearchProblems: PatternProblem[] = [
     mnemonicAction: 'Finding which half is still sorted',
     mnemonicStory:
       'Array is sorted but has one rotation point. Determine which half is "pure sorted", target must be there or in other half. Keep halving until found.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '♻️',
-        title: 'Circular Buffers',
-        description: 'Search in circular buffer data structures efficiently',
+        icon: "🗺️",
+        title: "Rotated Map Coordinate Search",
+        description: "Google Maps indexes data on rotated coordinate systems. When searching for a city, system detects rotation point and binary searches appropriate half, optimizing storage for different continental regions.",
+      },
+      {
+        icon: "🔄",
+        title: "Circular Buffer in Audio Processing",
+        description: "Ring buffers in audio/networking are rotated arrays. Network systems search circular timestamp buffers using rotation-aware binary search for timeout markers. Audio processing finds sample positions in O(log n) time.",
+      },
+      {
+        icon: "📊",
+        title: "Time-Series Database Rollover",
+        description: "InfluxDB rolls data between time buckets (hourly/daily/yearly). Binary searches across rotated time indices when querying date ranges spanning rollover boundaries without sequential scanning.",
+      },
+      {
+        icon: "🎞️",
+        title: "Video Codec Keyframe Seeking",
+        description: "Video players search rotated keyframe indices to find correct frames for seeking. When files are written circularly (newest overwrite oldest), binary search handles rotation to instantly locate requested timestamps.",
+      },
+      {
+        icon: "💾",
+        title: "Database Crash Recovery",
+        description: "When databases crash, recovery logs are rotated/wrapped. Recovery system binary searches rotated log index to find crash point and restart location in O(log n) instead of O(n) scanning terabytes.",
       },
     ],
   },
@@ -111,11 +146,31 @@ export const binarySearchProblems: PatternProblem[] = [
     mnemonicAction: 'Binary searching for edges',
     mnemonicStory:
       'Use binary search twice: find leftmost occurrence, then rightmost. Each search takes O(log n). Get boundaries in total O(log n) time.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '📊',
-        title: 'Range Queries',
-        description: 'Database range queries for date/price ranges',
+        icon: "📊",
+        title: "Stock Price Range Analysis",
+        description: "Financial systems find first/last occurrence of prices within ranges. 'Find all times AAPL was $150-$155' requires binary searching sorted history for boundaries. Morgan Stanley processes billions of price range queries daily.",
+      },
+      {
+        icon: "🏘️",
+        title: "Real Estate Price Range Search",
+        description: "Zillow users search 'houses $300k-$500k'. System binary searches property prices for boundary positions efficiently retrieving listings between them. Handles millions of concurrent range queries.",
+      },
+      {
+        icon: "🎓",
+        title: "University Grade Distribution",
+        description: "Universities analyze grade distributions by finding all A's (90-100%), B's, etc. Binary search finds first/last A grade in sorted roster giving instant range without scanning all students.",
+      },
+      {
+        icon: "🚗",
+        title: "Autonomous Vehicle Speed Zones",
+        description: "Self-driving cars find first/last position of 25mph zones in sorted maps. Instantly know speed limit boundaries before entering zones using binary search on map indices.",
+      },
+      {
+        icon: "📞",
+        title: "Telecom Area Code Routing",
+        description: "Telecom finds first/last number in area code 408 by binary searching phone number assignments. Routing tables for billions of numbers use boundary positions to direct calls to correct regional switches.",
       },
     ],
   },
@@ -152,11 +207,31 @@ export const binarySearchProblems: PatternProblem[] = [
     mnemonicAction: 'Finding insertion spot',
     mnemonicStory:
       'Binary search tells you where target IS. If not found, search stops at insertion point. The boundary itself is the answer.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '📝',
-        title: 'Sorted List Insert',
-        description: 'Insert items into sorted collections maintaining order',
+        icon: "✈️",
+        title: "Airline Seat Booking Insertion",
+        description: "Airline systems maintain sorted available seats. When booking seat 12F, binary search finds insertion point in sorted list marking it unavailable. Expedia processes millions of seat allocations daily.",
+      },
+      {
+        icon: "📚",
+        title: "Library Book Catalog Insertion",
+        description: "Libraries maintain sorted ISBN catalogues. When new books arrive, binary search finds correct sorted position. Dewey Decimal ordering maintained in O(log n) search + O(n) insertion.",
+      },
+      {
+        icon: "🎵",
+        title: "Spotify Playlist Song Insertion",
+        description: "Music apps insert songs into playlists maintaining chronological order. Binary search finds insertion point for newly added songs keeping playlists efficiently sorted.",
+      },
+      {
+        icon: "🏆",
+        title: "Mobile Game Leaderboard Insertion",
+        description: "Games insert new player scores into leaderboards maintaining sorted order. Binary search finds insertion point for new scores then updates rankings in O(log n).",
+      },
+      {
+        icon: "📮",
+        title: "Gmail Email Timestamp Insertion",
+        description: "Gmail maintains sorted email indices by timestamp. New emails are binary searched for correct temporal position allowing fast chronological retrieval and conversation threading.",
       },
     ],
   },

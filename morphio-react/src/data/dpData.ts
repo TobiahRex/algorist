@@ -34,11 +34,31 @@ export const dpProblems: PatternProblem[] = [
     mnemonicAction: 'Memoizing overlapping subproblems',
     mnemonicStory:
       'Each stair either comes from (n-1) stairs + 1 step OR (n-2) stairs + 2 steps. Store results to avoid recalculating. Fibonacci pattern!',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🎮',
-        title: 'Game Paths',
-        description: 'Count valid move sequences in games',
+        icon: "🏋️",
+        title: "Fitness Rep Combinations",
+        description: "Gym apps find combinations of exercise reps reaching target repetitions. 15 reps with 1-2 rep per set = 2^15 combinations, DP memoizes reaching targets.",
+      },
+      {
+        icon: "💰",
+        title: "Coin Change Combinations",
+        description: "Vending machines find coin combinations for change. DP memoizes ways to make each amount reducing brute-force from exponential.",
+      },
+      {
+        icon: "🎮",
+        title: "Game Score Paths",
+        description: "Games calculate number of paths to reach target scores. DP memoizes paths avoiding redundant calculations.",
+      },
+      {
+        icon: "📦",
+        title: "Package Weight Combinations",
+        description: "Logistics finds weight combinations from package sizes. DP memoizes reachable weights avoiding recomputation.",
+      },
+      {
+        icon: "🎵",
+        title: "Music Tempo Transitions",
+        description: "Music apps find beat sequences reaching tempo targets. DP memoizes reachable tempos from possible transitions.",
       },
     ],
   },
@@ -70,11 +90,31 @@ export const dpProblems: PatternProblem[] = [
     mnemonicAction: 'DP choice: rob or skip',
     mnemonicStory:
       'For each house, choose: rob it (+ value from 2 houses back) or skip it (+ value from 1 house back). Take max. Remember all decisions.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '💰',
-        title: 'Portfolio Optimization',
-        description: 'Select non-conflicting investments for max return',
+        icon: "🏦",
+        title: "Bank Route Planning",
+        description: "Armored car services plan pickup routes maximizing value without visiting adjacent branches (security risk). DP computes optimal non-adjacent selections.",
+      },
+      {
+        icon: "🎪",
+        title: "Carnival Booth Revenue",
+        description: "Carnival operators select booths for maximum revenue with adjacency constraints. DP handles booth spacing rules.",
+      },
+      {
+        icon: "📊",
+        title: "Stock Portfolio Selection",
+        description: "Investors select non-correlated stocks. DP finds maximum portfolio value with correlation constraints (non-adjacent selection).",
+      },
+      {
+        icon: "🌾",
+        title: "Farm Field Planting",
+        description: "Farmers plant crops in fields maximizing yield avoiding adjacent field conflicts. DP plans crop rotation respecting rotation rules.",
+      },
+      {
+        icon: "🎨",
+        title: "Gallery Art Placement",
+        description: "Museums arrange artworks maximizing visitor interest avoiding valuable pieces next to each other. DP handles adjacency constraints.",
       },
     ],
   },
@@ -111,11 +151,31 @@ export const dpProblems: PatternProblem[] = [
     mnemonicAction: 'DP building up to target',
     mnemonicStory:
       'For each amount 0..target, try each coin. Take minimum: current coin (1 + dp[amount-coin]) or best so far. Build bottom-up.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '💳',
-        title: 'Payment Optimization',
-        description: 'Minimize denomination count for exact payment',
+        icon: "💳",
+        title: "Credit Card Rewards Optimization",
+        description: "Finance apps find minimum card transactions reaching spending threshold. DP computes minimum transactions to reach bonus tiers.",
+      },
+      {
+        icon: "🎮",
+        title: "Game Loot Chest Distribution",
+        description: "Games distribute loot minimizing chest count. DP finds minimum chests needed to distribute all items.",
+      },
+      {
+        icon: "✈️",
+        title: "Airline Seat Bundle Pricing",
+        description: "Airlines price seat bundles minimizing bundle count. DP finds minimum bundles covering all customer requirements.",
+      },
+      {
+        icon: "📦",
+        title: "Warehouse Bin Packing",
+        description: "Warehouses pack items minimizing bin count. DP computes minimum bins needed (variant of coin change).",
+      },
+      {
+        icon: "🏥",
+        title: "Prescription Dosage Calculation",
+        description: "Hospitals calculate minimum pills needed for treatment reaching target dosage. DP finds minimum pills (analogous to minimum coins).",
       },
     ],
   },
@@ -147,11 +207,31 @@ export const dpProblems: PatternProblem[] = [
     mnemonicAction: '2D DP table filling',
     mnemonicStory:
       'Build 2D table: if chars match, diagonal+1. If not, take max from left or top. Fill entire table bottom-up. Read diagonal.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '📝',
-        title: 'Diff Algorithms',
-        description: 'Find common subsequence for file diffing',
+        icon: "📝",
+        title: "Document Diff Highlighting",
+        description: "Git and diff tools highlight changed lines using LCS. Files A and B compute LCS to identify minimal changes displayed to users.",
+      },
+      {
+        icon: "🧬",
+        title: "DNA Sequence Alignment",
+        description: "Bioinformatics aligns DNA sequences using LCS. Finding common patterns between genomes identifies evolutionary relationships.",
+      },
+      {
+        icon: "🎬",
+        title: "Video Scene Matching",
+        description: "Video editing software matches scenes between takes using LCS. Editors quickly find best versions of shots across multiple takes.",
+      },
+      {
+        icon: "📊",
+        title: "Data Migration Mapping",
+        description: "ETL systems map old database schema to new using LCS. Common field names identified via longest common subsequences.",
+      },
+      {
+        icon: "🎮",
+        title: "Game Replay Compression",
+        description: "Game engines compress replays by storing LCS of frame sequences. Redundant frames are eliminated reducing storage 10-100x.",
       },
     ],
   },

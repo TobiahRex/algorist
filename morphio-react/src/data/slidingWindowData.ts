@@ -32,13 +32,28 @@ export const slidingWindowProblems: PatternProblem[] = [
     realWorldUses: [
       {
         icon: '📊',
-        title: 'Stock Price Average',
-        description: 'Calculate moving average of stock prices over k days',
+        title: 'Stock Market Moving Averages',
+        description: 'Financial analysts compute k-day moving averages to smooth price volatility and identify trends. A 50-day moving average of Apple stock calculates the average price over the last 50 trading days. Instead of recalculating all 50 prices each day (O(50n)), the sliding window removes yesterday\'s oldest price and adds today\'s new price (O(n)). This runs millions of times across all securities every trading day.',
       },
       {
         icon: '🎬',
-        title: 'Video Buffering',
-        description: 'Process network packets in fixed-size sliding windows',
+        title: 'Video Stream Bitrate Optimization',
+        description: 'Netflix and YouTube adapt streaming quality based on network throughput. Every second, measure the average bandwidth used in the last 10 seconds by maintaining a sliding window of packet sizes. If average drops below threshold, reduce quality. If it increases, upgrade. This adaptive bitrate algorithm prevents buffering and maximizes video quality without overwhelming networks.',
+      },
+      {
+        icon: '📱',
+        title: 'Mobile Device Battery Analysis',
+        description: 'Android and iOS track CPU usage in rolling k-second windows. If average CPU in the last 5 seconds exceeds 80%, the OS throttles background processes to extend battery life. The window slides every second, adding the current second\'s CPU spike, removing the oldest. This prevents false alarms from brief spikes.',
+      },
+      {
+        icon: '🏥',
+        title: 'Patient Vital Signs Monitoring',
+        description: 'Hospital ICU monitors compute rolling averages of heart rate, blood pressure, oxygen levels over k-minute windows. If the rolling average heart rate exceeds 120 BPM for 5 consecutive minutes, an alert triggers. The window slides minute-by-minute, maintaining O(1) computation instead of recalculating every time.',
+      },
+      {
+        icon: '🚗',
+        title: 'Autonomous Vehicle Collision Avoidance',
+        description: 'Tesla autopilot maintains a sliding window of the last 30 frames from cameras to calculate average obstacle distance. If the rolling average distance drops below safe threshold while moving at speed, initiate emergency braking. The window updates at 30fps, so O(n) algorithm would be too slow — sliding window keeps it real-time.',
       },
     ],
   },
@@ -78,8 +93,28 @@ export const slidingWindowProblems: PatternProblem[] = [
     realWorldUses: [
       {
         icon: '🔐',
-        title: 'Password Validation',
-        description: 'Find longest password substring with unique characters',
+        title: 'Password Security Strength Analysis',
+        description: 'Security software analyzes passwords to ensure they don\'t contain repeating character patterns. The longest substring without repeating characters indicates the password\'s complexity. A password like "abcdefg" has strength 7 (all unique), while "aabbcc" has strength 2. Weak repeating patterns make brute-force attacks faster. This check runs during password creation and guides users to stronger passwords.',
+      },
+      {
+        icon: '🎮',
+        title: 'Game Input Combo Detection',
+        description: 'Fighting games like Street Fighter detect special attack combos by finding the longest input sequence without duplicate button presses. The combo "ABC" (3 unique) triggers a special move, but "AABC" (contains repeat A) doesn\'t. The sliding window checks input buffers at 60fps to recognize legitimate combos before the input window closes.',
+      },
+      {
+        icon: '📡',
+        title: 'Network Protocol Packet Validation',
+        description: 'Some protocols require packet headers to have unique byte sequences for integrity checking. The longest unique byte substring length must meet minimum threshold. If an attacker corrupts the packet with repeated bytes, validation fails. Network stacks perform this check on every incoming packet at line-rate speeds.',
+      },
+      {
+        icon: '🧬',
+        title: 'DNA Sequence Uniqueness Scoring',
+        description: 'Genomic research identifies regions of DNA without repeated nucleotides (A, C, G, T). A CGATCGA sequence has longest unique substring length of 4 (CGAT). These regions often code for specific proteins. The algorithm identifies high-complexity DNA regions for deeper analysis.',
+      },
+      {
+        icon: '🎨',
+        title: 'License Plate Character Validation',
+        description: 'DMV systems validate license plates by checking for repeated characters within allowed rules. Some plates require maximum consecutive character repetitions. The sliding window identifies plates like "AAB1234" (2 As) vs "AAA1234" (invalid) by finding longest unique substring. Invalid patterns are rejected at vehicle registration.',
       },
     ],
   },
@@ -114,8 +149,28 @@ export const slidingWindowProblems: PatternProblem[] = [
     realWorldUses: [
       {
         icon: '🛒',
-        title: 'Shopping Cart Limit',
-        description: 'Select longest product sequence with k brands only',
+        title: 'E-Commerce Cart Supplier Limit',
+        description: 'Retailers enforce policies: customers can buy at most k different supplier/brands in one transaction to reduce shipping complexity. The algorithm finds the longest product sequence respecting this constraint. A customer buying [Nike, Adidas, Nike, Adidas, Puma] with k=2 can buy up to 4 items (before Puma violates the constraint). This drives fulfillment efficiency.',
+      },
+      {
+        icon: '📊',
+        title: 'Stock Portfolio Diversification',
+        description: 'Investment algorithms maintain portfolios with at most k distinct asset classes (stocks, bonds, crypto, commodities, real estate). To rebalance, find the longest trading sequence respecting this constraint. A stock trader analyzing price history [AAPL, MSFT, AAPL, GOOGL, TSLA] with k=2 assets finds the longest valid window respects diversification rules.',
+      },
+      {
+        icon: '🏭',
+        title: 'Manufacturing Assembly Line Quality Control',
+        description: 'Factory assembly lines use at most k different component suppliers to maintain consistency and traceability. Quality control inspects production sequences ensuring compliance. A sequence [SupplierA, SupplierB, SupplierA, SupplierC, SupplierB] with k=2 violates policy when SupplierC appears. The sliding window identifies compliant batch sizes for quality certification.',
+      },
+      {
+        icon: '🎬',
+        title: 'Film Production Location Scouting',
+        description: 'Movie crews limit production to at most k different filming locations per day to reduce setup overhead. The production manager finds the longest consecutive shooting schedule respecting this. A schedule [Location1, Location2, Location1, Location2, Location3] with k=2 is valid until Location3, then requires travel. Optimization finds longest sequences minimizing logistics.',
+      },
+      {
+        icon: '🌍',
+        title: 'Tourism Bus Route Optimization',
+        description: 'Tour buses visit at most k distinct attractions per route to keep tours under 4 hours. The routing algorithm finds the longest sequence of destinations respecting this limit. A route [Museum, Park, Museum, Beach, Theater, Park] with k=3 is valid for first 4 stops, then exceeds limit. Optimization maximizes tourist coverage.',
       },
     ],
   },

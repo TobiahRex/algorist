@@ -24,11 +24,31 @@ export const dfsProblems: PatternProblem[] = [
     mnemonicAction: 'Exploring branches completely',
     mnemonicStory:
       'Dive deep into first branch, explore fully before backtracking. Visit node, then recurse left, then recurse right. Pure depth-first commitment.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🔍',
-        title: 'Maze Solving',
-        description: 'Explore maze paths completely before trying alternatives',
+        icon: "📁",
+        title: "File System Directory Listing",
+        description: "Operating systems traverse file hierarchies in DFS preorder: visit directory, list contents, then recurse. Unix find command and Windows dir /s use this pattern.",
+      },
+      {
+        icon: "🎯",
+        title: "HTML DOM Tree Parsing",
+        description: "Web browsers parse HTML in DFS preorder: process opening tag, children, closing tag. JavaScript DOM traversal follows DFS order for event bubbling.",
+      },
+      {
+        icon: "🏢",
+        title: "Organization Hierarchy Reporting",
+        description: "Companies traverse org charts in DFS preorder to generate reporting hierarchies. CEO's report first, then their departments' reports.",
+      },
+      {
+        icon: "💾",
+        title: "File Backup Traversal",
+        description: "Backup systems traverse file trees in DFS preorder ensuring parent directories are backed up before children, maintaining integrity.",
+      },
+      {
+        icon: "🔍",
+        title: "Code Syntax Tree Analysis",
+        description: "Compilers traverse abstract syntax trees (ASTs) in DFS preorder for code analysis, optimization, and code generation.",
       },
     ],
   },
@@ -55,11 +75,31 @@ export const dfsProblems: PatternProblem[] = [
     mnemonicAction: 'Left-visit-right pattern',
     mnemonicStory:
       'For BST, inorder traversal gives sorted sequence. Left-root-right order naturally produces ascending values. Perfect for sorted extraction.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '📑',
-        title: 'Extract Sorted Data',
-        description: 'Get sorted output from binary search tree',
+        icon: "📊",
+        title: "Binary Search Tree Value Listing",
+        description: "BST inorder traversal returns values in sorted order. Database indices use this to return sorted query results efficiently.",
+      },
+      {
+        icon: "🎵",
+        title: "Playlist Order Resolution",
+        description: "Music apps resolve playlist ordering using BST inorder traversal. O(n) sorted playlist generation without explicit sorting.",
+      },
+      {
+        icon: "⏱️",
+        title: "Task Scheduling by Priority",
+        description: "Schedulers maintain tasks in BSTs and use inorder to process by priority without sorting overhead.",
+      },
+      {
+        icon: "📈",
+        title: "Financial Report Generation",
+        description: "Financial systems generate sorted income statement items using inorder BST traversal from transaction trees.",
+      },
+      {
+        icon: "🎓",
+        title: "Grade Book Sorting",
+        description: "Schools traverse student grade BSTs in inorder to generate alphabetical gradebooks and sorted reports.",
       },
     ],
   },
@@ -81,11 +121,31 @@ export const dfsProblems: PatternProblem[] = [
     mnemonicAction: 'Processing leaves before parents',
     mnemonicStory:
       'Visit children first, then process parent. Perfect for deletion: remove children before parent. Or aggregating from leaves upward.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🗑️',
-        title: 'Tree Deletion',
-        description: 'Delete nodes safely: children before parents',
+        icon: "📁",
+        title: "File Deletion Cleanup",
+        description: "When deleting directories, systems traverse in DFS postorder: delete children first, then parent. rm -r uses this to safely delete trees.",
+      },
+      {
+        icon: "💾",
+        title: "Memory Deallocation",
+        description: "Garbage collectors use postorder traversal to deallocate objects with dependents: free children first, then parent, preventing dangling pointers.",
+      },
+      {
+        icon: "📊",
+        title: "Expression Evaluation",
+        description: "Calculators evaluate mathematical expressions using postorder traversal: 3 + (4 * 5) is evaluated with operands before operators.",
+      },
+      {
+        icon: "🏗️",
+        title: "Build System Dependency Compilation",
+        description: "Build systems like Make compile files in postorder: compile dependencies before dependents. Only recompile when dependencies change.",
+      },
+      {
+        icon: "🎮",
+        title: "Game Resource Unloading",
+        description: "Game engines unload resources in postorder: unload child game objects before parent scene, ensuring proper cleanup.",
       },
     ],
   },

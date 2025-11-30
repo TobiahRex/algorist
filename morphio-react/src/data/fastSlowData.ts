@@ -37,13 +37,28 @@ export const fastSlowProblems: PatternProblem[] = [
     realWorldUses: [
       {
         icon: '🔗',
-        title: 'Deadlock Detection',
-        description: 'Detect circular dependencies in process scheduling',
+        title: 'Operating System Deadlock Detection',
+        description: 'OS kernels use cycle detection to prevent deadlocks where Process A waits for Process B, B waits for C, C waits for A (circular dependency). Every process-to-process wait creates a link in a directed graph. The fast/slow pointer algorithm detects cycles in O(1) memory - critical on embedded devices with 64MB RAM. When a cycle is detected, the OS kills one process to break the deadlock.',
       },
       {
         icon: '📡',
-        title: 'Network Routing',
-        description: 'Find loops in network topology before packets waste bandwidth',
+        title: 'Network Routing Loop Prevention',
+        description: 'BGP (Border Gateway Protocol) routers detect routing loops where packets could circulate infinitely (Router A routes to B, B to C, C back to A). Each hop is a linked list node. Routers check for cycles in path advertisements to prevent bandwidth waste and TTL exhaustion. Detecting loops in O(1) space means minimal router memory usage.',
+      },
+      {
+        icon: '🎮',
+        title: 'Game Update Cycle Detection',
+        description: 'Game engines detect circular dependencies in update systems. If Entity A updates before B, B before C, and C before A, the game locks. The fast/slow pointer detects this before runtime. Unreal Engine and Unity use this pattern to ensure safe parallel processing.',
+      },
+      {
+        icon: '🏦',
+        title: 'Blockchain Transaction Validation',
+        description: 'Cryptocurrency systems detect circular transaction chains. If Wallet A sends to B, B to C, C back to A in a loop, the transaction is invalid. Fast/slow detection prevents infinite loops in smart contract execution before gas limits are exceeded.',
+      },
+      {
+        icon: '🔐',
+        title: 'Hash Table Collision Loop Detection',
+        description: 'In poorly implemented hash tables, collisions can create cycles in the probe chain. When looking up a key, if you encounter a cycle instead of finding an empty slot, the table is corrupt. Fast/slow pointer detection identifies this corruption without allocating extra memory for visited sets.',
       },
     ],
   },
@@ -78,8 +93,23 @@ export const fastSlowProblems: PatternProblem[] = [
     realWorldUses: [
       {
         icon: '🐛',
-        title: 'Bug Detection',
-        description: 'Trace back to find source of infinite loop in code',
+        title: 'Infinite Loop Debugging',
+        description: 'Debuggers use cycle start detection to find where infinite loops originate. When a program hangs, the debugger detects the cycle, then traces back to find the exact line of code creating the loop. This is critical for post-mortem analysis of crashed services.',
+      },
+      {
+        icon: '🔗',
+        title: 'Linked Resource Dependency Resolution',
+        description: 'Content delivery networks track resource dependencies (Script A requires B, B requires C, C requires A). Finding the cycle start identifies which resource to remove to break the circular dependency. CDN servers use this to avoid infinite resource loading.',
+      },
+      {
+        icon: '🏢',
+        title: 'Supply Chain Circular Dependency Breaking',
+        description: 'ERP systems model supplier networks. If Supplier A provides to B, B to C, C back to A (circular), the system identifies the cycle start node to break the dependency or flag the issue for manual resolution.',
+      },
+      {
+        icon: '🎯',
+        title: 'Recommendation System Loop Detection',
+        description: 'Recommendation engines detect when users form circular referrals (User A recommends Product B, which leads to User C, who recommends back to A). Identifying the start of the cycle helps personalize recommendations.',
       },
     ],
   },
@@ -114,8 +144,28 @@ export const fastSlowProblems: PatternProblem[] = [
     realWorldUses: [
       {
         icon: '⚖️',
-        title: 'Load Balancing',
-        description: 'Split task lists into balanced halves for parallel processing',
+        title: 'Parallel Processing Load Balancing',
+        description: 'MapReduce jobs need to split linked task lists into two balanced halves for independent parallel processing. The middle-finding algorithm splits workload without scanning the entire length first. Hadoop uses this pattern to distribute tasks across nodes efficiently.',
+      },
+      {
+        icon: '🎬',
+        title: 'Video Codec Keyframe Insertion',
+        description: 'Video encoders insert keyframes at optimal positions for seeking. Instead of decoding the entire video to find the middle, the fast/slow pointer finds the temporal midpoint in one pass. This determines where to place I-frames for balanced segment sizes.',
+      },
+      {
+        icon: '📚',
+        title: 'Sorted Linked List Median Finding',
+        description: 'Database query engines find median values in sorted linked lists without storing in memory. For datasets streaming from disk, finding the middle in one pass and returning the middle value (or average of middle two) gives median in O(n) time, O(1) space.',
+      },
+      {
+        icon: '🌳',
+        title: 'Binary Search Tree Self-Balancing',
+        description: 'AVL tree and Red-Black tree implementations find the middle of unbalanced sequences during insertion. Using fast/slow pointers, they identify the correct pivot for tree restructuring without pre-computing length.',
+      },
+      {
+        icon: '🔄',
+        title: 'Merge Sort In-Place Splitting',
+        description: 'In-place merge sort implementations find the middle of arrays to split without allocating new buffers. Finding the midpoint in a linked list using fast/slow pointers allows O(1) extra space merge sort implementation.',
       },
     ],
   },
@@ -155,8 +205,28 @@ export const fastSlowProblems: PatternProblem[] = [
     realWorldUses: [
       {
         icon: '🎮',
-        title: 'Game Mechanics',
-        description: 'Detect win conditions vs. infinite loops in game states',
+        title: 'Game State Stability Detection',
+        description: 'Game engines use happy number logic to detect whether game states are stable or will cycle infinitely. When applying transformations (physics updates, AI decisions), if the fast/slow pointers collide, the state loops infinitely. This prevents infinite loops during playtesting.',
+      },
+      {
+        icon: '🔬',
+        title: 'Cellular Automaton Cycle Detection',
+        description: 'Conway\'s Game of Life and similar cellular automata need to detect if patterns oscillate forever or reach steady state. Fast/slow pointer pattern applied to cellular state snapshots detects cycles in O(1) memory - critical for real-time simulation.',
+      },
+      {
+        icon: '💻',
+        title: 'CPU Cycle Detection in Emulators',
+        description: 'When emulating CPU instruction sets, if fast/slow tracking of CPU state registers detect a cycle, the emulator has detected infinite instruction loops. Virtual machines use this to avoid runaway simulations that waste battery.',
+      },
+      {
+        icon: '🧮',
+        title: 'Numerical Algorithm Convergence Testing',
+        description: 'Newton\'s method and other iterative numerical algorithms need to detect divergence. By applying fast/slow pointer pattern to function result sequences, algorithms detect if computation cycles without converging. This prevents infinite iterations in scientific computing.',
+      },
+      {
+        icon: '🔐',
+        title: 'Pseudo-Random Number Generator Testing',
+        description: 'PRNGs must eventually cycle (cycle detection is a property). Test suites use fast/slow pointers to find the cycle length - generators with very long cycles are higher quality. NIST certifies RNGs partly by cycle properties.',
       },
     ],
   },

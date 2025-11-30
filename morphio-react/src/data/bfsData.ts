@@ -29,16 +29,31 @@ export const bfsProblems: PatternProblem[] = [
     mnemonicAction: 'Processing by depth',
     mnemonicStory:
       'Start at root, scan all neighbors level by level. Use queue: add children as you process parents. First in, first out ensures level-order guarantee.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🌳',
-        title: 'Tree Serialization',
-        description: 'Level-order format for tree persistence (like JSON)',
+        icon: "📊",
+        title: "Printer Queue Job Scheduling",
+        description: "Print servers queue jobs in level-order (FIFO). BFS explores queue breadth-first ensuring jobs from same batch are grouped, improving cache locality and throughput on multi-printer systems.",
       },
       {
-        icon: '📡',
-        title: 'Network Broadcasting',
-        description: 'Broadcast messages level-by-level to all network nodes',
+        icon: "🌐",
+        title: "Web Crawler Multi-Level Discovery",
+        description: "Web crawlers use BFS to discover pages level-by-level. Starting from seed URLs, they fetch all pages one hop away, then two hops, etc. Ensures breadth-first indexing and crawl efficiency for Google's spider.",
+      },
+      {
+        icon: "🎮",
+        title: "Game AI Enemy Detection Radius",
+        description: "Game engines use BFS to find all enemies within attack radius, level-by-level from player. Efficient for dynamic range queries and LOD (level-of-detail) optimization in 3D games.",
+      },
+      {
+        icon: "🏥",
+        title: "Hospital Room Allocation",
+        description: "Hospital systems find available rooms level-by-level (floor 1, then floor 2, etc). BFS ensures nearby rooms are allocated first, reducing patient transfer distances.",
+      },
+      {
+        icon: "📱",
+        title: "Social Network Friend Recommendations",
+        description: "Facebook's friend suggestion uses BFS to explore connections: direct friends (1 hop), friends of friends (2 hops), etc. Ranking by hop distance provides relevance.",
       },
     ],
   },
@@ -65,11 +80,31 @@ export const bfsProblems: PatternProblem[] = [
     mnemonicAction: 'Expanding frontier equally',
     mnemonicStory:
       'BFS expands frontier simultaneously from start. All neighbors at distance 1, then distance 2, etc. First to reach target is guaranteed shortest.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🚗',
-        title: 'GPS Navigation',
-        description: 'Find shortest route without traffic weights',
+        icon: "🗺️",
+        title: "GPS Navigation Routing",
+        description: "Navigation systems like Google Maps use BFS on unweighted graphs to find shortest-path routes. Bluetooth/WiFi networks are unweighted, making BFS optimal for hop-count minimization.",
+      },
+      {
+        icon: "🎮",
+        title: "Chess AI Move Sequence",
+        description: "Chess engines use BFS to explore move sequences of equal ply depth. Finding shortest path to checkmate uses breadth-first exploration.",
+      },
+      {
+        icon: "🧭",
+        title: "Maze Solver Robot",
+        description: "Robots navigating mazes use BFS since each cell move has equal cost. Guarantees shortest path to goal without exploring dead ends unnecessarily.",
+      },
+      {
+        icon: "🌳",
+        title: "Genealogy Family Tree",
+        description: "Ancestry.com uses BFS to find closest common ancestor between two people. Level-by-level exploration from both directions finds the relationship path.",
+      },
+      {
+        icon: "💻",
+        title: "Operating System Process Hierarchy",
+        description: "OS kernels use BFS to find process trees and child processes level-by-level. Efficient for signal broadcasting to process groups.",
       },
     ],
   },

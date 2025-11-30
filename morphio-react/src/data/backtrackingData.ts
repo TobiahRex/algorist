@@ -24,11 +24,31 @@ export const backtrackingProblems: PatternProblem[] = [
     mnemonicAction: 'Trying each position',
     mnemonicStory:
       'Place each element at position 1. Recursively permute rest. When stuck, backtrack and try next element. Build tree of all arrangements.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🎭',
-        title: 'Scheduling',
-        description: 'Generate all possible team/shift arrangements',
+        icon: "🎮",
+        title: "Game AI Move Exploration",
+        description: "Chess/Go AI engines generate all possible moves (permutations) from current board state. Backtracking explores each permutation pruning invalid branches.",
+      },
+      {
+        icon: "🧩",
+        title: "Password Cracking Dictionaries",
+        description: "Security scanners generate permutations of character combinations testing password strength. Backtracking stops at valid passwords.",
+      },
+      {
+        icon: "📊",
+        title: "Survey Response Analysis",
+        description: "Market research analyzes all permutations of survey responses finding patterns. Backtracking prunes responses that violate consistency rules.",
+      },
+      {
+        icon: "🎨",
+        title: "Graphic Design Template Variations",
+        description: "Design tools generate all permutations of layout components showing design variations. Backtracking skips invalid layout combinations.",
+      },
+      {
+        icon: "🧬",
+        title: "DNA Sequence Permutation Analysis",
+        description: "Genomic research generates DNA permutations testing mutation resistance. Backtracking prunes non-viable sequences early.",
       },
     ],
   },
@@ -55,11 +75,31 @@ export const backtrackingProblems: PatternProblem[] = [
     mnemonicAction: 'Picking k from n',
     mnemonicStory:
       'At each step, decide to include current element or skip. Once you have k elements, record. Backtrack and try excluding instead.',
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🎲',
-        title: 'Lottery Combinations',
-        description: 'Generate all possible lottery ticket combinations',
+        icon: "🎁",
+        title: "Gift Bundle Combinations",
+        description: "E-commerce generates product bundle combinations. Users select 3 items from 100 options - backtracking efficiently generates C(100,3) without explicitly generating all permutations.",
+      },
+      {
+        icon: "📚",
+        title: "Course Prerequisite Combinations",
+        description: "Universities generate valid course combinations respecting prerequisites. Backtracking ensures all prerequisites are satisfied before including courses.",
+      },
+      {
+        icon: "🏆",
+        title: "Tournament Bracket Combinations",
+        description: "Sports league software generates bracket combinations ensuring fairness. Backtracking prunes brackets violating tournament rules.",
+      },
+      {
+        icon: "💳",
+        title: "Credit Card Fraud Pattern Combinations",
+        description: "Banks test fraud detection patterns by generating transaction combinations matching known patterns. Backtracking prunes non-matching patterns early.",
+      },
+      {
+        icon: "🎬",
+        title: "Movie Scene Editing Combinations",
+        description: "Video editors generate edit combinations respecting pacing rules. Backtracking skips edits violating cinematography guidelines.",
       },
     ],
   },
@@ -86,11 +126,31 @@ export const backtrackingProblems: PatternProblem[] = [
     mnemonicAction: 'Testing & backtracking',
     mnemonicStory:
       "Place queen in row 1. Check if safe. Recurse to next row. If can't place safely, backtrack and try next column in previous row.",
-    realWorldUses: [
+        realWorldUses: [
       {
-        icon: '🛡️',
-        title: 'Resource Allocation',
-        description: 'Place resources with conflict avoidance constraints',
+        icon: "🎮",
+        title: "Dungeon Treasure Placement",
+        description: "Game designers use N-Queens logic to place treasures avoiding sight lines. Similar constraint satisfaction places treasures so enemies can't see all of them.",
+      },
+      {
+        icon: "📡",
+        title: "Radio Tower Placement",
+        description: "Telecom companies place towers ensuring coverage without interference. Constraint satisfaction similar to N-Queens prevents frequency conflicts.",
+      },
+      {
+        icon: "🏫",
+        title: "School Classroom Scheduling",
+        description: "Schools schedule classes avoiding teacher conflicts. Backtracking ensures no teacher teaches two classes simultaneously (Queens constraint).",
+      },
+      {
+        icon: "🍕",
+        title: "Restaurant Table Assignment",
+        description: "Restaurants assign customers to tables respecting distance constraints. Similar to N-Queens ensuring no two parties are too close.",
+      },
+      {
+        icon: "🎪",
+        title: "Carnival Booth Layout",
+        description: "Carnivals arrange booths so loud booths don't cluster together. Backtracking satisfies acoustic constraints like N-Queens placement.",
       },
     ],
   },
