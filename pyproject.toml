@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "algorist"
+version = "0.1.0"
+description = "A repository for studying algorithms, data structures, and problem-solving patterns"
+authors = ["Your Name <your.email@example.com>"]
+readme = "README.md"
+packages = [{include = "library_2025"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+jupyter = "^1.0.0"
+ipython = "^8.0.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
