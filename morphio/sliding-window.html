@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sliding Window Pattern — Deep Dive v2</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #22d3ee, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* Layout */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1000px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-structure h2 {
+            color: #f472b6;
+        }
+
+        .panel-behavior h2 {
+            color: #22d3ee;
+        }
+
+        .panel-trigger h2 {
+            color: #fbbf24;
+        }
+
+        .panel-code h2 {
+            color: #4ade80;
+        }
+
+        /* Animation Canvas */
+        .canvas-container {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+            border-color: #4a4f65;
+        }
+
+        button.active {
+            border-color: #22d3ee;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+        }
+
+        select {
+            background: #1a1f35;
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            max-width: 250px;
+        }
+
+        /* Structure diagram */
+        .structure-diagram {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .structure-diagram svg {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* State display */
+        .state-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .state-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .state-item .label {
+            font-size: 0.75rem;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .state-item .value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }
+
+        .state-left .value {
+            color: #f472b6;
+        }
+
+        .state-right .value {
+            color: #22d3ee;
+        }
+
+        .state-sum .value {
+            color: #4ade80;
+        }
+
+        /* Trigger keywords */
+        .triggers {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .trigger-tag {
+            background: rgba(251, 191, 36, 0.15);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            color: #fbbf24;
+            padding: 4px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+
+        /* Problems list */
+        .problems-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .problem-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-left: 3px solid #444;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .problem-card:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .problem-card.selected {
+            border-left-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .problem-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .problem-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #e0e0e0;
+        }
+
+        .difficulty {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .easy {
+            background: #1a3a2a;
+            color: #4ade80;
+        }
+
+        .medium {
+            background: #3a3a1a;
+            color: #fbbf24;
+        }
+
+        .hard {
+            background: #3a1a2a;
+            color: #f472b6;
+        }
+
+        .problem-desc {
+            font-size: 0.8rem;
+            color: #999;
+            line-height: 1.4;
+        }
+
+        .problem-example {
+            font-size: 0.75rem;
+            color: #666;
+            margin-top: 6px;
+            font-family: 'Consolas', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 8px;
+            border-radius: 4px;
+        }
+
+        /* Code blocks */
+        .code-container {
+            background: #0d1117;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #161b22;
+            padding: 10px 15px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .code-header label {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .code-header select {
+            flex: 1;
+            max-width: 350px;
+        }
+
+        .code-tabs {
+            display: flex;
+            background: #1a1f2e;
+            border-bottom: 1px solid #2a2f45;
+        }
+
+        .code-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            border: none;
+            background: transparent;
+            color: #888;
+            transition: all 0.2s;
+            border-radius: 0;
+        }
+
+        .code-tab:hover {
+            color: #ccc;
+            background: transparent;
+        }
+
+        .code-tab.active {
+            color: #4ade80;
+            border-bottom: 2px solid #4ade80;
+            margin-bottom: -1px;
+        }
+
+        .code-content {
+            display: none;
+            padding: 15px;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .code-content.active {
+            display: block;
+        }
+
+        pre {
+            margin: 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.78rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .comment {
+            color: #6a737d;
+        }
+
+        .keyword {
+            color: #ff7b72;
+        }
+
+        .function {
+            color: #d2a8ff;
+        }
+
+        .string {
+            color: #a5d6ff;
+        }
+
+        .number {
+            color: #79c0ff;
+        }
+
+        .variable {
+            color: #ffa657;
+        }
+
+        /* Invariant box */
+        .invariant-box {
+            background: rgba(34, 211, 238, 0.1);
+            border-left: 3px solid #22d3ee;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+        }
+
+        .invariant-box h4 {
+            color: #22d3ee;
+            font-size: 0.85rem;
+            margin-bottom: 8px;
+        }
+
+        .invariant-box p {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin: 5px 0;
+        }
+
+        .invariant-box code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: #4ade80;
+        }
+
+        /* Full width sections */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .shape-badge {
+            background: rgba(244, 114, 182, 0.2);
+            border: 1px solid #f472b6;
+            color: #f472b6;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            margin-left: auto;
+        }
+
+        /* Two variants */
+        .variants-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .variant-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            border-top: 3px solid;
+        }
+
+        .variant-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .variant-box p {
+            font-size: 0.8rem;
+            color: #aaa;
+            margin-bottom: 10px;
+        }
+
+        .variant-box code {
+            font-size: 0.75rem;
+            color: #4ade80;
+        }
+
+        .variant-fixed {
+            border-color: #22d3ee;
+        }
+
+        .variant-fixed h4 {
+            color: #22d3ee;
+        }
+
+        .variant-variable {
+            border-color: #a78bfa;
+        }
+
+        .variant-variable h4 {
+            color: #a78bfa;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🪟 Sliding Window Pattern</h1>
+    <p class="subtitle">Shape: Linear Chain | Complexity: O(n) | The "subarray/substring" solver</p>
+
+    <div class="main-grid">
+        <!-- STRUCTURE PANEL -->
+        <div class="panel panel-structure">
+            <h2>📐 1. Structure <span class="shape-badge">Linear Chain</span></h2>
+            <div class="structure-diagram">
+                <svg width="100%" height="140" viewBox="0 0 450 140">
+                    <g transform="translate(25, 50)">
+                        <rect x="0" y="0" width="45" height="40" fill="#1a2030" stroke="#444" stroke-width="1.5"
+                            rx="4" />
+                        <rect x="50" y="0" width="45" height="40" fill="#1a2030" stroke="#444" stroke-width="1.5"
+                            rx="4" />
+                        <rect x="100" y="0" width="45" height="40" fill="#2a1a3a" stroke="#f472b6" stroke-width="2"
+                            rx="4" />
+                        <rect x="150" y="0" width="45" height="40" fill="#1a3a3a" stroke="#22d3ee" stroke-width="2"
+                            rx="4" />
+                        <rect x="200" y="0" width="45" height="40" fill="#1a3a3a" stroke="#22d3ee" stroke-width="2"
+                            rx="4" />
+                        <rect x="250" y="0" width="45" height="40" fill="#1a3a3a" stroke="#22d3ee" stroke-width="2"
+                            rx="4" />
+                        <rect x="300" y="0" width="45" height="40" fill="#1a2030" stroke="#444" stroke-width="1.5"
+                            rx="4" />
+                        <rect x="350" y="0" width="45" height="40" fill="#1a2030" stroke="#444" stroke-width="1.5"
+                            rx="4" />
+
+                        <path d="M100 -8 L100 -15 L295 -15 L295 -8" fill="none" stroke="#4ade80" stroke-width="2" />
+                        <text x="197" y="-20" text-anchor="middle" fill="#4ade80" font-size="11">window</text>
+
+                        <text x="122" y="70" text-anchor="middle" fill="#f472b6" font-size="11"
+                            font-weight="bold">L</text>
+                        <path d="M122 58 L122 45" stroke="#f472b6" stroke-width="2" marker-end="url(#arrowPink)" />
+
+                        <text x="272" y="70" text-anchor="middle" fill="#22d3ee" font-size="11"
+                            font-weight="bold">R</text>
+                        <path d="M272 58 L272 45" stroke="#22d3ee" stroke-width="2" marker-end="url(#arrowCyan)" />
+                    </g>
+
+                    <g transform="translate(25, 110)">
+                        <rect x="0" y="0" width="120" height="25" fill="#1a2a1a" stroke="#4ade80" stroke-width="1"
+                            rx="4" />
+                        <text x="60" y="17" text-anchor="middle" fill="#4ade80" font-size="11">state: sum, count,
+                            map</text>
+                    </g>
+
+                    <defs>
+                        <marker id="arrowPink" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                            <path d="M0,0 L8,4 L0,8 Z" fill="#f472b6" />
+                        </marker>
+                        <marker id="arrowCyan" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+                            <path d="M0,0 L8,4 L0,8 Z" fill="#22d3ee" />
+                        </marker>
+                    </defs>
+                </svg>
+            </div>
+
+            <div class="variants-grid">
+                <div class="variant-box variant-fixed">
+                    <h4>Fixed Size Window</h4>
+                    <p>Window size K is given. Simpler logic.</p>
+                    <code>R - L + 1 == K always</code>
+                </div>
+                <div class="variant-box variant-variable">
+                    <h4>Variable Size Window</h4>
+                    <p>Find optimal size. Need shrink logic.</p>
+                    <code>while invalid: shrink L</code>
+                </div>
+            </div>
+
+            <div class="invariant-box">
+                <h4>🔒 The Invariant</h4>
+                <p><code>window = arr[L..R]</code> always satisfies the constraint</p>
+                <p><code>state</code> always reflects current window contents</p>
+            </div>
+        </div>
+
+        <!-- BEHAVIOR PANEL -->
+        <div class="panel panel-behavior">
+            <h2>⚡ 2. Behavior (Animated)</h2>
+            <div class="canvas-container">
+                <canvas id="animCanvas" width="420" height="120"></canvas>
+            </div>
+
+            <div class="controls">
+                <select id="problemSelect">
+                    <option value="maxSum">Max Sum (Fixed K=3)</option>
+                    <option value="minSubarray">Min Subarray ≥ Target</option>
+                </select>
+                <button id="btnStep">Step →</button>
+                <button id="btnPlay">▶ Play</button>
+                <button id="btnReset">↺ Reset</button>
+            </div>
+
+            <div class="state-display">
+                <div class="state-item state-left">
+                    <div class="label">Left (L)</div>
+                    <div class="value" id="leftVal">0</div>
+                </div>
+                <div class="state-item state-right">
+                    <div class="label">Right (R)</div>
+                    <div class="value" id="rightVal">0</div>
+                </div>
+                <div class="state-item state-sum">
+                    <div class="label">Window Sum</div>
+                    <div class="value" id="sumVal">0</div>
+                </div>
+            </div>
+
+            <div class="invariant-box" style="border-color: #fbbf24; background: rgba(251,191,36,0.1);">
+                <h4 style="color: #fbbf24;">🎬 The Choreography</h4>
+                <p><strong>Expand:</strong> Move R right, add arr[R] to state</p>
+                <p><strong>Contract:</strong> While invalid, move L right, remove arr[L]</p>
+                <p><strong>Record:</strong> Update best answer</p>
+            </div>
+        </div>
+
+        <!-- CLASSIC PROBLEMS PANEL -->
+        <div class="panel panel-trigger full-width">
+            <h2>🎯 3. Classic Problems <span
+                    style="font-size: 0.8rem; color: #888; font-weight: normal; margin-left: auto;">Click a problem to
+                    see its code →</span></h2>
+
+            <p style="font-size: 0.85rem; color: #aaa; margin-bottom: 15px;">
+                <strong>Trigger words:</strong>
+            </p>
+            <div class="triggers">
+                <span class="trigger-tag">subarray</span>
+                <span class="trigger-tag">substring</span>
+                <span class="trigger-tag">contiguous</span>
+                <span class="trigger-tag">window</span>
+                <span class="trigger-tag">consecutive</span>
+                <span class="trigger-tag">longest</span>
+                <span class="trigger-tag">shortest</span>
+                <span class="trigger-tag">maximum sum</span>
+                <span class="trigger-tag">at most K</span>
+                <span class="trigger-tag">exactly K</span>
+                <span class="trigger-tag">distinct</span>
+            </div>
+
+            <div class="problems-list"
+                style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 15px;">
+                <!-- Problem 1 -->
+                <div class="problem-card selected" data-problem="maxSumK">
+                    <div class="problem-header">
+                        <span class="difficulty easy">Easy</span>
+                        <span class="problem-title">Maximum Average Subarray I</span>
+                    </div>
+                    <div class="problem-desc">
+                        Given an integer array <code>nums</code> and an integer <code>k</code>, find a
+                        <strong>contiguous subarray</strong> whose length is equal to <code>k</code> that has the
+                        maximum average value.
+                    </div>
+                    <div class="problem-example">
+                        Input: nums = [1,12,-5,-6,50,3], k = 4<br>
+                        Output: 12.75 → subarray [12,-5,-6,50]
+                    </div>
+                </div>
+
+                <!-- Problem 2 -->
+                <div class="problem-card" data-problem="longestNoRepeat">
+                    <div class="problem-header">
+                        <span class="difficulty medium">Med</span>
+                        <span class="problem-title">Longest Substring Without Repeating Characters</span>
+                    </div>
+                    <div class="problem-desc">
+                        Given a string <code>s</code>, find the length of the <strong>longest substring</strong> without
+                        repeating characters.
+                    </div>
+                    <div class="problem-example">
+                        Input: s = "abcabcbb"<br>
+                        Output: 3 → "abc"
+                    </div>
+                </div>
+
+                <!-- Problem 3 -->
+                <div class="problem-card" data-problem="minSubarraySum">
+                    <div class="problem-header">
+                        <span class="difficulty medium">Med</span>
+                        <span class="problem-title">Minimum Size Subarray Sum</span>
+                    </div>
+                    <div class="problem-desc">
+                        Given an array of positive integers <code>nums</code> and a positive integer
+                        <code>target</code>, return the <strong>minimal length</strong> of a contiguous subarray whose
+                        sum is ≥ target. Return 0 if none exists.
+                    </div>
+                    <div class="problem-example">
+                        Input: target = 7, nums = [2,3,1,2,4,3]<br>
+                        Output: 2 → subarray [4,3]
+                    </div>
+                </div>
+
+                <!-- Problem 4 -->
+                <div class="problem-card" data-problem="fruitBaskets">
+                    <div class="problem-header">
+                        <span class="difficulty medium">Med</span>
+                        <span class="problem-title">Fruit Into Baskets</span>
+                    </div>
+                    <div class="problem-desc">
+                        You have two baskets. Each basket can hold only one type of fruit. Starting from any tree, pick
+                        exactly one fruit from every tree moving right. Stop when you have to pick a 3rd type. Return
+                        <strong>maximum fruits</strong> collected.
+                    </div>
+                    <div class="problem-example">
+                        Input: fruits = [1,2,1,2,3]<br>
+                        Output: 4 → [1,2,1,2] (types 1 and 2)
+                    </div>
+                </div>
+
+                <!-- Problem 5 -->
+                <div class="problem-card" data-problem="minWindowSubstring">
+                    <div class="problem-header">
+                        <span class="difficulty hard">Hard</span>
+                        <span class="problem-title">Minimum Window Substring</span>
+                    </div>
+                    <div class="problem-desc">
+                        Given strings <code>s</code> and <code>t</code>, return the <strong>minimum window
+                            substring</strong> of s such that every character in t (including duplicates) is included in
+                        the window. Return "" if no such window exists.
+                    </div>
+                    <div class="problem-example">
+                        Input: s = "ADOBECODEBANC", t = "ABC"<br>
+                        Output: "BANC"
+                    </div>
+                </div>
+
+                <!-- Problem 6 -->
+                <div class="problem-card" data-problem="slidingWindowMax">
+                    <div class="problem-header">
+                        <span class="difficulty hard">Hard</span>
+                        <span class="problem-title">Sliding Window Maximum</span>
+                    </div>
+                    <div class="problem-desc">
+                        Given an integer array <code>nums</code> and a sliding window of size <code>k</code> moving left
+                        to right, return the <strong>max value</strong> in each window position.
+                    </div>
+                    <div class="problem-example">
+                        Input: nums = [1,3,-1,-3,5,3,6,7], k = 3<br>
+                        Output: [3,3,5,5,6,7]
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CODE PANEL - FULL WIDTH -->
+        <div class="panel panel-code full-width">
+            <h2>💻 4. Code: Pattern → Problem</h2>
+            <div class="code-container">
+                <div class="code-header">
+                    <label>View code for:</label>
+                    <select id="codeSelect">
+                        <option value="pattern">🔷 Universal Pattern (Template)</option>
+                        <option value="maxSumK">Maximum Average Subarray I</option>
+                        <option value="longestNoRepeat">Longest Substring Without Repeating</option>
+                        <option value="minSubarraySum">Minimum Size Subarray Sum</option>
+                        <option value="fruitBaskets">Fruit Into Baskets</option>
+                        <option value="minWindowSubstring">Minimum Window Substring</option>
+                        <option value="slidingWindowMax">Sliding Window Maximum</option>
+                    </select>
+                </div>
+                <div class="code-tabs">
+                    <button class="code-tab active" data-tab="verbose">Verbose (Learning)</button>
+                    <button class="code-tab" data-tab="terse">Terse (Interview)</button>
+                    <button class="code-tab" data-tab="template">Template Mapping</button>
+                </div>
+
+                <div class="code-content active" id="verbose"></div>
+                <div class="code-content" id="terse"></div>
+                <div class="code-content" id="template"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // CODE EXAMPLES DATABASE
+        // ═══════════════════════════════════════════════════════════════
+
+        const codeExamples = {
+            pattern: {
+                verbose: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># UNIVERSAL SLIDING WINDOW - VERBOSE CLASS PATTERN</span>
+<span class="comment"># Use this to LEARN the structure. Every problem follows this.</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">class</span> <span class="function">SlidingWindow</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, arr):
+        <span class="variable">self</span>.arr = arr
+        <span class="variable">self</span>.left = <span class="number">0</span>
+        <span class="variable">self</span>.right = <span class="number">0</span>
+        <span class="variable">self</span>.state = ...       <span class="comment"># sum, dict, set, counter, etc.</span>
+        <span class="variable">self</span>.best = ...        <span class="comment"># 0, inf, -inf, "", etc.</span>
+    
+    <span class="keyword">def</span> <span class="function">expand</span>(<span class="variable">self</span>):
+        <span class="comment">"""Add arr[right] to window state"""</span>
+        element = <span class="variable">self</span>.arr[<span class="variable">self</span>.right]
+        <span class="comment"># Update state with element</span>
+        <span class="variable">self</span>.right += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">contract</span>(<span class="variable">self</span>):
+        <span class="comment">"""Remove arr[left] from window state"""</span>
+        element = <span class="variable">self</span>.arr[<span class="variable">self</span>.left]
+        <span class="comment"># Remove element from state</span>
+        <span class="variable">self</span>.left += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">is_valid</span>(<span class="variable">self</span>):
+        <span class="comment">"""Does current window satisfy constraint?"""</span>
+        <span class="keyword">return</span> ...             <span class="comment"># size check, sum check, etc.</span>
+    
+    <span class="keyword">def</span> <span class="function">is_invalid</span>(<span class="variable">self</span>):
+        <span class="comment">"""Should we shrink? (opposite of valid for variable window)"""</span>
+        <span class="keyword">return</span> ...
+    
+    <span class="keyword">def</span> <span class="function">update_best</span>(<span class="variable">self</span>):
+        <span class="comment">"""Record answer if current window is better"""</span>
+        <span class="variable">self</span>.best = better(<span class="variable">self</span>.best, current_answer)
+    
+    <span class="keyword">def</span> <span class="function">solve</span>(<span class="variable">self</span>):
+        <span class="keyword">while</span> <span class="variable">self</span>.right < <span class="keyword">len</span>(<span class="variable">self</span>.arr):
+            <span class="variable">self</span>.expand()              <span class="comment"># 1. EXPAND: grow window</span>
+            
+            <span class="keyword">while</span> <span class="variable">self</span>.is_invalid():   <span class="comment"># 2. CONTRACT: shrink while bad</span>
+                <span class="variable">self</span>.contract()
+            
+            <span class="variable">self</span>.update_best()         <span class="comment"># 3. RECORD: update answer</span>
+        
+        <span class="keyword">return</span> <span class="variable">self</span>.best`,
+
+                terse: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># UNIVERSAL SLIDING WINDOW - TERSE TEMPLATE</span>
+<span class="comment"># Memorize this skeleton. Fill in the 3 blanks per problem.</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">def</span> <span class="function">sliding_window</span>(arr):
+    left = <span class="number">0</span>
+    state = ___                      <span class="comment"># 1️⃣ Initial state</span>
+    best = ___                       <span class="comment"># 2️⃣ Initial answer</span>
+    
+    <span class="keyword">for</span> right <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(arr)):
+        <span class="comment"># EXPAND: add arr[right] to state</span>
+        state = add(state, arr[right])
+        
+        <span class="comment"># CONTRACT: shrink while invalid</span>
+        <span class="keyword">while</span> ___:                   <span class="comment"># 3️⃣ Invalid condition</span>
+            state = remove(state, arr[left])
+            left += <span class="number">1</span>
+        
+        <span class="comment"># RECORD: update best</span>
+        best = better(best, ...)
+    
+    <span class="keyword">return</span> best`,
+
+                template: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># THE 3 BLANKS - FILLED IN FOR COMMON PROBLEMS</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="comment"># ┌─────────────────────────────────────────────────────────────┐</span>
+<span class="comment"># │ PROBLEM               │ STATE    │ BEST    │ INVALID       │</span>
+<span class="comment"># ├─────────────────────────────────────────────────────────────┤</span>
+<span class="comment"># │ Max Sum of K          │ 0        │ -inf    │ size > k      │</span>
+<span class="comment"># │ Min Length ≥ Target   │ 0        │ inf     │ sum >= target │</span>
+<span class="comment"># │ Longest No Repeat     │ set()    │ 0       │ char in set   │</span>
+<span class="comment"># │ Longest K Distinct    │ {}       │ 0       │ len(d) > k    │</span>
+<span class="comment"># │ Min Window Substring  │ Counter  │ ""      │ have >= need  │</span>
+<span class="comment"># └─────────────────────────────────────────────────────────────┘</span>
+
+<span class="comment"># KEY INSIGHT:</span>
+<span class="comment"># - "Maximum/Longest" → best starts at 0 or -inf, update with max()</span>
+<span class="comment"># - "Minimum/Shortest" → best starts at inf, update with min()</span>
+<span class="comment"># - Fixed window → invalid = (size > k)</span>
+<span class="comment"># - Variable window → invalid = (constraint violated)</span>`
+            },
+
+            maxSumK: {
+                verbose: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># PROBLEM: Maximum Average Subarray I (LeetCode 643)</span>
+<span class="comment"># Find contiguous subarray of length k with maximum average.</span>
+<span class="comment"># TYPE: Fixed Window</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">class</span> <span class="function">MaxAverageSubarray</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, nums, k):
+        <span class="variable">self</span>.nums = nums
+        <span class="variable">self</span>.k = k
+        <span class="variable">self</span>.left = <span class="number">0</span>
+        <span class="variable">self</span>.right = <span class="number">0</span>
+        <span class="variable">self</span>.window_sum = <span class="number">0</span>           <span class="comment"># STATE: running sum</span>
+        <span class="variable">self</span>.best = <span class="keyword">float</span>(<span class="string">'-inf'</span>)    <span class="comment"># BEST: max sum seen</span>
+    
+    <span class="keyword">def</span> <span class="function">window_size</span>(<span class="variable">self</span>):
+        <span class="keyword">return</span> <span class="variable">self</span>.right - <span class="variable">self</span>.left
+    
+    <span class="keyword">def</span> <span class="function">expand</span>(<span class="variable">self</span>):
+        <span class="comment">"""Add nums[right] to sum"""</span>
+        <span class="variable">self</span>.window_sum += <span class="variable">self</span>.nums[<span class="variable">self</span>.right]
+        <span class="variable">self</span>.right += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">contract</span>(<span class="variable">self</span>):
+        <span class="comment">"""Remove nums[left] from sum"""</span>
+        <span class="variable">self</span>.window_sum -= <span class="variable">self</span>.nums[<span class="variable">self</span>.left]
+        <span class="variable">self</span>.left += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">is_full</span>(<span class="variable">self</span>):
+        <span class="comment">"""Window has exactly k elements?"""</span>
+        <span class="keyword">return</span> <span class="variable">self</span>.window_size() == <span class="variable">self</span>.k
+    
+    <span class="keyword">def</span> <span class="function">is_oversized</span>(<span class="variable">self</span>):
+        <span class="comment">"""Window too big? (invalid condition)"""</span>
+        <span class="keyword">return</span> <span class="variable">self</span>.window_size() > <span class="variable">self</span>.k
+    
+    <span class="keyword">def</span> <span class="function">update_best</span>(<span class="variable">self</span>):
+        <span class="variable">self</span>.best = <span class="keyword">max</span>(<span class="variable">self</span>.best, <span class="variable">self</span>.window_sum)
+    
+    <span class="keyword">def</span> <span class="function">solve</span>(<span class="variable">self</span>):
+        <span class="keyword">while</span> <span class="variable">self</span>.right < <span class="keyword">len</span>(<span class="variable">self</span>.nums):
+            <span class="variable">self</span>.expand()
+            
+            <span class="comment"># For fixed window: shrink if oversized</span>
+            <span class="keyword">while</span> <span class="variable">self</span>.is_oversized():
+                <span class="variable">self</span>.contract()
+            
+            <span class="comment"># Only record when window is exactly size k</span>
+            <span class="keyword">if</span> <span class="variable">self</span>.is_full():
+                <span class="variable">self</span>.update_best()
+        
+        <span class="keyword">return</span> <span class="variable">self</span>.best / <span class="variable">self</span>.k    <span class="comment"># Return average</span>
+
+<span class="comment"># Usage</span>
+result = MaxAverageSubarray([<span class="number">1</span>,<span class="number">12</span>,<span class="number">-5</span>,<span class="number">-6</span>,<span class="number">50</span>,<span class="number">3</span>], k=<span class="number">4</span>).solve()
+<span class="comment"># → 12.75</span>`,
+
+                terse: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Maximum Average Subarray I - TERSE (Interview Ready)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">def</span> <span class="function">findMaxAverage</span>(nums, k):
+    window = <span class="keyword">sum</span>(nums[:k])      <span class="comment"># Initial window of size k</span>
+    best = window
+    
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="keyword">range</span>(k, <span class="keyword">len</span>(nums)):
+        window += nums[i] - nums[i - k]   <span class="comment"># Slide: +right, -left</span>
+        best = <span class="keyword">max</span>(best, window)
+    
+    <span class="keyword">return</span> best / k
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># EVEN TERSER (one-pass, same logic)</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">def</span> <span class="function">findMaxAverage</span>(nums, k):
+    best = window = <span class="keyword">sum</span>(nums[:k])
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="keyword">range</span>(k, <span class="keyword">len</span>(nums)):
+        window += nums[i] - nums[i-k]
+        best = <span class="keyword">max</span>(best, window)
+    <span class="keyword">return</span> best / k`,
+
+                template: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Maximum Average Subarray I - TEMPLATE MAPPING</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="comment"># BLANK 1 - STATE:    window_sum = 0 (integer)</span>
+<span class="comment"># BLANK 2 - BEST:     -inf (we want maximum)</span>
+<span class="comment"># BLANK 3 - INVALID:  window_size > k (fixed window)</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Filled Template:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">def</span> <span class="function">findMaxAverage</span>(nums, k):
+    left = <span class="number">0</span>
+    window_sum = <span class="number">0</span>                    <span class="comment"># ← BLANK 1: state</span>
+    best = <span class="keyword">float</span>(<span class="string">'-inf'</span>)              <span class="comment"># ← BLANK 2: answer</span>
+    
+    <span class="keyword">for</span> right <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(nums)):
+        <span class="comment"># EXPAND</span>
+        window_sum += nums[right]
+        
+        <span class="comment"># CONTRACT while invalid</span>
+        <span class="keyword">while</span> right - left + <span class="number">1</span> > k:     <span class="comment"># ← BLANK 3: invalid</span>
+            window_sum -= nums[left]
+            left += <span class="number">1</span>
+        
+        <span class="comment"># RECORD (only when window is full)</span>
+        <span class="keyword">if</span> right - left + <span class="number">1</span> == k:
+            best = <span class="keyword">max</span>(best, window_sum)
+    
+    <span class="keyword">return</span> best / k
+
+<span class="comment"># TYPE: Fixed Window (size always K)</span>
+<span class="comment"># STATE TYPE: Integer (sum)</span>
+<span class="comment"># OPTIMIZATION: None needed</span>`
+            },
+
+            longestNoRepeat: {
+                verbose: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># PROBLEM: Longest Substring Without Repeating Characters (LC 3)</span>
+<span class="comment"># Find length of longest substring with all unique characters.</span>
+<span class="comment"># TYPE: Variable Window</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">class</span> <span class="function">LongestUniqueSubstring</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, s):
+        <span class="variable">self</span>.s = s
+        <span class="variable">self</span>.left = <span class="number">0</span>
+        <span class="variable">self</span>.right = <span class="number">0</span>
+        <span class="variable">self</span>.char_set = <span class="keyword">set</span>()        <span class="comment"># STATE: chars in window</span>
+        <span class="variable">self</span>.best = <span class="number">0</span>                 <span class="comment"># BEST: longest length</span>
+    
+    <span class="keyword">def</span> <span class="function">current_char</span>(<span class="variable">self</span>):
+        <span class="keyword">return</span> <span class="variable">self</span>.s[<span class="variable">self</span>.right]
+    
+    <span class="keyword">def</span> <span class="function">left_char</span>(<span class="variable">self</span>):
+        <span class="keyword">return</span> <span class="variable">self</span>.s[<span class="variable">self</span>.left]
+    
+    <span class="keyword">def</span> <span class="function">expand</span>(<span class="variable">self</span>):
+        <span class="comment">"""Add s[right] to set"""</span>
+        <span class="variable">self</span>.char_set.add(<span class="variable">self</span>.current_char())
+        <span class="variable">self</span>.right += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">contract</span>(<span class="variable">self</span>):
+        <span class="comment">"""Remove s[left] from set"""</span>
+        <span class="variable">self</span>.char_set.remove(<span class="variable">self</span>.left_char())
+        <span class="variable">self</span>.left += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">has_duplicate</span>(<span class="variable">self</span>):
+        <span class="comment">"""Is next char already in window? (invalid condition)"""</span>
+        <span class="keyword">return</span> <span class="variable">self</span>.current_char() <span class="keyword">in</span> <span class="variable">self</span>.char_set
+    
+    <span class="keyword">def</span> <span class="function">window_size</span>(<span class="variable">self</span>):
+        <span class="keyword">return</span> <span class="variable">self</span>.right - <span class="variable">self</span>.left
+    
+    <span class="keyword">def</span> <span class="function">update_best</span>(<span class="variable">self</span>):
+        <span class="variable">self</span>.best = <span class="keyword">max</span>(<span class="variable">self</span>.best, <span class="variable">self</span>.window_size())
+    
+    <span class="keyword">def</span> <span class="function">solve</span>(<span class="variable">self</span>):
+        <span class="keyword">while</span> <span class="variable">self</span>.right < <span class="keyword">len</span>(<span class="variable">self</span>.s):
+            <span class="comment"># CONTRACT first while we'd create a duplicate</span>
+            <span class="keyword">while</span> <span class="variable">self</span>.has_duplicate():
+                <span class="variable">self</span>.contract()
+            
+            <span class="comment"># EXPAND: safe to add this char now</span>
+            <span class="variable">self</span>.expand()
+            
+            <span class="comment"># RECORD: current window is valid</span>
+            <span class="variable">self</span>.update_best()
+        
+        <span class="keyword">return</span> <span class="variable">self</span>.best
+
+<span class="comment"># Usage</span>
+result = LongestUniqueSubstring(<span class="string">"abcabcbb"</span>).solve()
+<span class="comment"># → 3 ("abc")</span>`,
+
+                terse: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Longest Substring Without Repeating - TERSE (Interview Ready)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">def</span> <span class="function">lengthOfLongestSubstring</span>(s):
+    seen = <span class="keyword">set</span>()
+    left = best = <span class="number">0</span>
+    
+    <span class="keyword">for</span> right, char <span class="keyword">in</span> <span class="keyword">enumerate</span>(s):
+        <span class="keyword">while</span> char <span class="keyword">in</span> seen:           <span class="comment"># Shrink until no duplicate</span>
+            seen.remove(s[left])
+            left += <span class="number">1</span>
+        
+        seen.add(char)
+        best = <span class="keyword">max</span>(best, right - left + <span class="number">1</span>)
+    
+    <span class="keyword">return</span> best
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># OPTIMIZATION: Use dict to store last index (jump left pointer)</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">def</span> <span class="function">lengthOfLongestSubstring</span>(s):
+    last_seen = {}                   <span class="comment"># char → last index</span>
+    left = best = <span class="number">0</span>
+    
+    <span class="keyword">for</span> right, char <span class="keyword">in</span> <span class="keyword">enumerate</span>(s):
+        <span class="keyword">if</span> char <span class="keyword">in</span> last_seen <span class="keyword">and</span> last_seen[char] >= left:
+            left = last_seen[char] + <span class="number">1</span>   <span class="comment"># Jump past duplicate</span>
+        
+        last_seen[char] = right
+        best = <span class="keyword">max</span>(best, right - left + <span class="number">1</span>)
+    
+    <span class="keyword">return</span> best`,
+
+                template: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Longest Substring Without Repeating - TEMPLATE MAPPING</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="comment"># BLANK 1 - STATE:    set() to track chars in window</span>
+<span class="comment"># BLANK 2 - BEST:     0 (we want maximum length)</span>
+<span class="comment"># BLANK 3 - INVALID:  s[right] in seen (duplicate exists)</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Filled Template:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">def</span> <span class="function">lengthOfLongestSubstring</span>(s):
+    left = <span class="number">0</span>
+    seen = <span class="keyword">set</span>()                      <span class="comment"># ← BLANK 1: state</span>
+    best = <span class="number">0</span>                          <span class="comment"># ← BLANK 2: answer</span>
+    
+    <span class="keyword">for</span> right <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(s)):
+        <span class="comment"># CONTRACT while invalid</span>
+        <span class="keyword">while</span> s[right] <span class="keyword">in</span> seen:        <span class="comment"># ← BLANK 3: invalid</span>
+            seen.remove(s[left])
+            left += <span class="number">1</span>
+        
+        <span class="comment"># EXPAND</span>
+        seen.add(s[right])
+        
+        <span class="comment"># RECORD</span>
+        best = <span class="keyword">max</span>(best, right - left + <span class="number">1</span>)
+    
+    <span class="keyword">return</span> best
+
+<span class="comment"># TYPE: Variable Window (grow until duplicate)</span>
+<span class="comment"># STATE TYPE: Set (membership check)</span>
+<span class="comment"># OPTIMIZATION: Dict for O(1) jump instead of incremental shrink</span>`
+            },
+
+            minSubarraySum: {
+                verbose: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># PROBLEM: Minimum Size Subarray Sum (LeetCode 209)</span>
+<span class="comment"># Find smallest subarray with sum ≥ target.</span>
+<span class="comment"># TYPE: Variable Window (shrink while VALID to minimize)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">class</span> <span class="function">MinSubarraySum</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, target, nums):
+        <span class="variable">self</span>.target = target
+        <span class="variable">self</span>.nums = nums
+        <span class="variable">self</span>.left = <span class="number">0</span>
+        <span class="variable">self</span>.right = <span class="number">0</span>
+        <span class="variable">self</span>.window_sum = <span class="number">0</span>           <span class="comment"># STATE: running sum</span>
+        <span class="variable">self</span>.best = <span class="keyword">float</span>(<span class="string">'inf'</span>)     <span class="comment"># BEST: minimum length (start big)</span>
+    
+    <span class="keyword">def</span> <span class="function">expand</span>(<span class="variable">self</span>):
+        <span class="variable">self</span>.window_sum += <span class="variable">self</span>.nums[<span class="variable">self</span>.right]
+        <span class="variable">self</span>.right += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">contract</span>(<span class="variable">self</span>):
+        <span class="variable">self</span>.window_sum -= <span class="variable">self</span>.nums[<span class="variable">self</span>.left]
+        <span class="variable">self</span>.left += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">is_valid</span>(<span class="variable">self</span>):
+        <span class="comment">"""Window sum meets target? (VALID = we can try shrinking!)"""</span>
+        <span class="keyword">return</span> <span class="variable">self</span>.window_sum >= <span class="variable">self</span>.target
+    
+    <span class="keyword">def</span> <span class="function">window_size</span>(<span class="variable">self</span>):
+        <span class="keyword">return</span> <span class="variable">self</span>.right - <span class="variable">self</span>.left
+    
+    <span class="keyword">def</span> <span class="function">update_best</span>(<span class="variable">self</span>):
+        <span class="variable">self</span>.best = <span class="keyword">min</span>(<span class="variable">self</span>.best, <span class="variable">self</span>.window_size())
+    
+    <span class="keyword">def</span> <span class="function">solve</span>(<span class="variable">self</span>):
+        <span class="keyword">while</span> <span class="variable">self</span>.right < <span class="keyword">len</span>(<span class="variable">self</span>.nums):
+            <span class="variable">self</span>.expand()
+            
+            <span class="comment"># KEY INSIGHT: shrink WHILE VALID to find minimum!</span>
+            <span class="keyword">while</span> <span class="variable">self</span>.is_valid():
+                <span class="variable">self</span>.update_best()     <span class="comment"># Record before shrinking</span>
+                <span class="variable">self</span>.contract()
+        
+        <span class="keyword">return</span> <span class="variable">self</span>.best <span class="keyword">if</span> <span class="variable">self</span>.best != <span class="keyword">float</span>(<span class="string">'inf'</span>) <span class="keyword">else</span> <span class="number">0</span>
+
+<span class="comment"># Usage</span>
+result = MinSubarraySum(<span class="number">7</span>, [<span class="number">2</span>,<span class="number">3</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">4</span>,<span class="number">3</span>]).solve()
+<span class="comment"># → 2 (subarray [4,3])</span>`,
+
+                terse: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Minimum Size Subarray Sum - TERSE (Interview Ready)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">def</span> <span class="function">minSubArrayLen</span>(target, nums):
+    left = window = <span class="number">0</span>
+    best = <span class="keyword">float</span>(<span class="string">'inf'</span>)
+    
+    <span class="keyword">for</span> right, val <span class="keyword">in</span> <span class="keyword">enumerate</span>(nums):
+        window += val                       <span class="comment"># Expand</span>
+        
+        <span class="keyword">while</span> window >= target:              <span class="comment"># Shrink while valid!</span>
+            best = <span class="keyword">min</span>(best, right - left + <span class="number">1</span>)
+            window -= nums[left]
+            left += <span class="number">1</span>
+    
+    <span class="keyword">return</span> best <span class="keyword">if</span> best != <span class="keyword">float</span>(<span class="string">'inf'</span>) <span class="keyword">else</span> <span class="number">0</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># KEY INSIGHT: This is "inverted" from typical sliding window!</span>
+<span class="comment"># Usually: shrink while INVALID</span>
+<span class="comment"># Here:    shrink while VALID (to minimize length)</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>`,
+
+                template: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Minimum Size Subarray Sum - TEMPLATE MAPPING</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="comment"># BLANK 1 - STATE:    window_sum = 0</span>
+<span class="comment"># BLANK 2 - BEST:     inf (we want minimum)</span>
+<span class="comment"># BLANK 3 - INVALID:  ⚠️ INVERTED! Shrink while sum >= target</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Filled Template:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">def</span> <span class="function">minSubArrayLen</span>(target, nums):
+    left = <span class="number">0</span>
+    window_sum = <span class="number">0</span>                    <span class="comment"># ← BLANK 1: state</span>
+    best = <span class="keyword">float</span>(<span class="string">'inf'</span>)               <span class="comment"># ← BLANK 2: answer (want min!)</span>
+    
+    <span class="keyword">for</span> right <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(nums)):
+        <span class="comment"># EXPAND</span>
+        window_sum += nums[right]
+        
+        <span class="comment"># ⚠️ INVERTED: Shrink while VALID (not invalid!)</span>
+        <span class="keyword">while</span> window_sum >= target:       <span class="comment"># ← BLANK 3: VALID condition</span>
+            best = <span class="keyword">min</span>(best, right - left + <span class="number">1</span>)   <span class="comment"># Record BEFORE shrink</span>
+            window_sum -= nums[left]
+            left += <span class="number">1</span>
+    
+    <span class="keyword">return</span> best <span class="keyword">if</span> best != <span class="keyword">float</span>(<span class="string">'inf'</span>) <span class="keyword">else</span> <span class="number">0</span>
+
+<span class="comment"># TYPE: Variable Window (INVERTED - shrink while valid)</span>
+<span class="comment"># STATE TYPE: Integer (sum)</span>
+<span class="comment"># KEY PATTERN: "Minimum length where X" → shrink while condition met</span>`
+            },
+
+            fruitBaskets: {
+                verbose: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># PROBLEM: Fruit Into Baskets (LeetCode 904)</span>
+<span class="comment"># Longest subarray with at most 2 distinct values.</span>
+<span class="comment"># TYPE: Variable Window (at most K distinct)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict
+
+<span class="keyword">class</span> <span class="function">FruitBaskets</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, fruits):
+        <span class="variable">self</span>.fruits = fruits
+        <span class="variable">self</span>.left = <span class="number">0</span>
+        <span class="variable">self</span>.right = <span class="number">0</span>
+        <span class="variable">self</span>.basket = defaultdict(<span class="keyword">int</span>)  <span class="comment"># STATE: fruit → count</span>
+        <span class="variable">self</span>.best = <span class="number">0</span>                    <span class="comment"># BEST: max fruits collected</span>
+        <span class="variable">self</span>.max_types = <span class="number">2</span>               <span class="comment"># Constraint: 2 baskets</span>
+    
+    <span class="keyword">def</span> <span class="function">expand</span>(<span class="variable">self</span>):
+        <span class="comment">"""Add fruit to basket"""</span>
+        fruit = <span class="variable">self</span>.fruits[<span class="variable">self</span>.right]
+        <span class="variable">self</span>.basket[fruit] += <span class="number">1</span>
+        <span class="variable">self</span>.right += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">contract</span>(<span class="variable">self</span>):
+        <span class="comment">"""Remove fruit from basket"""</span>
+        fruit = <span class="variable">self</span>.fruits[<span class="variable">self</span>.left]
+        <span class="variable">self</span>.basket[fruit] -= <span class="number">1</span>
+        <span class="keyword">if</span> <span class="variable">self</span>.basket[fruit] == <span class="number">0</span>:
+            <span class="keyword">del</span> <span class="variable">self</span>.basket[fruit]      <span class="comment"># Remove empty type</span>
+        <span class="variable">self</span>.left += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">too_many_types</span>(<span class="variable">self</span>):
+        <span class="comment">"""More than 2 fruit types? (invalid condition)"""</span>
+        <span class="keyword">return</span> <span class="keyword">len</span>(<span class="variable">self</span>.basket) > <span class="variable">self</span>.max_types
+    
+    <span class="keyword">def</span> <span class="function">window_size</span>(<span class="variable">self</span>):
+        <span class="keyword">return</span> <span class="variable">self</span>.right - <span class="variable">self</span>.left
+    
+    <span class="keyword">def</span> <span class="function">update_best</span>(<span class="variable">self</span>):
+        <span class="variable">self</span>.best = <span class="keyword">max</span>(<span class="variable">self</span>.best, <span class="variable">self</span>.window_size())
+    
+    <span class="keyword">def</span> <span class="function">solve</span>(<span class="variable">self</span>):
+        <span class="keyword">while</span> <span class="variable">self</span>.right < <span class="keyword">len</span>(<span class="variable">self</span>.fruits):
+            <span class="variable">self</span>.expand()
+            
+            <span class="keyword">while</span> <span class="variable">self</span>.too_many_types():
+                <span class="variable">self</span>.contract()
+            
+            <span class="variable">self</span>.update_best()
+        
+        <span class="keyword">return</span> <span class="variable">self</span>.best
+
+<span class="comment"># Usage</span>
+result = FruitBaskets([<span class="number">1</span>,<span class="number">2</span>,<span class="number">1</span>,<span class="number">2</span>,<span class="number">3</span>]).solve()
+<span class="comment"># → 4 (subarray [1,2,1,2])</span>`,
+
+                terse: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Fruit Into Baskets - TERSE (Interview Ready)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">from</span> collections <span class="keyword">import</span> defaultdict
+
+<span class="keyword">def</span> <span class="function">totalFruit</span>(fruits):
+    basket = defaultdict(<span class="keyword">int</span>)
+    left = best = <span class="number">0</span>
+    
+    <span class="keyword">for</span> right, fruit <span class="keyword">in</span> <span class="keyword">enumerate</span>(fruits):
+        basket[fruit] += <span class="number">1</span>
+        
+        <span class="keyword">while</span> <span class="keyword">len</span>(basket) > <span class="number">2</span>:         <span class="comment"># Too many types</span>
+            left_fruit = fruits[left]
+            basket[left_fruit] -= <span class="number">1</span>
+            <span class="keyword">if</span> basket[left_fruit] == <span class="number">0</span>:
+                <span class="keyword">del</span> basket[left_fruit]
+            left += <span class="number">1</span>
+        
+        best = <span class="keyword">max</span>(best, right - left + <span class="number">1</span>)
+    
+    <span class="keyword">return</span> best
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Using Counter (slightly cleaner)</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">from</span> collections <span class="keyword">import</span> Counter
+
+<span class="keyword">def</span> <span class="function">totalFruit</span>(fruits):
+    cnt = Counter()
+    left = best = <span class="number">0</span>
+    
+    <span class="keyword">for</span> right, f <span class="keyword">in</span> <span class="keyword">enumerate</span>(fruits):
+        cnt[f] += <span class="number">1</span>
+        <span class="keyword">while</span> <span class="keyword">len</span>(cnt) > <span class="number">2</span>:
+            cnt[fruits[left]] -= <span class="number">1</span>
+            <span class="keyword">if</span> cnt[fruits[left]] == <span class="number">0</span>: <span class="keyword">del</span> cnt[fruits[left]]
+            left += <span class="number">1</span>
+        best = <span class="keyword">max</span>(best, right - left + <span class="number">1</span>)
+    
+    <span class="keyword">return</span> best`,
+
+                template: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Fruit Into Baskets - TEMPLATE MAPPING</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="comment"># BLANK 1 - STATE:    dict/Counter (value → count in window)</span>
+<span class="comment"># BLANK 2 - BEST:     0 (we want maximum length)</span>
+<span class="comment"># BLANK 3 - INVALID:  len(state) > 2 (more than 2 types)</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Filled Template:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">def</span> <span class="function">totalFruit</span>(fruits):
+    left = <span class="number">0</span>
+    basket = {}                       <span class="comment"># ← BLANK 1: state (type → count)</span>
+    best = <span class="number">0</span>                          <span class="comment"># ← BLANK 2: answer (want max)</span>
+    
+    <span class="keyword">for</span> right <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(fruits)):
+        <span class="comment"># EXPAND</span>
+        fruit = fruits[right]
+        basket[fruit] = basket.get(fruit, <span class="number">0</span>) + <span class="number">1</span>
+        
+        <span class="comment"># CONTRACT while invalid</span>
+        <span class="keyword">while</span> <span class="keyword">len</span>(basket) > <span class="number">2</span>:          <span class="comment"># ← BLANK 3: invalid</span>
+            left_fruit = fruits[left]
+            basket[left_fruit] -= <span class="number">1</span>
+            <span class="keyword">if</span> basket[left_fruit] == <span class="number">0</span>:
+                <span class="keyword">del</span> basket[left_fruit]
+            left += <span class="number">1</span>
+        
+        <span class="comment"># RECORD</span>
+        best = <span class="keyword">max</span>(best, right - left + <span class="number">1</span>)
+    
+    <span class="keyword">return</span> best
+
+<span class="comment"># TYPE: Variable Window (at most K distinct)</span>
+<span class="comment"># STATE TYPE: Dict/Counter (for frequency tracking)</span>
+<span class="comment"># PATTERN: "Longest with at most K distinct" → len(dict) > K is invalid</span>
+<span class="comment"># GENERALIZE: Replace 2 with K for "Longest Substring with K Distinct"</span>`
+            },
+
+            minWindowSubstring: {
+                verbose: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># PROBLEM: Minimum Window Substring (LeetCode 76)</span>
+<span class="comment"># Find smallest substring containing all chars of t.</span>
+<span class="comment"># TYPE: Variable Window (HARD - shrink while valid to minimize)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">from</span> collections <span class="keyword">import</span> Counter
+
+<span class="keyword">class</span> <span class="function">MinWindowSubstring</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, s, t):
+        <span class="variable">self</span>.s = s
+        <span class="variable">self</span>.t = t
+        <span class="variable">self</span>.left = <span class="number">0</span>
+        <span class="variable">self</span>.right = <span class="number">0</span>
+        
+        <span class="comment"># STATE: what we need vs what we have</span>
+        <span class="variable">self</span>.need = Counter(t)           <span class="comment"># Required char counts</span>
+        <span class="variable">self</span>.have = Counter()            <span class="comment"># Current window counts</span>
+        <span class="variable">self</span>.required = <span class="keyword">len</span>(<span class="variable">self</span>.need)   <span class="comment"># Unique chars needed</span>
+        <span class="variable">self</span>.formed = <span class="number">0</span>                  <span class="comment"># Unique chars satisfied</span>
+        
+        <span class="comment"># BEST: store (length, left, right) of best window</span>
+        <span class="variable">self</span>.best = (<span class="keyword">float</span>(<span class="string">'inf'</span>), <span class="number">0</span>, <span class="number">0</span>)
+    
+    <span class="keyword">def</span> <span class="function">expand</span>(<span class="variable">self</span>):
+        <span class="comment">"""Add s[right] to window"""</span>
+        char = <span class="variable">self</span>.s[<span class="variable">self</span>.right]
+        <span class="variable">self</span>.have[char] += <span class="number">1</span>
+        
+        <span class="comment"># Check if this char is now satisfied</span>
+        <span class="keyword">if</span> char <span class="keyword">in</span> <span class="variable">self</span>.need <span class="keyword">and</span> <span class="variable">self</span>.have[char] == <span class="variable">self</span>.need[char]:
+            <span class="variable">self</span>.formed += <span class="number">1</span>
+        
+        <span class="variable">self</span>.right += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">contract</span>(<span class="variable">self</span>):
+        <span class="comment">"""Remove s[left] from window"""</span>
+        char = <span class="variable">self</span>.s[<span class="variable">self</span>.left]
+        
+        <span class="comment"># Check if removing breaks satisfaction</span>
+        <span class="keyword">if</span> char <span class="keyword">in</span> <span class="variable">self</span>.need <span class="keyword">and</span> <span class="variable">self</span>.have[char] == <span class="variable">self</span>.need[char]:
+            <span class="variable">self</span>.formed -= <span class="number">1</span>
+        
+        <span class="variable">self</span>.have[char] -= <span class="number">1</span>
+        <span class="variable">self</span>.left += <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">is_valid</span>(<span class="variable">self</span>):
+        <span class="comment">"""Window contains all required chars?"""</span>
+        <span class="keyword">return</span> <span class="variable">self</span>.formed == <span class="variable">self</span>.required
+    
+    <span class="keyword">def</span> <span class="function">update_best</span>(<span class="variable">self</span>):
+        length = <span class="variable">self</span>.right - <span class="variable">self</span>.left
+        <span class="keyword">if</span> length < <span class="variable">self</span>.best[<span class="number">0</span>]:
+            <span class="variable">self</span>.best = (length, <span class="variable">self</span>.left, <span class="variable">self</span>.right)
+    
+    <span class="keyword">def</span> <span class="function">solve</span>(<span class="variable">self</span>):
+        <span class="keyword">while</span> <span class="variable">self</span>.right < <span class="keyword">len</span>(<span class="variable">self</span>.s):
+            <span class="variable">self</span>.expand()
+            
+            <span class="comment"># Shrink while VALID (to minimize length)</span>
+            <span class="keyword">while</span> <span class="variable">self</span>.is_valid():
+                <span class="variable">self</span>.update_best()
+                <span class="variable">self</span>.contract()
+        
+        length, l, r = <span class="variable">self</span>.best
+        <span class="keyword">return</span> <span class="variable">self</span>.s[l:r] <span class="keyword">if</span> length != <span class="keyword">float</span>(<span class="string">'inf'</span>) <span class="keyword">else</span> <span class="string">""</span>
+
+<span class="comment"># Usage</span>
+result = MinWindowSubstring(<span class="string">"ADOBECODEBANC"</span>, <span class="string">"ABC"</span>).solve()
+<span class="comment"># → "BANC"</span>`,
+
+                terse: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Minimum Window Substring - TERSE (Interview Ready)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">from</span> collections <span class="keyword">import</span> Counter
+
+<span class="keyword">def</span> <span class="function">minWindow</span>(s, t):
+    <span class="keyword">if</span> <span class="keyword">not</span> t <span class="keyword">or</span> <span class="keyword">not</span> s: <span class="keyword">return</span> <span class="string">""</span>
+    
+    need = Counter(t)
+    have = Counter()
+    required, formed = <span class="keyword">len</span>(need), <span class="number">0</span>
+    left = <span class="number">0</span>
+    best = (<span class="keyword">float</span>(<span class="string">'inf'</span>), <span class="number">0</span>, <span class="number">0</span>)      <span class="comment"># (length, left, right)</span>
+    
+    <span class="keyword">for</span> right, char <span class="keyword">in</span> <span class="keyword">enumerate</span>(s):
+        have[char] += <span class="number">1</span>
+        <span class="keyword">if</span> char <span class="keyword">in</span> need <span class="keyword">and</span> have[char] == need[char]:
+            formed += <span class="number">1</span>
+        
+        <span class="comment"># Shrink while valid</span>
+        <span class="keyword">while</span> formed == required:
+            <span class="keyword">if</span> right - left + <span class="number">1</span> < best[<span class="number">0</span>]:
+                best = (right - left + <span class="number">1</span>, left, right + <span class="number">1</span>)
+            
+            <span class="comment"># Contract</span>
+            left_char = s[left]
+            <span class="keyword">if</span> left_char <span class="keyword">in</span> need <span class="keyword">and</span> have[left_char] == need[left_char]:
+                formed -= <span class="number">1</span>
+            have[left_char] -= <span class="number">1</span>
+            left += <span class="number">1</span>
+    
+    <span class="keyword">return</span> s[best[<span class="number">1</span>]:best[<span class="number">2</span>]] <span class="keyword">if</span> best[<span class="number">0</span>] != <span class="keyword">float</span>(<span class="string">'inf'</span>) <span class="keyword">else</span> <span class="string">""</span>`,
+
+                template: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Minimum Window Substring - TEMPLATE MAPPING</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="comment"># This is the BOSS of sliding window problems. Combines:</span>
+<span class="comment"># - Counter state (like Fruit Baskets)</span>
+<span class="comment"># - Shrink while valid (like Min Subarray Sum)</span>
+<span class="comment"># - Tracking "satisfaction" of multiple constraints</span>
+
+<span class="comment"># BLANK 1 - STATE:    Two Counters (need, have) + formed count</span>
+<span class="comment"># BLANK 2 - BEST:     (inf, 0, 0) tuple for (length, start, end)</span>
+<span class="comment"># BLANK 3 - INVALID:  ⚠️ INVERTED! Shrink while formed == required</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># The Key Insight:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="comment"># "formed" tracks HOW MANY unique characters are fully satisfied.</span>
+<span class="comment"># When formed == required, the window is VALID.</span>
+<span class="comment"># We shrink WHILE valid to find minimum.</span>
+
+<span class="comment"># Satisfaction logic:</span>
+<span class="comment"># - char enters window: if have[char] == need[char], formed++</span>
+<span class="comment"># - char leaves window: if have[char] == need[char], formed--</span>
+<span class="comment">#   (check BEFORE decrementing have[char])</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Pattern Recognition:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="comment"># "Minimum window containing all of X" triggers this pattern:</span>
+<span class="comment"># 1. Build Counter of what you need</span>
+<span class="comment"># 2. Track how many needs are satisfied</span>
+<span class="comment"># 3. Shrink while fully satisfied to minimize</span>
+
+<span class="comment"># TYPE: Variable Window (INVERTED - shrink while valid)</span>
+<span class="comment"># STATE TYPE: Two Counters + formed/required integers</span>
+<span class="comment"># COMPLEXITY: O(|s| + |t|) time, O(|s| + |t|) space</span>`
+            },
+
+            slidingWindowMax: {
+                verbose: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># PROBLEM: Sliding Window Maximum (LeetCode 239)</span>
+<span class="comment"># Return max value in each window position.</span>
+<span class="comment"># TYPE: Fixed Window + Monotonic Deque optimization</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">from</span> collections <span class="keyword">import</span> deque
+
+<span class="keyword">class</span> <span class="function">SlidingWindowMaximum</span>:
+    <span class="keyword">def</span> <span class="function">__init__</span>(<span class="variable">self</span>, nums, k):
+        <span class="variable">self</span>.nums = nums
+        <span class="variable">self</span>.k = k
+        
+        <span class="comment"># STATE: Monotonic decreasing deque of INDICES</span>
+        <span class="comment"># Front = index of max, values decrease toward back</span>
+        <span class="variable">self</span>.dq = deque()
+        
+        <span class="variable">self</span>.result = []
+    
+    <span class="keyword">def</span> <span class="function">remove_out_of_window</span>(<span class="variable">self</span>, right):
+        <span class="comment">"""Remove indices outside current window"""</span>
+        <span class="keyword">while</span> <span class="variable">self</span>.dq <span class="keyword">and</span> <span class="variable">self</span>.dq[<span class="number">0</span>] <= right - <span class="variable">self</span>.k:
+            <span class="variable">self</span>.dq.popleft()
+    
+    <span class="keyword">def</span> <span class="function">maintain_monotonic</span>(<span class="variable">self</span>, right):
+        <span class="comment">"""Remove smaller elements from back (they'll never be max)"""</span>
+        <span class="keyword">while</span> <span class="variable">self</span>.dq <span class="keyword">and</span> <span class="variable">self</span>.nums[<span class="variable">self</span>.dq[<span class="number">-1</span>]] < <span class="variable">self</span>.nums[right]:
+            <span class="variable">self</span>.dq.pop()
+    
+    <span class="keyword">def</span> <span class="function">add_current</span>(<span class="variable">self</span>, right):
+        <span class="comment">"""Add current index to deque"""</span>
+        <span class="variable">self</span>.dq.append(right)
+    
+    <span class="keyword">def</span> <span class="function">get_max</span>(<span class="variable">self</span>):
+        <span class="comment">"""Front of deque is always the max"""</span>
+        <span class="keyword">return</span> <span class="variable">self</span>.nums[<span class="variable">self</span>.dq[<span class="number">0</span>]]
+    
+    <span class="keyword">def</span> <span class="function">window_complete</span>(<span class="variable">self</span>, right):
+        <span class="keyword">return</span> right >= <span class="variable">self</span>.k - <span class="number">1</span>
+    
+    <span class="keyword">def</span> <span class="function">solve</span>(<span class="variable">self</span>):
+        <span class="keyword">for</span> right <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(<span class="variable">self</span>.nums)):
+            <span class="comment"># 1. Remove indices outside window</span>
+            <span class="variable">self</span>.remove_out_of_window(right)
+            
+            <span class="comment"># 2. Remove smaller elements (maintain decreasing order)</span>
+            <span class="variable">self</span>.maintain_monotonic(right)
+            
+            <span class="comment"># 3. Add current index</span>
+            <span class="variable">self</span>.add_current(right)
+            
+            <span class="comment"># 4. Record max once window is full</span>
+            <span class="keyword">if</span> <span class="variable">self</span>.window_complete(right):
+                <span class="variable">self</span>.result.append(<span class="variable">self</span>.get_max())
+        
+        <span class="keyword">return</span> <span class="variable">self</span>.result
+
+<span class="comment"># Usage</span>
+result = SlidingWindowMaximum([<span class="number">1</span>,<span class="number">3</span>,<span class="number">-1</span>,<span class="number">-3</span>,<span class="number">5</span>,<span class="number">3</span>,<span class="number">6</span>,<span class="number">7</span>], k=<span class="number">3</span>).solve()
+<span class="comment"># → [3, 3, 5, 5, 6, 7]</span>`,
+
+                terse: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Sliding Window Maximum - TERSE (Interview Ready)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="keyword">from</span> collections <span class="keyword">import</span> deque
+
+<span class="keyword">def</span> <span class="function">maxSlidingWindow</span>(nums, k):
+    dq = deque()                     <span class="comment"># Stores indices, decreasing values</span>
+    result = []
+    
+    <span class="keyword">for</span> i, num <span class="keyword">in</span> <span class="keyword">enumerate</span>(nums):
+        <span class="comment"># Remove out-of-window indices from front</span>
+        <span class="keyword">while</span> dq <span class="keyword">and</span> dq[<span class="number">0</span>] <= i - k:
+            dq.popleft()
+        
+        <span class="comment"># Remove smaller elements from back (monotonic property)</span>
+        <span class="keyword">while</span> dq <span class="keyword">and</span> nums[dq[<span class="number">-1</span>]] < num:
+            dq.pop()
+        
+        dq.append(i)
+        
+        <span class="comment"># Record max once window is full</span>
+        <span class="keyword">if</span> i >= k - <span class="number">1</span>:
+            result.append(nums[dq[<span class="number">0</span>]])
+    
+    <span class="keyword">return</span> result
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># WHY THIS WORKS:</span>
+<span class="comment"># - Deque front = index of maximum in current window</span>
+<span class="comment"># - Smaller elements behind a larger one can NEVER be the max</span>
+<span class="comment">#   (the larger one will leave the window after them)</span>
+<span class="comment"># - So we remove them → monotonically decreasing deque</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>`,
+
+                template: `<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+<span class="comment"># Sliding Window Maximum - TEMPLATE MAPPING</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════════</span>
+
+<span class="comment"># This problem COMBINES two patterns:</span>
+<span class="comment"># 1. Fixed Sliding Window (size K)</span>
+<span class="comment"># 2. Monotonic Deque (for O(1) max lookup)</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Why Naive Sliding Window Fails:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="comment"># Naive: for each window, scan all K elements for max → O(nk)</span>
+<span class="comment"># With monotonic deque: amortized O(1) per element → O(n)</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Monotonic Deque Intuition:</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="comment"># Imagine people standing in line by age (value).</span>
+<span class="comment"># When a new person arrives:</span>
+<span class="comment"># - Everyone YOUNGER in front of them leaves (they can't win)</span>
+<span class="comment"># - Oldest person at front is the "max"</span>
+<span class="comment"># - People leave from front when they exit the window</span>
+
+<span class="comment"># INVARIANT: deque is always DECREASING (front = max)</span>
+
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+<span class="comment"># Template (for "max/min in sliding window" problems):</span>
+<span class="comment"># ─────────────────────────────────────────────────────────────</span>
+
+<span class="keyword">def</span> <span class="function">monotonic_sliding_window</span>(nums, k):
+    dq = deque()   <span class="comment"># Stores INDICES</span>
+    result = []
+    
+    <span class="keyword">for</span> i <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(nums)):
+        <span class="comment"># 1. Remove out-of-window from FRONT</span>
+        <span class="keyword">while</span> dq <span class="keyword">and</span> dq[<span class="number">0</span>] <= i - k:
+            dq.popleft()
+        
+        <span class="comment"># 2. Remove "losers" from BACK (maintain monotonic property)</span>
+        <span class="comment"># For MAX: remove smaller elements</span>
+        <span class="comment"># For MIN: remove larger elements</span>
+        <span class="keyword">while</span> dq <span class="keyword">and</span> nums[dq[<span class="number">-1</span>]] < nums[i]:  <span class="comment"># ← Change < to > for MIN</span>
+            dq.pop()
+        
+        <span class="comment"># 3. Add current</span>
+        dq.append(i)
+        
+        <span class="comment"># 4. Record answer</span>
+        <span class="keyword">if</span> i >= k - <span class="number">1</span>:
+            result.append(nums[dq[<span class="number">0</span>]])
+    
+    <span class="keyword">return</span> result
+
+<span class="comment"># TYPE: Fixed Window + Monotonic Deque</span>
+<span class="comment"># STATE TYPE: Deque of indices (not values!)</span>
+<span class="comment"># COMPLEXITY: O(n) - each element added/removed at most once</span>`
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // ANIMATION LOGIC
+        // ═══════════════════════════════════════════════════════════════
+
+        const arr = [2, 1, 5, 1, 3, 2, 8, 1];
+        let left = 0, right = 0, windowSum = 0, best = 0;
+        let isPlaying = false, playInterval = null;
+        let problemType = 'maxSum';
+        const K = 3, TARGET = 7;
+
+        const canvas = document.getElementById('animCanvas');
+        const ctx = canvas.getContext('2d');
+
+        function draw() {
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const cellW = 45, cellH = 40, startX = 20, startY = 40;
+
+            for (let i = 0; i < arr.length; i++) {
+                const x = startX + i * (cellW + 5);
+                const inWindow = i >= left && i < right;
+
+                ctx.fillStyle = inWindow ? '#1a3a3a' : '#1a2030';
+                ctx.strokeStyle = inWindow ? '#22d3ee' : '#444';
+                ctx.lineWidth = inWindow ? 2 : 1;
+
+                ctx.beginPath();
+                ctx.roundRect(x, startY, cellW, cellH, 5);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = inWindow ? '#fff' : '#888';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(arr[i], x + cellW / 2, startY + cellH / 2);
+
+                ctx.fillStyle = '#555';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(i, x + cellW / 2, startY + cellH + 12);
+            }
+
+            if (left < arr.length) {
+                const lx = startX + left * (cellW + 5) + cellW / 2;
+                ctx.fillStyle = '#f472b6';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText('L', lx, startY - 10);
+                ctx.beginPath();
+                ctx.moveTo(lx, startY - 5);
+                ctx.lineTo(lx - 5, startY - 15);
+                ctx.lineTo(lx + 5, startY - 15);
+                ctx.fill();
+            }
+
+            if (right <= arr.length && right > 0) {
+                const rx = startX + (right - 1) * (cellW + 5) + cellW / 2;
+                ctx.fillStyle = '#22d3ee';
+                ctx.fillText('R', rx, startY - 10);
+                ctx.beginPath();
+                ctx.moveTo(rx, startY - 5);
+                ctx.lineTo(rx - 5, startY - 15);
+                ctx.lineTo(rx + 5, startY - 15);
+                ctx.fill();
+            }
+
+            ctx.fillStyle = '#4ade80';
+            ctx.font = '12px sans-serif';
+            ctx.textAlign = 'right';
+            ctx.fillText(`Best: ${best}`, canvas.width - 10, 20);
+
+            document.getElementById('leftVal').textContent = left;
+            document.getElementById('rightVal').textContent = Math.max(0, right - 1);
+            document.getElementById('sumVal').textContent = windowSum;
+        }
+
+        function step() {
+            if (right >= arr.length) {
+                if (problemType === 'minSubarray') {
+                    while (windowSum >= TARGET && left < right) {
+                        const len = right - left;
+                        best = best === 0 ? len : Math.min(best, len);
+                        windowSum -= arr[left];
+                        left++;
+                        draw();
+                    }
+                }
+                stopPlay();
+                return;
+            }
+
+            if (problemType === 'maxSum') {
+                windowSum += arr[right];
+                right++;
+                if (right - left === K) best = Math.max(best, windowSum);
+                if (right - left > K) {
+                    windowSum -= arr[left];
+                    left++;
+                }
+            } else if (problemType === 'minSubarray') {
+                windowSum += arr[right];
+                right++;
+                while (windowSum >= TARGET && left < right) {
+                    const len = right - left;
+                    best = best === 0 ? len : Math.min(best, len);
+                    windowSum -= arr[left];
+                    left++;
+                }
+            }
+            draw();
+        }
+
+        function reset() {
+            left = 0; right = 0; windowSum = 0; best = 0;
+            stopPlay();
+            draw();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopPlay();
+            } else {
+                isPlaying = true;
+                document.getElementById('btnPlay').textContent = '⏸ Pause';
+                document.getElementById('btnPlay').classList.add('active');
+                playInterval = setInterval(step, 600);
+            }
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            document.getElementById('btnPlay').textContent = '▶ Play';
+            document.getElementById('btnPlay').classList.remove('active');
+            if (playInterval) { clearInterval(playInterval); playInterval = null; }
+        }
+
+        document.getElementById('btnStep').addEventListener('click', step);
+        document.getElementById('btnPlay').addEventListener('click', togglePlay);
+        document.getElementById('btnReset').addEventListener('click', reset);
+        document.getElementById('problemSelect').addEventListener('change', (e) => {
+            problemType = e.target.value;
+            reset();
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // CODE SELECTION LOGIC
+        // ═══════════════════════════════════════════════════════════════
+
+        function updateCode(problemKey) {
+            const example = codeExamples[problemKey];
+            if (example) {
+                document.getElementById('verbose').innerHTML = `<pre>${example.verbose}</pre>`;
+                document.getElementById('terse').innerHTML = `<pre>${example.terse}</pre>`;
+                document.getElementById('template').innerHTML = `<pre>${example.template}</pre>`;
+            }
+        }
+
+        // Code tabs
+        document.querySelectorAll('.code-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.code-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        // Code selector dropdown
+        document.getElementById('codeSelect').addEventListener('change', (e) => {
+            updateCode(e.target.value);
+
+            // Update problem card selection
+            document.querySelectorAll('.problem-card').forEach(card => {
+                card.classList.remove('selected');
+                if (card.dataset.problem === e.target.value) {
+                    card.classList.add('selected');
+                }
+            });
+        });
+
+        // Problem card click
+        document.querySelectorAll('.problem-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const problemKey = card.dataset.problem;
+
+                // Update selection
+                document.querySelectorAll('.problem-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+
+                // Update dropdown
+                document.getElementById('codeSelect').value = problemKey;
+
+                // Update code
+                updateCode(problemKey);
+            });
+        });
+
+        // Initial load
+        draw();
+        updateCode('pattern');
+    </script>
+</body>
+
+</html>
