@@ -3,6 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { Dispatch } from 'redux';
 import { PatternLayout } from '../components/PatternLayout';
 import { AnimationCanvas } from '../components/AnimationCanvas';
+import { PatternStructure } from '../components/PatternStructure';
+import { PatternVariants } from '../components/PatternVariants';
+import { SynthesizedPatternCategory } from '../components/SynthesizedPatternCategory';
+import { BehaviorAnimation } from '../components/BehaviorAnimation';
 import {
   selectActiveTab,
   selectSelectedProblem,
@@ -24,7 +28,7 @@ import {
   setCodeView,
 } from '../redux/actions/patternActions';
 import type { PatternAction } from '../redux/types';
-import { twoPointersProblem, twoPointersCodeExamples } from '../data/twoPointersData';
+import { twoPointersProblem, twoPointersCodeExamples, twoPointersLeetCode, twoPointersCheatSheet, twoPointersSynthesizedCategory } from '../data/twoPointersData';
 import type { StepState } from '../redux/types';
 
 const generateVisualizationSteps = (problem: typeof twoPointersProblem[0]): StepState[] => {
@@ -202,22 +206,73 @@ export const TwoPointersContainer: React.FC = () => {
       codeView={codeView}
       onChangeCodeView={handleChangeCodeView}
       selectedProblem={selectedProblem || null}
+      leetCodeProblems={twoPointersLeetCode}
+      cheatSheetData={twoPointersCheatSheet}
     >
+      <SynthesizedPatternCategory category={twoPointersSynthesizedCategory} />
+
       {currentState && (
-        <AnimationCanvas
-          width={420}
-          height={130}
-          currentState={currentState}
-          onStep={handleStep}
-          onPlay={handlePlay}
-          onPause={handlePause}
-          onReset={handleReset}
-          isAnimating={isAnimating}
-          animationSpeed={animationSpeed}
-          totalSteps={states.length}
-          currentStep={currentStep}
-          renderFrame={renderFrame}
-        />
+        <>
+          <PatternStructure
+            arrayLength={8}
+            pointers={
+              currentState.pointers
+                ? Object.entries(currentState.pointers).map(([name, index]) => ({
+                    name,
+                    index: index as number,
+                    color: name === 'left' ? '#f472b6' : '#22d3ee',
+                  }))
+                : []
+            }
+            windowStart={currentState.pointers?.left}
+            windowEnd={currentState.pointers?.right}
+            highlightedIndices={currentState.highlights || []}
+            currentState={currentState.values || {}}
+            title="Two Pointers Structure"
+          />
+
+          <PatternVariants
+            variants={[
+              {
+                name: 'Opposite Direction',
+                color: '#f472b6',
+                description: 'Pointers move toward each other from opposite ends. For sorted arrays, comparing sum to target.',
+                logic: 'if sum < target: left++; else: right--',
+                condition: 'Use when array is sorted and you need to find pairs',
+              },
+              {
+                name: 'Same Direction',
+                color: '#22d3ee',
+                description: 'Both pointers move in same direction. For in-place partitioning or moving unwanted elements.',
+                logic: 'while condition: advance both or one pointer',
+                condition: 'Use for segregation, removing duplicates, or rotating arrays',
+              },
+            ]}
+          />
+
+          <BehaviorAnimation
+            steps={states}
+            arrayLength={8}
+            onStepChange={(_step) => {
+              // Update visualization when step changes
+            }}
+          />
+
+          <AnimationCanvas
+            width={420}
+            height={130}
+            currentState={currentState}
+            onStep={handleStep}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onReset={handleReset}
+            isAnimating={isAnimating}
+            animationSpeed={animationSpeed}
+            totalSteps={states.length}
+            currentStep={currentStep}
+            renderFrame={renderFrame}
+          />
+        </>
       )}
     </PatternLayout>
   );

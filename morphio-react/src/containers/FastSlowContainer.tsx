@@ -2,6 +2,9 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { Dispatch } from 'redux';
 import { PatternLayout } from '../components/PatternLayout';
+import { PatternVariants } from '../components/PatternVariants';
+import { SynthesizedPatternCategory } from '../components/SynthesizedPatternCategory';
+import { BehaviorAnimation } from '../components/BehaviorAnimation';
 import {
   selectActiveTab,
   selectSelectedProblem,
@@ -22,7 +25,7 @@ import {
   setCodeView,
 } from '../redux/actions/patternActions';
 import type { PatternAction, StepState } from '../redux/types';
-import { fastSlowProblems, fastSlowCodeExamples } from '../data/fastSlowData';
+import { fastSlowProblems, fastSlowCodeExamples, fastSlowLeetCode, fastSlowCheatSheet, fastSlowSynthesizedCategory } from '../data/fastSlowData';
 
 const generateVisualizationSteps = (problem: typeof fastSlowProblems[0]): StepState[] => {
   const example = problem.examples[0];
@@ -226,8 +229,39 @@ export const FastSlowContainer: React.FC = () => {
       codeView={codeView}
       onChangeCodeView={handleChangeCodeView}
       selectedProblem={selectedProblem || null}
+      leetCodeProblems={fastSlowLeetCode}
+      cheatSheetData={fastSlowCheatSheet}
     >
+      <SynthesizedPatternCategory category={fastSlowSynthesizedCategory} />
+
       <LinkedListVisualization currentState={currentState as any} />
+
+      <PatternVariants
+        variants={[
+          {
+            name: 'Linked List Cycle',
+            color: '#f472b6',
+            description: 'Detect cycles in linked lists using slow/fast pointers. When fast catches slow, cycle exists.',
+            logic: 'slow += 1; fast += 2; if slow === fast: cycle found',
+            condition: 'Use when detecting loops in linked lists',
+          },
+          {
+            name: 'Numerical Sequences',
+            color: '#22d3ee',
+            description: 'Detect cycles in numerical transformations. Fast transforms twice per step, slow once.',
+            logic: 'slow = f(slow); fast = f(f(fast)); if collision: cycle',
+            condition: 'Use for happy numbers, sequence analysis',
+          },
+        ]}
+      />
+
+      <BehaviorAnimation
+        steps={states}
+        arrayLength={8}
+        onStepChange={(_step) => {
+          // Update visualization when step changes
+        }}
+      />
 
       <div style={{ marginTop: '15px' }}>
         <div className="controls">

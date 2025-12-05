@@ -2,24 +2,30 @@ import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { Dispatch } from 'redux';
 import { PatternLayout } from '../components/PatternLayout';
+import { PatternStructure } from '../components/PatternStructure';
+import { PatternVariants } from '../components/PatternVariants';
+import { SynthesizedPatternCategory } from '../components/SynthesizedPatternCategory';
+import { BehaviorAnimation } from '../components/BehaviorAnimation';
 import {
   selectActiveTab,
   selectSelectedProblem,
   selectCurrentState,
   selectIsAnimating,
   selectCodeView,
+  selectStates,
 } from '../redux/selectors/patternSelectors';
 import {
   setActiveTab,
   selectProblem,
   initVisualization,
+  stepVisualization,
   playAnimation,
   pauseAnimation,
   resetVisualization,
   setCodeView,
 } from '../redux/actions/patternActions';
 import type { PatternAction, StepState } from '../redux/types';
-import { binarySearchProblems, binarySearchCodeExamples } from '../data/binarySearchData';
+import { binarySearchProblems, binarySearchCodeExamples, binarySearchLeetCode, binarySearchCheatSheet, binarySearchSynthesizedCategory } from '../data/binarySearchData';
 
 const generateVisualizationSteps = (problem: typeof binarySearchProblems[0]): StepState[] => {
   const example = problem.examples[0];
@@ -131,6 +137,7 @@ export const BinarySearchContainer: React.FC = () => {
   const currentState = useSelector(selectCurrentState);
   const isAnimating = useSelector(selectIsAnimating);
   const codeView = useSelector(selectCodeView);
+  const states = useSelector(selectStates);
 
   const selectedProblem = binarySearchProblems.find((p) => p.id === selectedProblemId);
 
@@ -151,6 +158,10 @@ export const BinarySearchContainer: React.FC = () => {
 
   const handleChangeCodeView = (view: 'verbose' | 'terse') => {
     dispatch(setCodeView(view));
+  };
+
+  const handleStep = () => {
+    dispatch(stepVisualization());
   };
 
   const handlePlay = () => {
@@ -186,11 +197,61 @@ export const BinarySearchContainer: React.FC = () => {
       codeView={codeView}
       onChangeCodeView={handleChangeCodeView}
       selectedProblem={selectedProblem || null}
+      leetCodeProblems={binarySearchLeetCode}
+      cheatSheetData={binarySearchCheatSheet}
     >
+      <SynthesizedPatternCategory category={binarySearchSynthesizedCategory} />
+
+      <PatternStructure
+        arrayLength={8}
+        pointers={
+          currentState.pointers
+            ? Object.entries(currentState.pointers).map(([name, index]) => ({
+                name,
+                index: index as number,
+                color: name === 'mid' ? '#fbbf24' : name === 'left' ? '#f472b6' : '#22d3ee',
+              }))
+            : []
+        }
+        windowStart={currentState.pointers?.left}
+        windowEnd={currentState.pointers?.right}
+        highlightedIndices={currentState.highlights || []}
+        currentState={currentState.values || {}}
+        title="Binary Search Space"
+      />
+
+      <PatternVariants
+        variants={[
+          {
+            name: 'Iterative Binary Search',
+            color: '#22d3ee',
+            description: 'Iterative approach with left/right pointers. Eliminates half the space with each midpoint check.',
+            logic: 'mid = (left + right) / 2; if arr[mid] < target: left = mid + 1; else: right = mid - 1',
+            condition: 'Use for standard binary search problems on sorted arrays',
+          },
+          {
+            name: 'Boundary Binary Search',
+            color: '#a78bfa',
+            description: 'Find leftmost or rightmost occurrence of target. Refine boundaries until they converge.',
+            logic: 'Always move towards one boundary even when target found',
+            condition: 'Use for finding first/last position, range queries',
+          },
+        ]}
+      />
+
+      <BehaviorAnimation
+        steps={states}
+        arrayLength={8}
+        onStepChange={(_step) => {
+          // Update visualization when step changes
+        }}
+      />
+
       <BinarySearchVisualization currentState={currentState} />
 
       <div style={{ marginTop: '15px' }}>
         <div className="controls">
+          <button onClick={handleStep}>Step →</button>
           <button onClick={isAnimating ? handlePause : handlePlay}>
             {isAnimating ? '⏸ Pause' : '▶ Play'}
           </button>

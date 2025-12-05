@@ -3,6 +3,10 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { Dispatch } from 'redux';
 import { PatternLayout } from '../components/PatternLayout';
 import { AnimationCanvas } from '../components/AnimationCanvas';
+import { PatternStructure } from '../components/PatternStructure';
+import { PatternVariants } from '../components/PatternVariants';
+import { SynthesizedPatternCategory } from '../components/SynthesizedPatternCategory';
+import { BehaviorAnimation } from '../components/BehaviorAnimation';
 import {
   selectActiveTab,
   selectSelectedProblem,
@@ -24,7 +28,7 @@ import {
   setCodeView,
 } from '../redux/actions/patternActions';
 import type { PatternAction } from '../redux/types';
-import { slidingWindowProblems, slidingWindowCodeExamples } from '../data/slidingWindowData';
+import { slidingWindowProblems, slidingWindowCodeExamples, slidingWindowLeetCode, slidingWindowCheatSheet, slidingWindowSynthesizedCategory } from '../data/slidingWindowData';
 import type { StepState } from '../redux/types';
 
 const generateVisualizationSteps = (problem: typeof slidingWindowProblems[0]): StepState[] => {
@@ -179,22 +183,77 @@ export const SlidingWindowContainer: React.FC = () => {
       codeView={codeView}
       onChangeCodeView={handleChangeCodeView}
       selectedProblem={selectedProblem || null}
+      leetCodeProblems={slidingWindowLeetCode}
+      cheatSheetData={slidingWindowCheatSheet}
     >
+      <SynthesizedPatternCategory category={slidingWindowSynthesizedCategory} />
+
+      {/* Pattern Structure Visualization */}
       {currentState && (
-        <AnimationCanvas
-          width={420}
-          height={130}
-          currentState={currentState}
-          onStep={handleStep}
-          onPlay={handlePlay}
-          onPause={handlePause}
-          onReset={handleReset}
-          isAnimating={isAnimating}
-          animationSpeed={animationSpeed}
-          totalSteps={states.length}
-          currentStep={currentStep}
-          renderFrame={renderFrame}
-        />
+        <>
+          <PatternStructure
+            arrayLength={8}
+            pointers={
+              currentState.pointers
+                ? Object.entries(currentState.pointers).map(([name, index]) => ({
+                    name,
+                    index: index as number,
+                    color: name === 'left' ? '#f472b6' : '#22d3ee',
+                  }))
+                : []
+            }
+            windowStart={currentState.pointers?.left}
+            windowEnd={currentState.pointers?.right}
+            highlightedIndices={currentState.highlights || []}
+            currentState={currentState.values || {}}
+            title="Sliding Window Structure (Fixed Size K)"
+          />
+
+          {/* Pattern Variants */}
+          <PatternVariants
+            variants={[
+              {
+                name: 'Fixed Size Window',
+                color: '#22d3ee',
+                description: 'Window size K is given and constant. Simpler logic.',
+                logic: 'R - L + 1 == K always',
+                condition: 'Use when target window size is known',
+              },
+              {
+                name: 'Variable Size Window',
+                color: '#a78bfa',
+                description: 'Find optimal window size. Need shrinking logic.',
+                logic: 'while invalid: shrink L',
+                condition: 'Use when finding optimal/longest/shortest subarray',
+              },
+            ]}
+          />
+
+          {/* Behavior Animation */}
+          <BehaviorAnimation
+            steps={states}
+            arrayLength={8}
+            onStepChange={(_step) => {
+              // Update visualization when step changes
+            }}
+          />
+
+          {/* Original Canvas Animation */}
+          <AnimationCanvas
+            width={420}
+            height={130}
+            currentState={currentState}
+            onStep={handleStep}
+            onPlay={handlePlay}
+            onPause={handlePause}
+            onReset={handleReset}
+            isAnimating={isAnimating}
+            animationSpeed={animationSpeed}
+            totalSteps={states.length}
+            currentStep={currentStep}
+            renderFrame={renderFrame}
+          />
+        </>
       )}
     </PatternLayout>
   );
