@@ -12,5 +12,16 @@ def diagonals():
 def snake():
     grid = [[i for i in range(0, 8)] for j in range(0, 8)]
 
+    for r in range(0, len(grid)):
+        if r % 2 == 0:
+            for cr in grid[r]:
+                print("snake right: ", cr)
+        else:
+            for cl in range(len(grid[r]) - 1, -1, -1):
+                print("snake left: ", grid[r][cl])
+
+def diagonal():
+    
+
 if __name__ == '__main__':
-    print(diagonals())
+    print(snake())
