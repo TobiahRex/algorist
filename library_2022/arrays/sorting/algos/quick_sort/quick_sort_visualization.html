@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Sort Visualization - Lomuto's & Hoare's Partitions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            color: #e0e0e0;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #f472b6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #94a3b8;
+            margin-bottom: 30px;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.9rem;
+            color: #a78bfa;
+            font-weight: 500;
+        }
+
+        input, select, button {
+            padding: 10px 15px;
+            border: 2px solid #3b3b5c;
+            border-radius: 8px;
+            background: #1a1a2e;
+            color: #e0e0e0;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #a78bfa;
+            box-shadow: 0 0 0 3px rgba(167, 139, 250, 0.2);
+        }
+
+        button {
+            background: linear-gradient(135deg, #a78bfa, #f472b6);
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            min-width: 120px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(167, 139, 250, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .visualization-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        @media (max-width: 1200px) {
+            .visualization-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .explanation-panel {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .explanation-content {
+            background: rgba(26, 26, 46, 0.6);
+            border-radius: 8px;
+            padding: 20px;
+            line-height: 1.8;
+            font-size: 1rem;
+            color: #cbd5e1;
+        }
+
+        .explanation-content h3 {
+            color: #a78bfa;
+            margin-bottom: 15px;
+            font-size: 1.2rem;
+        }
+
+        .explanation-content .algorithm-step {
+            margin-bottom: 15px;
+            padding: 12px;
+            background: rgba(167, 139, 250, 0.1);
+            border-left: 3px solid #a78bfa;
+            border-radius: 4px;
+        }
+
+        .explanation-content .algorithm-step strong {
+            color: #f472b6;
+        }
+
+        .explanation-content .code-snippet {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            margin: 10px 0;
+            overflow-x: auto;
+        }
+
+        .explanation-content .highlight {
+            color: #22d3ee;
+            font-weight: 600;
+        }
+
+        .explanation-content .pivot-info {
+            color: #f472b6;
+            font-weight: 600;
+        }
+
+        .explanation-content .pointer-info {
+            color: #22d3ee;
+            font-weight: 600;
+        }
+
+        .visualization-panel {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .panel-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #a78bfa;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .array-display {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+            min-height: 120px;
+            align-items: flex-start;
+        }
+
+        .array-element {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+            border: 2px solid transparent;
+        }
+
+        .array-element.pivot {
+            background: linear-gradient(135deg, #f472b6, #ec4899);
+            border-color: #f472b6;
+            box-shadow: 0 0 20px rgba(244, 114, 182, 0.6);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .array-element.left-pointer {
+            background: linear-gradient(135deg, #22d3ee, #06b6d4);
+            border-color: #22d3ee;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
+        }
+
+        .array-element.right-pointer {
+            background: linear-gradient(135deg, #34d399, #10b981);
+            border-color: #34d399;
+            box-shadow: 0 0 15px rgba(52, 211, 153, 0.5);
+        }
+
+        .array-element.swapped {
+            background: linear-gradient(135deg, #fbbf24, #f59e0b);
+            border-color: #fbbf24;
+            animation: swapPulse 0.5s ease;
+        }
+
+        .array-element.partitioned {
+            background: #3b3b5c;
+            border-color: #5b5b7c;
+            opacity: 0.6;
+        }
+
+        .array-element.current {
+            background: linear-gradient(135deg, #a78bfa, #8b5cf6);
+            border-color: #a78bfa;
+        }
+
+        @keyframes swapPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+        }
+
+        .info-panel {
+            background: rgba(26, 26, 46, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: #94a3b8;
+            font-size: 0.9rem;
+        }
+
+        .info-value {
+            color: #e0e0e0;
+            font-weight: 600;
+        }
+
+        .step-info {
+            background: rgba(26, 26, 46, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(26, 26, 46, 0.6);
+            border-radius: 8px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            border: 2px solid transparent;
+        }
+
+        .examples {
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        .example-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .example-btn {
+            padding: 8px 16px;
+            background: #1a1a2e;
+            border: 2px solid #3b3b5c;
+            color: #e0e0e0;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .example-btn:hover {
+            border-color: #a78bfa;
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .speed-slider {
+            width: 150px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Quick Sort Visualization</h1>
+        <p class="subtitle">Interactive visualization of Quick Sort with Lomuto's and Hoare's partition schemes</p>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>Array Input</label>
+                <input type="text" id="arrayInput" placeholder="e.g., 5,3,8,1,9,2" value="5,3,8,1,9,2">
+            </div>
+            <div class="control-group">
+                <label>Partition Scheme</label>
+                <select id="partitionScheme">
+                    <option value="lomuto">Lomuto's Partition</option>
+                    <option value="hoare">Hoare's Partition</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>Speed</label>
+                <div class="speed-control">
+                    <input type="range" id="speedSlider" class="speed-slider" min="100" max="2000" value="800" step="100">
+                    <span id="speedValue">800ms</span>
+                </div>
+            </div>
+            <div class="control-group">
+                <label>Actions</label>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button id="startBtn">Start</button>
+                    <button id="pauseBtn" disabled>Pause</button>
+                    <button id="stepBackBtn" disabled>⏮ Step Back</button>
+                    <button id="stepForwardBtn" disabled>Step Forward ⏭</button>
+                    <button id="resetBtn">Reset</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation-panel">
+            <div class="panel-title">📖 Detailed Explanation</div>
+            <div class="explanation-content" id="explanationContent">
+                <h3>Quick Sort Algorithm</h3>
+                <p>Quick Sort is a divide-and-conquer algorithm that works by selecting a 'pivot' element and partitioning the array around it. Elements smaller than the pivot go to the left, and elements greater go to the right. The process is then repeated recursively for the sub-arrays.</p>
+                <p><strong>Time Complexity:</strong> Average O(n log n), Worst O(n²) | <strong>Space Complexity:</strong> O(log n)</p>
+                <p>Select an array and click "Start" to begin the visualization.</p>
+            </div>
+        </div>
+
+        <div class="visualization-container">
+            <div class="visualization-panel">
+                <div class="panel-title">📊 Array Visualization</div>
+                <div class="array-display" id="arrayDisplay"></div>
+                <div class="info-panel">
+                    <div class="info-item">
+                        <span class="info-label">Current Step:</span>
+                        <span class="info-value" id="currentStep">0 / 0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Swaps:</span>
+                        <span class="info-value" id="swapCount">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Comparisons:</span>
+                        <span class="info-value" id="comparisonCount">0</span>
+                    </div>
+                </div>
+                <div class="step-info" id="stepInfo">Ready to start...</div>
+            </div>
+
+            <div class="visualization-panel">
+                <div class="panel-title">🔍 Partition Details</div>
+                <div class="array-display" id="partitionDisplay"></div>
+                <div class="info-panel">
+                    <div class="info-item">
+                        <span class="info-label">Pivot Index:</span>
+                        <span class="info-value" id="pivotIndex">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Pivot Value:</span>
+                        <span class="info-value" id="pivotValue">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Left Pointer:</span>
+                        <span class="info-value" id="leftPointer">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Right Pointer:</span>
+                        <span class="info-value" id="rightPointer">-</span>
+                    </div>
+                </div>
+                <div class="step-info" id="partitionInfo">Waiting for partition step...</div>
+            </div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #f472b6, #ec4899);"></div>
+                <span>Pivot</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #22d3ee, #06b6d4);"></div>
+                <span>Left Pointer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #34d399, #10b981);"></div>
+                <span>Right Pointer</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);"></div>
+                <span>Swapped</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: #3b3b5c;"></div>
+                <span>Partitioned</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background: linear-gradient(135deg, #a78bfa, #8b5cf6);"></div>
+                <span>Current Element</span>
+            </div>
+        </div>
+
+        <div class="examples">
+            <div class="panel-title">📚 Example Arrays</div>
+            <p style="color: #94a3b8; margin-bottom: 15px;">Click to load example arrays of varying complexity:</p>
+            <div class="example-buttons">
+                <button class="example-btn" onclick="loadExample([3, 1, 2])">Simple (3 elements)</button>
+                <button class="example-btn" onclick="loadExample([5, 3, 8, 1, 9, 2])">Medium (6 elements)</button>
+                <button class="example-btn" onclick="loadExample([10, 3, 8, 2, 1, 7, 5, 4, 9, 6])">Complex (10 elements)</button>
+                <button class="example-btn" onclick="loadExample([1, 2, 3, 4, 5])">Already Sorted</button>
+                <button class="example-btn" onclick="loadExample([5, 4, 3, 2, 1])">Reverse Sorted</button>
+                <button class="example-btn" onclick="loadExample([3, 3, 3, 3, 3])">All Same</button>
+                <button class="example-btn" onclick="loadExample([1])">Single Element</button>
+                <button class="example-btn" onclick="loadExample([9, 1, 8, 2, 7, 3, 6, 4, 5])">Alternating</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let originalArray = [];
+        let currentArray = [];
+        let steps = [];
+        let currentStepIndex = 0;
+        let isPlaying = false;
+        let animationTimeout = null;
+        let speed = 800;
+
+        const arrayInput = document.getElementById('arrayInput');
+        const partitionScheme = document.getElementById('partitionScheme');
+        const speedSlider = document.getElementById('speedSlider');
+        const speedValue = document.getElementById('speedValue');
+        const startBtn = document.getElementById('startBtn');
+        const pauseBtn = document.getElementById('pauseBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const arrayDisplay = document.getElementById('arrayDisplay');
+        const partitionDisplay = document.getElementById('partitionDisplay');
+        const currentStepSpan = document.getElementById('currentStep');
+        const swapCountSpan = document.getElementById('swapCount');
+        const comparisonCountSpan = document.getElementById('comparisonCount');
+        const stepInfo = document.getElementById('stepInfo');
+        const partitionInfo = document.getElementById('partitionInfo');
+        const pivotIndexSpan = document.getElementById('pivotIndex');
+        const pivotValueSpan = document.getElementById('pivotValue');
+        const leftPointerSpan = document.getElementById('leftPointer');
+        const rightPointerSpan = document.getElementById('rightPointer');
+        const explanationContent = document.getElementById('explanationContent');
+        const stepBackBtn = document.getElementById('stepBackBtn');
+        const stepForwardBtn = document.getElementById('stepForwardBtn');
+
+        speedSlider.addEventListener('input', (e) => {
+            speed = parseInt(e.target.value);
+            speedValue.textContent = speed + 'ms';
+        });
+
+        function loadExample(arr) {
+            arrayInput.value = arr.join(',');
+            resetVisualization();
+        }
+
+        function parseArray() {
+            const input = arrayInput.value.trim();
+            if (!input) return [];
+            return input.split(',').map(x => parseInt(x.trim())).filter(x => !isNaN(x));
+        }
+
+        function swap(arr, i, j) {
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+
+        function lomutosPartition(arr, low, high, stepCallback) {
+            const pivotIndex = Math.floor(Math.random() * (high - low + 1)) + low;
+            const pivot = arr[pivotIndex];
+            
+            stepCallback({
+                type: 'pivot_selected',
+                pivotIndex,
+                pivot,
+                low,
+                high,
+                message: `Selected pivot: ${pivot} at index ${pivotIndex}`
+            });
+
+            swap(arr, pivotIndex, high);
+            stepCallback({
+                type: 'swap',
+                indices: [pivotIndex, high],
+                low,
+                high,
+                message: `Moved pivot ${pivot} to end (index ${high})`
+            });
+
+            let i = low;
+            for (let j = low; j < high; j++) {
+                stepCallback({
+                    type: 'compare',
+                    indices: [j, high],
+                    pivot,
+                    leftPointer: i,
+                    rightPointer: j,
+                    low,
+                    high,
+                    message: `Comparing arr[${j}]=${arr[j]} with pivot ${pivot}`
+                });
+
+                if (arr[j] <= pivot) {
+                    if (j > i) {
+                        swap(arr, i, j);
+                        stepCallback({
+                            type: 'swap',
+                            indices: [i, j],
+                            pivot,
+                            leftPointer: i,
+                            rightPointer: j,
+                            low,
+                            high,
+                            message: `Swapped ${arr[j]} and ${arr[i]} (arr[${j}] <= pivot)`
+                        });
+                    }
+                    i++;
+                }
+            }
+
+            swap(arr, high, i);
+            stepCallback({
+                type: 'pivot_placed',
+                indices: [high, i],
+                pivotIndex: i,
+                pivot,
+                low,
+                high,
+                message: `Placed pivot ${pivot} at final position (index ${i})`
+            });
+
+            return i;
+        }
+
+        function hoaresPartition(arr, low, high, stepCallback) {
+            const pivotIndex = low;
+            const pivot = arr[pivotIndex];
+            
+            stepCallback({
+                type: 'pivot_selected',
+                pivotIndex,
+                pivot,
+                low,
+                high,
+                message: `Selected pivot: ${pivot} at index ${pivotIndex}`
+            });
+
+            let left = low;
+            let right = high;
+
+            while (left < right) {
+                while (left < right && arr[left] < pivot) {
+                    stepCallback({
+                        type: 'compare',
+                        indices: [left],
+                        pivot,
+                        leftPointer: left,
+                        rightPointer: right,
+                        low,
+                        high,
+                        message: `Moving left pointer: arr[${left}]=${arr[left]} < pivot ${pivot}`
+                    });
+                    left++;
+                }
+
+                while (left < right && arr[right] > pivot) {
+                    stepCallback({
+                        type: 'compare',
+                        indices: [right],
+                        pivot,
+                        leftPointer: left,
+                        rightPointer: right,
+                        low,
+                        high,
+                        message: `Moving right pointer: arr[${right}]=${arr[right]} > pivot ${pivot}`
+                    });
+                    right--;
+                }
+
+                if (left < right) {
+                    swap(arr, left, right);
+                    stepCallback({
+                        type: 'swap',
+                        indices: [left, right],
+                        pivot,
+                        leftPointer: left,
+                        rightPointer: right,
+                        low,
+                        high,
+                        message: `Swapped arr[${left}]=${arr[left]} and arr[${right}]=${arr[right]}`
+                    });
+                    left++;
+                    right--;
+                }
+            }
+
+            stepCallback({
+                type: 'pivot_placed',
+                pivotIndex: right,
+                pivot,
+                leftPointer: left,
+                rightPointer: right,
+                low,
+                high,
+                message: `Partition complete. Pivot position: ${right}`
+            });
+
+            return right;
+        }
+
+        function quickSort(arr, low, high, stepCallback, partitionFn) {
+            if (low < high) {
+                stepCallback({
+                    type: 'recursion',
+                    low,
+                    high,
+                    message: `Sorting subarray from index ${low} to ${high}`
+                });
+
+                const pivotIndex = partitionFn(arr, low, high, stepCallback);
+
+                stepCallback({
+                    type: 'partition_complete',
+                    pivotIndex,
+                    low,
+                    high,
+                    message: `Partition complete. Recursing on left [${low}, ${pivotIndex - 1}] and right [${pivotIndex + 1}, ${high}]`
+                });
+
+                quickSort(arr, low, pivotIndex - 1, stepCallback, partitionFn);
+                quickSort(arr, pivotIndex + 1, high, stepCallback, partitionFn);
+            } else if (low === high) {
+                stepCallback({
+                    type: 'base_case',
+                    index: low,
+                    message: `Base case: single element at index ${low} is already sorted`
+                });
+            }
+        }
+
+        function generateSteps() {
+            const arr = [...originalArray];
+            steps = [];
+            let swapCount = 0;
+            let comparisonCount = 0;
+
+            const stepCallback = (step) => {
+                if (step.type === 'swap') {
+                    swapCount++;
+                }
+                if (step.type === 'compare') {
+                    comparisonCount++;
+                }
+                step.swapCount = swapCount;
+                step.comparisonCount = comparisonCount;
+                step.array = [...arr];
+                steps.push(step);
+            };
+
+            const partitionFn = partitionScheme.value === 'lomuto' ? lomutosPartition : hoaresPartition;
+            quickSort(arr, 0, arr.length - 1, stepCallback, partitionFn);
+
+            steps.push({
+                type: 'complete',
+                array: [...arr],
+                message: 'Sorting complete!',
+                swapCount,
+                comparisonCount
+            });
+        }
+
+        function renderArray(container, arr, step) {
+            container.innerHTML = '';
+            const state = step?.array || arr;
+
+            state.forEach((value, index) => {
+                const element = document.createElement('div');
+                element.className = 'array-element';
+                element.textContent = value;
+                element.dataset.index = index;
+
+                if (step) {
+                    if (step.type === 'pivot_selected' && index === step.pivotIndex) {
+                        element.classList.add('pivot');
+                    } else if (step.type === 'pivot_placed' && index === step.pivotIndex) {
+                        element.classList.add('pivot');
+                    } else if (step.pivotIndex !== undefined && index === step.pivotIndex) {
+                        element.classList.add('pivot');
+                    }
+
+                    if (step.leftPointer !== undefined && index === step.leftPointer) {
+                        element.classList.add('left-pointer');
+                    }
+                    if (step.rightPointer !== undefined && index === step.rightPointer) {
+                        element.classList.add('right-pointer');
+                    }
+
+                    if (step.indices && step.indices.includes(index)) {
+                        if (step.type === 'swap') {
+                            element.classList.add('swapped');
+                        } else if (step.type === 'compare') {
+                            element.classList.add('current');
+                        }
+                    }
+
+                    if (step.low !== undefined && step.high !== undefined) {
+                        if (index < step.low || index > step.high) {
+                            element.classList.add('partitioned');
+                        }
+                    }
+                }
+
+                container.appendChild(element);
+            });
+        }
+
+        function generateDetailedExplanation(step) {
+            if (!step) {
+                const scheme = partitionScheme.value;
+                const schemeName = scheme === 'lomuto' ? "Lomuto's" : "Hoare's";
+                const schemeDesc = scheme === 'lomuto' 
+                    ? `<strong>Lomuto's Partition:</strong> Uses a single pointer that scans from left to right. The pivot is moved to the end first, then elements ≤ pivot are moved to the left. Finally, the pivot is placed in its correct position. This scheme is simpler to understand but typically performs more swaps.`
+                    : `<strong>Hoare's Partition:</strong> Uses two pointers starting from both ends that move towards each other. Elements are swapped when they're on the wrong side. This scheme is more efficient with fewer swaps on average, but the pivot may not end up in its final position.`;
+                
+                return `
+                    <h3>Quick Sort Algorithm Overview</h3>
+                    <div class="algorithm-step">
+                        <p><strong>Quick Sort</strong> is a highly efficient divide-and-conquer sorting algorithm invented by Tony Hoare in 1959. It's one of the most widely used sorting algorithms due to its excellent average-case performance.</p>
+                        
+                        <p><strong>Core Concept:</strong> The algorithm works by selecting a 'pivot' element from the array and partitioning the other elements into two sub-arrays according to whether they are less than or greater than the pivot. The sub-arrays are then sorted recursively.</p>
+                        
+                        <p><strong>Key Steps:</strong></p>
+                        <ol style="margin-left: 20px; margin-top: 10px;">
+                            <li><strong>Choose a pivot:</strong> Select an element from the array (various strategies exist)</li>
+                            <li><strong>Partition:</strong> Rearrange the array so elements < pivot are on the left, elements > pivot are on the right</li>
+                            <li><strong>Recurse:</strong> Recursively apply Quick Sort to the left and right sub-arrays</li>
+                            <li><strong>Base case:</strong> Arrays of size 0 or 1 are already sorted</li>
+                        </ol>
+                        
+                        <p><strong>Time Complexity:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Best/Average: O(n log n) - When pivot divides array roughly in half</li>
+                            <li>Worst: O(n²) - When pivot is always the smallest or largest element</li>
+                        </ul>
+                        
+                        <p><strong>Space Complexity:</strong> O(log n) for the recursion stack</p>
+                        
+                        <p style="margin-top: 15px;">${schemeDesc}</p>
+                        
+                        <p style="margin-top: 15px;"><strong>Select an array and click "Start" to begin the visualization.</strong></p>
+                    </div>
+                `;
+            }
+
+            const scheme = partitionScheme.value;
+            const schemeName = scheme === 'lomuto' ? "Lomuto's" : "Hoare's";
+            const stepTypeName = step.type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+            let explanation = `<h3>Step ${currentStepIndex + 1} of ${steps.length}: ${stepTypeName}</h3>`;
+
+            if (step.type === 'recursion') {
+                const subarraySize = step.high - step.low + 1;
+                explanation += `
+                    <div class="algorithm-step">
+                        <strong>🔁 Recursive Call - Divide Phase</strong>
+                        <p>Quick Sort uses the divide-and-conquer strategy. We're now processing a subarray from index <span class="highlight">${step.low}</span> to <span class="highlight">${step.high}</span>, which contains <span class="highlight">${subarraySize}</span> element(s).</p>
+                        
+                        <p><strong>Why this subarray?</strong> This is either the original array (first call) or a subarray created from a previous partition. The recursive nature allows us to sort smaller and smaller pieces until we reach the base case.</p>
+                        
+                        <p><strong>Current subarray elements:</strong> <span class="highlight">[${step.array.slice(step.low, step.high + 1).join(', ')}]</span></p>
+                        
+                        <p><strong>Next step:</strong> We'll select a pivot and partition this subarray around it.</p>
+                        
+                        <div class="code-snippet">quickSort(arr, ${step.low}, ${step.high}) {<br>&nbsp;&nbsp;// Partition around pivot<br>&nbsp;&nbsp;// Recursively sort left and right subarrays<br>}</div>
+                    </div>
+                `;
+            } else if (step.type === 'pivot_selected') {
+                if (scheme === 'lomuto') {
+                    explanation += `
+                        <div class="algorithm-step">
+                            <strong>🎯 Pivot Selection - Lomuto's Scheme</strong>
+                            <p>Selected <span class="pivot-info">${step.pivot}</span> at index <span class="pivot-info">${step.pivotIndex}</span> as the pivot element.</p>
+                            
+                            <p><strong>Lomuto's Partition Strategy:</strong></p>
+                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>Random Selection:</strong> A random element is chosen to avoid worst-case O(n²) performance on already-sorted arrays</li>
+                                <li><strong>Move to End:</strong> The pivot will be swapped to the last position (index ${step.high})</li>
+                                <li><strong>Single Pointer:</strong> We'll use one pointer (i) to track the boundary between elements ≤ pivot and elements > pivot</li>
+                                <li><strong>Scan Left to Right:</strong> Another pointer (j) scans from left to right, comparing each element with the pivot</li>
+                            </ol>
+                            
+                            <p><strong>Why move pivot to end?</strong> This simplifies the partitioning logic. We can scan all elements except the last one, then place the pivot in its correct position at the end.</p>
+                            
+                            <p><strong>Current array state:</strong> <span class="highlight">[${step.array.join(', ')}]</span></p>
+                            
+                            <div class="code-snippet">// Random pivot selection<br>pivotIndex = random(${step.low}, ${step.high}) = ${step.pivotIndex}<br>pivot = arr[${step.pivotIndex}] = ${step.pivot}<br><br>// Next: Move pivot to end position</div>
+                        </div>
+                    `;
+                } else {
+                    explanation += `
+                        <div class="algorithm-step">
+                            <strong>🎯 Pivot Selection - Hoare's Scheme</strong>
+                            <p>Selected <span class="pivot-info">${step.pivot}</span> at index <span class="pivot-info">${step.pivotIndex}</span> (first element) as the pivot element.</p>
+                            
+                            <p><strong>Hoare's Partition Strategy:</strong></p>
+                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>First Element:</strong> The first element is used as the pivot (no random selection needed)</li>
+                                <li><strong>Two Pointers:</strong> Two pointers start from both ends and move towards each other</li>
+                                <li><strong>Left Pointer:</strong> Moves right while elements are < pivot</li>
+                                <li><strong>Right Pointer:</strong> Moves left while elements are > pivot</li>
+                                <li><strong>Swap When Stuck:</strong> When both pointers find elements on the wrong side, they swap</li>
+                            </ol>
+                            
+                            <p><strong>Why use first element?</strong> Hoare's scheme doesn't require moving the pivot. The two-pointer approach naturally partitions the array, and the pivot may not end up in its final sorted position (unlike Lomuto's).</p>
+                            
+                            <p><strong>Advantage:</strong> Generally performs fewer swaps than Lomuto's scheme because elements are swapped only when both pointers are "stuck" on wrong-side elements.</p>
+                            
+                            <p><strong>Current array state:</strong> <span class="highlight">[${step.array.join(', ')}]</span></p>
+                            
+                            <div class="code-snippet">pivot = arr[${step.pivotIndex}] = ${step.pivot}<br>left = ${step.low}<br>right = ${step.high}<br><br>// Next: Move pointers towards each other</div>
+                        </div>
+                    `;
+                }
+            } else if (step.type === 'swap' && step.indices) {
+                const [i, j] = step.indices;
+                const valI = step.array[i];
+                const valJ = step.array[j];
+                const beforeSwap = [...step.array];
+                beforeSwap[i] = valJ;
+                beforeSwap[j] = valI;
+                
+                if (scheme === 'lomuto') {
+                    // Determine if this is the initial pivot move or a partition swap
+                    const isPivotMove = (i === step.pivotIndex && j === step.high) || (i === step.high && j === step.pivotIndex);
+                    
+                    if (isPivotMove) {
+                        explanation += `
+                            <div class="algorithm-step">
+                                <strong>🔄 Moving Pivot to End - Lomuto's Scheme</strong>
+                                <p>Swapping pivot <span class="pivot-info">${step.pivot}</span> from index <span class="highlight">${step.pivotIndex === i ? i : j}</span> to the end position (index <span class="highlight">${step.high}</span>).</p>
+                                
+                                <p><strong>Before:</strong> arr[${i}] = <span class="highlight">${valI}</span>, arr[${j}] = <span class="highlight">${valJ}</span></p>
+                                <p><strong>After:</strong> arr[${i}] = <span class="highlight">${valJ}</span>, arr[${j}] = <span class="highlight">${valI}</span></p>
+                                
+                                <p><strong>Why move pivot to end?</strong> This simplifies the partitioning loop. We can now scan from index ${step.low} to ${step.high - 1}, knowing the pivot is safely at the end. After partitioning, we'll swap it to its final position.</p>
+                                
+                                <p><strong>Next step:</strong> Initialize pointer i = ${step.low} and start scanning with pointer j from ${step.low + 1} to ${step.high - 1}.</p>
+                                
+                                <div class="code-snippet">// Move pivot to end<br>swap(arr, ${step.pivotIndex}, ${step.high})<br>// Now pivot is at arr[${step.high}]</div>
+                            </div>
+                        `;
+                    } else {
+                        explanation += `
+                            <div class="algorithm-step">
+                                <strong>🔄 Partition Swap - Lomuto's Scheme</strong>
+                                <p>Swapping elements at indices <span class="highlight">${i}</span> and <span class="highlight">${j}</span> to maintain the partition invariant.</p>
+                                
+                                <p><strong>Context:</strong> Pointer j (at index ${j}) found an element (${step.array[j]}) that is ≤ pivot (${step.pivot}).</p>
+                                <p><strong>Action:</strong> Increment pointer i (now at ${i}) and swap arr[i] with arr[j].</p>
+                                
+                                <p><strong>Before swap:</strong> arr[${i}] = <span class="highlight">${valI}</span>, arr[${j}] = <span class="highlight">${valJ}</span></p>
+                                <p><strong>After swap:</strong> arr[${i}] = <span class="highlight">${valJ}</span>, arr[${j}] = <span class="highlight">${valI}</span></p>
+                                
+                                <p><strong>Invariant maintained:</strong> After this swap, all elements from index ${step.low} to ${i} are ≤ pivot. Elements from ${i + 1} to ${j - 1} are > pivot.</p>
+                                
+                                <p><strong>Current array:</strong> <span class="highlight">[${step.array.join(', ')}]</span></p>
+                                
+                                <div class="code-snippet">if (arr[j] <= pivot) {<br>&nbsp;&nbsp;i++;  // Expand left partition<br>&nbsp;&nbsp;swap(arr, i, j);  // Move small element to left<br>}</div>
+                            </div>
+                        `;
+                    }
+                } else {
+                    explanation += `
+                        <div class="algorithm-step">
+                            <strong>🔄 Element Swap - Hoare's Scheme</strong>
+                            <p>Swapping elements at indices <span class="highlight">${i}</span> and <span class="highlight">${j}</span> because both pointers found elements on the wrong side.</p>
+                            
+                            <p><strong>Context:</strong></p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>Left pointer (at ${i}) found arr[${i}] = <span class="highlight">${valI}</span> which is ≥ pivot (${step.pivot})</li>
+                                <li>Right pointer (at ${j}) found arr[${j}] = <span class="highlight">${valJ}</span> which is ≤ pivot (${step.pivot})</li>
+                            </ul>
+                            
+                            <p><strong>Before swap:</strong> arr[${i}] = <span class="highlight">${valI}</span>, arr[${j}] = <span class="highlight">${valJ}</span></p>
+                            <p><strong>After swap:</strong> arr[${i}] = <span class="highlight">${valJ}</span>, arr[${j}] = <span class="highlight">${valI}</span></p>
+                            
+                            <p><strong>Why swap?</strong> Both elements are on the wrong side of where they should be. After swapping, the left element (${valJ}) is now on the left (where it should be if ≤ pivot), and the right element (${valI}) is on the right (where it should be if ≥ pivot).</p>
+                            
+                            <p><strong>After swap:</strong> Both pointers advance (left++, right--) and continue moving towards each other.</p>
+                            
+                            <p><strong>Current array:</strong> <span class="highlight">[${step.array.join(', ')}]</span></p>
+                            
+                            <div class="code-snippet">if (left < right) {<br>&nbsp;&nbsp;swap(arr, left, right);<br>&nbsp;&nbsp;left++;<br>&nbsp;&nbsp;right--;<br>}</div>
+                        </div>
+                    `;
+                }
+            } else if (step.type === 'compare') {
+                const indices = step.indices || [];
+                if (scheme === 'lomuto' && indices.length === 2) {
+                    const [j, pivotIdx] = indices;
+                    const currentVal = step.array[j];
+                    const comparison = currentVal <= step.pivot ? '≤' : '>';
+                    const shouldSwap = currentVal <= step.pivot;
+                    
+                    explanation += `
+                        <div class="algorithm-step">
+                            <strong>🔍 Element Comparison - Lomuto's Scheme</strong>
+                            <p>Comparing element at index <span class="pointer-info">${j}</span> with the pivot value.</p>
+                            
+                            <p><strong>Current state:</strong></p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>Scanning pointer j: index <span class="pointer-info">${j}</span>, value = <span class="highlight">${currentVal}</span></li>
+                                <li>Partition boundary pointer i: index <span class="pointer-info">${step.leftPointer}</span></li>
+                                <li>Pivot value: <span class="pivot-info">${step.pivot}</span> (currently at index ${step.high})</li>
+                            </ul>
+                            
+                            <p><strong>Comparison:</strong> arr[${j}] (${currentVal}) ${comparison} pivot (${step.pivot})</p>
+                            
+                            ${shouldSwap ? `
+                                <p><strong>✅ Result:</strong> Since ${currentVal} ≤ ${step.pivot}, this element belongs in the left partition.</p>
+                                <p><strong>Action:</strong> Increment pointer i (from ${step.leftPointer} to ${step.leftPointer + 1}), then swap arr[i] with arr[j].</p>
+                                <p><strong>Why?</strong> Pointer i marks the boundary between elements ≤ pivot (indices ${step.low} to i) and elements > pivot (indices i+1 to j-1). By incrementing i and swapping, we expand the left partition.</p>
+                            ` : `
+                                <p><strong>❌ Result:</strong> Since ${currentVal} > ${step.pivot}, this element belongs in the right partition.</p>
+                                <p><strong>Action:</strong> Do nothing. The element is already in the correct region (right of pointer i).</p>
+                                <p><strong>Why?</strong> Elements > pivot should stay on the right side. Pointer i remains unchanged, maintaining the partition boundary.</p>
+                            `}
+                            
+                            <p><strong>Partition invariant:</strong> After processing index ${j}:</p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>Indices [${step.low}, ${shouldSwap ? step.leftPointer + 1 : step.leftPointer}]: elements ≤ pivot</li>
+                                <li>Indices [${shouldSwap ? step.leftPointer + 2 : step.leftPointer + 1}, ${j}]: elements > pivot</li>
+                                <li>Index ${step.high}: pivot (temporary position)</li>
+                            </ul>
+                            
+                            <div class="code-snippet">for (j = ${step.low + 1}; j < ${step.high}; j++) {<br>&nbsp;&nbsp;if (arr[j] <= pivot) {<br>&nbsp;&nbsp;&nbsp;&nbsp;i++;<br>&nbsp;&nbsp;&nbsp;&nbsp;swap(arr, i, j);<br>&nbsp;&nbsp;}<br>}</div>
+                        </div>
+                    `;
+                } else if (scheme === 'hoare') {
+                    const idx = indices[0];
+                    const isLeft = step.leftPointer === idx;
+                    const currentVal = step.array[idx];
+                    const condition = isLeft ? currentVal < step.pivot : currentVal > step.pivot;
+                    const shouldMove = condition;
+                    
+                    explanation += `
+                        <div class="algorithm-step">
+                            <strong>🔍 Pointer Movement - Hoare's Scheme</strong>
+                            <p>${isLeft ? 'Left' : 'Right'} pointer is checking if it can advance.</p>
+                            
+                            <p><strong>Current state:</strong></p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li>Left pointer: index <span class="pointer-info">${step.leftPointer}</span>, value = <span class="highlight">${step.array[step.leftPointer]}</span></li>
+                                <li>Right pointer: index <span class="pointer-info">${step.rightPointer}</span>, value = <span class="highlight">${step.array[step.rightPointer]}</span></li>
+                                <li>Pivot: <span class="pivot-info">${step.pivot}</span></li>
+                            </ul>
+                            
+                            <p><strong>${isLeft ? 'Left' : 'Right'} pointer check:</strong> arr[${idx}] (${currentVal}) ${isLeft ? '<' : '>'} pivot (${step.pivot})?</p>
+                            
+                            ${shouldMove ? `
+                                <p><strong>✅ Result:</strong> Yes! ${currentVal} ${isLeft ? '<' : '>'} ${step.pivot}, so the element is already on the correct side.</p>
+                                <p><strong>Action:</strong> Advance ${isLeft ? 'left' : 'right'} pointer ${isLeft ? 'right' : 'left'} (${isLeft ? '++' : '--'}).</p>
+                                <p><strong>Why?</strong> Elements ${isLeft ? 'smaller than' : 'larger than'} the pivot should be on the ${isLeft ? 'left' : 'right'} side. Since this element is already correctly positioned, we can move past it.</p>
+                            ` : `
+                                <p><strong>❌ Result:</strong> No! ${currentVal} ${isLeft ? '≥' : '≤'} ${step.pivot}, so this element is on the wrong side.</p>
+                                <p><strong>Action:</strong> Stop advancing this pointer. It's now "stuck" waiting for the other pointer to find a swap partner.</p>
+                                <p><strong>Why?</strong> This element needs to be ${isLeft ? 'moved to the right' : 'moved to the left'} side of the partition, but we'll wait until the other pointer finds an element to swap with.</p>
+                            `}
+                            
+                            <p><strong>Hoare's strategy:</strong> The two pointers move towards each other. When both are "stuck" (left finds element ≥ pivot, right finds element ≤ pivot), they swap and continue.</p>
+                            
+                            <div class="code-snippet">${isLeft ? 
+                                `while (left < right && arr[left] < pivot) {<br>&nbsp;&nbsp;left++;  // Move right<br>}` :
+                                `while (left < right && arr[right] > pivot) {<br>&nbsp;&nbsp;right--;  // Move left<br>}`
+                            }</div>
+                        </div>
+                    `;
+                }
+            } else if (step.type === 'pivot_placed') {
+                if (scheme === 'lomuto') {
+                    explanation += `
+                        <div class="algorithm-step">
+                            <strong>✅ Partition Complete - Lomuto's Scheme</strong>
+                            <p>Pivot <span class="pivot-info">${step.pivot}</span> has been placed at its final sorted position: index <span class="pivot-info">${step.pivotIndex}</span>.</p>
+                            
+                            <p><strong>Final partition state:</strong></p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>Left partition [${step.low}, ${step.pivotIndex - 1}]:</strong> All elements ≤ pivot</li>
+                                <li><strong>Pivot position [${step.pivotIndex}]:</strong> Pivot ${step.pivot} (in its final sorted position!)</li>
+                                <li><strong>Right partition [${step.pivotIndex + 1}, ${step.high}]:</strong> All elements > pivot</li>
+                            </ul>
+                            
+                            <p><strong>Key property:</strong> The pivot is now in its correct final position in the sorted array. It will never move again.</p>
+                            
+                            <p><strong>Current array:</strong> <span class="highlight">[${step.array.join(', ')}]</span></p>
+                            
+                            <p><strong>Next steps:</strong> Recursively sort the two subarrays:</p>
+                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                <li>Left subarray: indices [${step.low}, ${step.pivotIndex - 1}] - contains ${step.pivotIndex - step.low} element(s)</li>
+                                <li>Right subarray: indices [${step.pivotIndex + 1}, ${step.high}] - contains ${step.high - step.pivotIndex} element(s)</li>
+                            </ol>
+                            
+                            <p><strong>Why this works:</strong> Since the pivot is in its final position, we know that after sorting the left and right subarrays, the entire array will be sorted.</p>
+                            
+                            <div class="code-snippet">// Place pivot in final position<br>swap(arr, ${step.high}, ${step.pivotIndex})<br>return ${step.pivotIndex};<br><br>// Recursively sort subarrays<br>quickSort(arr, ${step.low}, ${step.pivotIndex - 1})<br>quickSort(arr, ${step.pivotIndex + 1}, ${step.high})</div>
+                        </div>
+                    `;
+                } else {
+                    explanation += `
+                        <div class="algorithm-step">
+                            <strong>✅ Partition Complete - Hoare's Scheme</strong>
+                            <p>Partition operation is complete. The array has been divided around pivot <span class="pivot-info">${step.pivot}</span>.</p>
+                            
+                            <p><strong>Final partition state:</strong></p>
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>Left partition [${step.low}, ${step.pivotIndex}]:</strong> All elements ≤ pivot</li>
+                                <li><strong>Right partition [${step.pivotIndex + 1}, ${step.high}]:</strong> All elements ≥ pivot</li>
+                            </ul>
+                            
+                            <p><strong>Important difference from Lomuto's:</strong> In Hoare's scheme, the pivot may NOT be in its final sorted position. The pivot could be anywhere in the left partition. However, the partition property is maintained: all elements in the left partition are ≤ all elements in the right partition.</p>
+                            
+                            <p><strong>Return value:</strong> The function returns index <span class="pivot-info">${step.pivotIndex}</span>, which is the right pointer's final position. This marks the boundary between the two partitions.</p>
+                            
+                            <p><strong>Current array:</strong> <span class="highlight">[${step.array.join(', ')}]</span></p>
+                            
+                            <p><strong>Next steps:</strong> Recursively sort the two subarrays:</p>
+                            <ol style="margin-left: 20px; margin-top: 10px;">
+                                <li>Left subarray: indices [${step.low}, ${step.pivotIndex}] - contains ${step.pivotIndex - step.low + 1} element(s)</li>
+                                <li>Right subarray: indices [${step.pivotIndex + 1}, ${step.high}] - contains ${step.high - step.pivotIndex} element(s)</li>
+                            </ol>
+                            
+                            <p><strong>Why this works:</strong> Even though the pivot isn't in its final position, the partition ensures that after sorting both subarrays, the entire array will be sorted. The pivot will end up in the correct position during the recursive calls.</p>
+                            
+                            <div class="code-snippet">// Return partition boundary<br>return ${step.pivotIndex};<br><br>// Recursively sort subarrays<br>quickSort(arr, ${step.low}, ${step.pivotIndex})<br>quickSort(arr, ${step.pivotIndex + 1}, ${step.high})</div>
+                        </div>
+                    `;
+                }
+            } else if (step.type === 'partition_complete') {
+                explanation += `
+                    <div class="algorithm-step">
+                        <strong>📊 Partition Summary</strong>
+                        <p>The partition operation for range [${step.low}, ${step.high}] is complete.</p>
+                        
+                        <p><strong>Partition result:</strong> Pivot boundary at index <span class="pivot-info">${step.pivotIndex}</span></p>
+                        
+                        <p><strong>Subarrays to sort:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li><strong>Left:</strong> [${step.low}, ${step.pivotIndex - 1}] - ${step.pivotIndex - step.low} element(s)</li>
+                            <li><strong>Right:</strong> [${step.pivotIndex + 1}, ${step.high}] - ${step.high - step.pivotIndex} element(s)</li>
+                        </ul>
+                        
+                        <p><strong>Recursive calls:</strong> The algorithm will now make two recursive calls to sort these subarrays. Each recursive call will follow the same process: select a pivot, partition, and recurse on the resulting subarrays.</p>
+                        
+                        <p><strong>Termination:</strong> The recursion will stop when subarrays have 0 or 1 elements (base case), which are already sorted.</p>
+                    </div>
+                `;
+            } else if (step.type === 'base_case') {
+                explanation += `
+                    <div class="algorithm-step">
+                        <strong>🏁 Base Case - Recursion Termination</strong>
+                        <p>Reached the base case: subarray with a single element at index <span class="highlight">${step.index}</span>.</p>
+                        
+                        <p><strong>Why is this the base case?</strong> An array with 0 or 1 element is already sorted by definition. There's nothing to partition or rearrange.</p>
+                        
+                        <p><strong>What happens?</strong> The recursive call returns immediately without doing any work. This is the termination condition that prevents infinite recursion.</p>
+                        
+                        <p><strong>Recursion tree:</strong> This base case represents a leaf node in the recursion tree. The algorithm will backtrack and continue processing other subarrays.</p>
+                        
+                        <div class="code-snippet">if (low >= high) {<br>&nbsp;&nbsp;return;  // Base case: already sorted<br>}</div>
+                    </div>
+                `;
+            } else if (step.type === 'complete') {
+                explanation += `
+                    <div class="algorithm-step">
+                        <strong>🎉 Sorting Complete!</strong>
+                        <p>The entire array has been successfully sorted using Quick Sort with ${schemeName} partition scheme.</p>
+                        
+                        <p><strong>Final sorted array:</strong> <span class="highlight">[${step.array.join(', ')}]</span></p>
+                        
+                        <p><strong>Performance metrics:</strong></p>
+                        <ul style="margin-left: 20px; margin-top: 10px;">
+                            <li>Total swaps: <span class="highlight">${step.swapCount}</span></li>
+                            <li>Total comparisons: <span class="highlight">${step.comparisonCount}</span></li>
+                            <li>Array size: ${step.array.length} elements</li>
+                        </ul>
+                        
+                        <p><strong>Algorithm efficiency:</strong> Quick Sort's performance depends on pivot selection. With good pivots (dividing array roughly in half), it achieves O(n log n) average time complexity. The ${schemeName} scheme ${scheme === 'lomuto' ? 'typically performs more swaps but is easier to understand' : 'generally performs fewer swaps and is more efficient'}.</p>
+                        
+                        <p><strong>Key takeaway:</strong> Quick Sort is an in-place, unstable sorting algorithm that's very efficient in practice, often outperforming other O(n log n) algorithms due to good cache performance and low constant factors.</p>
+                    </div>
+                `;
+            } else {
+                explanation += `<div class="algorithm-step"><p>${step.message || 'Processing...'}</p></div>`;
+            }
+
+            // Add scheme-specific context footer
+            if (step.type !== 'complete' && step.type !== 'base_case') {
+                explanation += `
+                    <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <strong>📚 ${schemeName} Partition Scheme - Key Characteristics:</strong>
+                        ${scheme === 'lomuto' ? `
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>Single pointer:</strong> Uses one pointer (i) to track partition boundary</li>
+                                <li><strong>Pivot placement:</strong> Pivot is moved to end, then placed in final position</li>
+                                <li><strong>Guarantee:</strong> Pivot ends up in its correct sorted position</li>
+                                <li><strong>Simplicity:</strong> Easier to understand and implement</li>
+                                <li><strong>Trade-off:</strong> Typically performs more swaps than Hoare's scheme</li>
+                                <li><strong>Use case:</strong> Good for educational purposes and when simplicity is preferred</li>
+                            </ul>
+                        ` : `
+                            <ul style="margin-left: 20px; margin-top: 10px;">
+                                <li><strong>Two pointers:</strong> Uses left and right pointers moving towards each other</li>
+                                <li><strong>Efficiency:</strong> Generally performs fewer swaps than Lomuto's</li>
+                                <li><strong>Pivot position:</strong> Pivot may not end up in final sorted position</li>
+                                <li><strong>Original algorithm:</strong> This is the partition scheme from Hoare's original 1959 paper</li>
+                                <li><strong>Performance:</strong> Better average-case performance due to fewer swaps</li>
+                                <li><strong>Use case:</strong> Preferred in production code for better performance</li>
+                            </ul>
+                        `}
+                    </div>
+                `;
+            }
+
+            return explanation;
+        }
+
+        function updateInfo(step) {
+            if (!step) return;
+
+            currentStepSpan.textContent = `${currentStepIndex + 1} / ${steps.length}`;
+            swapCountSpan.textContent = step.swapCount || 0;
+            comparisonCountSpan.textContent = step.comparisonCount || 0;
+            stepInfo.textContent = step.message || '';
+
+            if (step.type === 'pivot_selected' || step.type === 'pivot_placed') {
+                pivotIndexSpan.textContent = step.pivotIndex !== undefined ? step.pivotIndex : '-';
+                pivotValueSpan.textContent = step.pivot !== undefined ? step.pivot : '-';
+            } else {
+                pivotIndexSpan.textContent = '-';
+                pivotValueSpan.textContent = '-';
+            }
+
+            leftPointerSpan.textContent = step.leftPointer !== undefined ? step.leftPointer : '-';
+            rightPointerSpan.textContent = step.rightPointer !== undefined ? step.rightPointer : '-';
+
+            if (step.low !== undefined && step.high !== undefined) {
+                partitionInfo.textContent = `Partitioning range [${step.low}, ${step.high}]`;
+            } else {
+                partitionInfo.textContent = step.message || 'Waiting for partition step...';
+            }
+
+            // Update detailed explanation
+            explanationContent.innerHTML = generateDetailedExplanation(step);
+        }
+
+        function displayStep(index) {
+            if (index < 0 || index >= steps.length) return;
+
+            currentStepIndex = index;
+            const step = steps[currentStepIndex];
+            
+            // Use the step's array state if available, otherwise use current array
+            const arrayToDisplay = step.array ? [...step.array] : currentArray;
+            
+            renderArray(arrayDisplay, arrayToDisplay, step);
+            renderArray(partitionDisplay, arrayToDisplay, step);
+            updateInfo(step);
+
+            if (step.array) {
+                currentArray = [...step.array];
+            }
+
+            // Update button states
+            stepBackBtn.disabled = currentStepIndex === 0;
+            stepForwardBtn.disabled = currentStepIndex >= steps.length - 1;
+        }
+
+        function playStep() {
+            if (currentStepIndex >= steps.length) {
+                isPlaying = false;
+                startBtn.disabled = false;
+                pauseBtn.disabled = true;
+                stepBackBtn.disabled = false;
+                stepForwardBtn.disabled = true;
+                return;
+            }
+
+            displayStep(currentStepIndex);
+            currentStepIndex++;
+
+            if (isPlaying) {
+                animationTimeout = setTimeout(playStep, speed);
+            }
+        }
+
+        function stepForward() {
+            if (currentStepIndex < steps.length - 1) {
+                pauseVisualization();
+                displayStep(currentStepIndex + 1);
+            }
+        }
+
+        function stepBackward() {
+            if (currentStepIndex > 0) {
+                pauseVisualization();
+                const prevIndex = currentStepIndex - 1;
+                // Restore array state from previous step
+                if (prevIndex >= 0) {
+                    // Find the most recent step with array state at or before prevIndex
+                    for (let i = prevIndex; i >= 0; i--) {
+                        if (steps[i].array) {
+                            currentArray = [...steps[i].array];
+                            break;
+                        }
+                    }
+                    // If no array found in previous steps, use original
+                    if (!steps[prevIndex]?.array && prevIndex === 0) {
+                        currentArray = [...originalArray];
+                    }
+                }
+                displayStep(prevIndex);
+            }
+        }
+
+        function startVisualization() {
+            const arr = parseArray();
+            if (arr.length === 0) {
+                alert('Please enter a valid array');
+                return;
+            }
+
+            originalArray = [...arr];
+            currentArray = [...arr];
+            currentStepIndex = 0;
+            generateSteps();
+
+            isPlaying = true;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stepBackBtn.disabled = false;
+            stepForwardBtn.disabled = false;
+            playStep();
+        }
+
+        function pauseVisualization() {
+            isPlaying = false;
+            if (animationTimeout) {
+                clearTimeout(animationTimeout);
+            }
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+            stepBackBtn.disabled = currentStepIndex === 0;
+            stepForwardBtn.disabled = currentStepIndex >= steps.length - 1;
+        }
+
+        function resetVisualization() {
+            pauseVisualization();
+            const arr = parseArray();
+            originalArray = arr.length > 0 ? [...arr] : [];
+            currentArray = [...originalArray];
+            currentStepIndex = 0;
+            steps = [];
+            renderArray(arrayDisplay, currentArray);
+            renderArray(partitionDisplay, currentArray);
+            currentStepSpan.textContent = '0 / 0';
+            swapCountSpan.textContent = '0';
+            comparisonCountSpan.textContent = '0';
+            stepInfo.textContent = 'Ready to start...';
+            partitionInfo.textContent = 'Waiting for partition step...';
+            pivotIndexSpan.textContent = '-';
+            pivotValueSpan.textContent = '-';
+            leftPointerSpan.textContent = '-';
+            rightPointerSpan.textContent = '-';
+            explanationContent.innerHTML = generateDetailedExplanation(null);
+            stepBackBtn.disabled = true;
+            stepForwardBtn.disabled = true;
+        }
+
+        startBtn.addEventListener('click', startVisualization);
+        pauseBtn.addEventListener('click', pauseVisualization);
+        resetBtn.addEventListener('click', resetVisualization);
+        stepForwardBtn.addEventListener('click', stepForward);
+        stepBackBtn.addEventListener('click', stepBackward);
+
+        arrayInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                resetVisualization();
+            }
+        });
+
+        partitionScheme.addEventListener('change', () => {
+            if (steps.length > 0) {
+                resetVisualization();
+            } else {
+                // Update initial explanation when scheme changes
+                explanationContent.innerHTML = generateDetailedExplanation(null);
+            }
+        });
+
+        resetVisualization();
+    </script>
+</body>
+</html>
