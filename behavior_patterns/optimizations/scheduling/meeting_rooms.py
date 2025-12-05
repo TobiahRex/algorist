@@ -58,11 +58,8 @@ class MeetingRoomsII:
             else:
                 in_use -= 1
                 e += 1
-        
+
         return max_rooms
-
-    def min_rooms_heap(self)
-
 
     def solve(self) -> int:
         return self.min_rooms_two_pointer()
