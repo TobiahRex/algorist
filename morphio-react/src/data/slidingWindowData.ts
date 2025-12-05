@@ -360,3 +360,122 @@ def totalFruit(fruits, k=2):
     return max_fruits`,
   },
 };
+
+export const slidingWindowLeetCode = [
+  {
+    id: 3,
+    title: 'Longest Substring Without Repeating Characters',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/longest-substring-without-repeating-characters/',
+    keyTakeaway: 'Hash set for character tracking, shrink when duplicate found',
+    patternFocus: 'Core: Variable window with hash set pattern',
+  },
+  {
+    id: 76,
+    title: 'Minimum Window Substring',
+    difficulty: 'Hard' as const,
+    url: 'https://leetcode.com/problems/minimum-window-substring/',
+    keyTakeaway: 'Two pointers with character frequency map, expand/shrink logic',
+    patternFocus: 'Advanced: Complex window requirements with frequency maps',
+  },
+  {
+    id: 209,
+    title: 'Minimum Size Subarray Sum',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/minimum-size-subarray-sum/',
+    keyTakeaway: 'Variable window with running sum, shrink when target met',
+    patternFocus: 'Foundation: Basic variable window pattern',
+  },
+  {
+    id: 219,
+    title: 'Contains Duplicate II',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/contains-duplicate-ii/',
+    keyTakeaway: 'Fixed size window (k) with set membership checking',
+    patternFocus: 'Foundation: Fixed window pattern',
+  },
+  {
+    id: 239,
+    title: 'Sliding Window Maximum',
+    difficulty: 'Hard' as const,
+    url: 'https://leetcode.com/problems/sliding-window-maximum/',
+    keyTakeaway: 'Deque to maintain max in fixed window efficiently',
+    patternFocus: 'Advanced: Deque optimization for fixed window',
+  },
+  {
+    id: 438,
+    title: 'Find All Anagrams in a String',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/find-all-anagrams-in-a-string/',
+    keyTakeaway: 'Fixed window with frequency array comparison',
+    patternFocus: 'Foundation: Fixed window with pattern matching',
+  },
+  {
+    id: 567,
+    title: 'Permutation in String',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/permutation-in-string/',
+    keyTakeaway: 'Fixed window, compare frequency maps when size matches',
+    patternFocus: 'Foundation: Fixed window pattern matching',
+  },
+];
+
+export const slidingWindowCheatSheet = {
+  timeComplexity: 'O(n) - each element visited at most twice',
+  spaceComplexity: 'O(k) for hash map/set of unique characters',
+  keyPoints: [
+    {
+      title: 'Window Types',
+      content: [
+        'Fixed size: Always maintain k consecutive elements',
+        'Variable size: Expand until valid, shrink when invalid',
+        'Track both L and R pointers simultaneously',
+      ],
+    },
+    {
+      title: 'Tracking State',
+      content: [
+        'Hash map for frequency counts',
+        'Hash set for uniqueness validation',
+        'Deque for optimization in max/min problems',
+      ],
+    },
+    {
+      title: 'Movement Rules',
+      content: [
+        'Expand: Always add right element first',
+        'Shrink: Remove left elements when constraint broken',
+        'Never shrink too much - reset count/map on each iteration',
+      ],
+    },
+  ],
+  whenToUse: [
+    'Finding longest/shortest substring/subarray',
+    'Contiguous elements with specific property',
+    'Need to find pattern within sequence',
+    'Performance requirement - O(n) vs O(n²)',
+  ],
+  commonMistakes: [
+    'Forgetting to update result when condition met',
+    'Not properly initializing hash map/set state',
+    'Shrinking window too early before checking',
+    'Off-by-one error in window boundary calculations',
+    'Not handling empty window edge cases',
+  ],
+};
+
+export const slidingWindowSynthesizedCategory = {
+  icon: '🪟',
+  title: 'Optimal Contiguous Subarray Discovery',
+  coreInsight: 'The core insight across all sliding window applications: instead of checking every possible contiguous subarray (O(n²)), you can maintain a dynamic window of valid candidates and slide it efficiently. When the window satisfies your constraint (has k elements, all unique characters, sum ≥ target), you record that result. When it violates the constraint, you shrink. This "lazy" evaluation over contiguous segments reduces brute-force quadratic checks to linear passes.',
+  commonAcross: [
+    'Text search (substring patterns)',
+    'Time series (rolling averages)',
+    'Networking (sliding window TCP)',
+    'Data compression (character frequencies)',
+    'Fraud detection (activity windows)',
+    'Resource allocation (memory pages)',
+    'Signal processing (moving windows)',
+    'Financial analysis (moving averages)',
+  ],
+};

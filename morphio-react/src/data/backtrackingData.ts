@@ -352,3 +352,19 @@ def solveNQueens(n):
     return result`,
   },
 };
+
+export const backtrackingSynthesizedCategory = {
+  icon: '🔄',
+  title: 'Constraint Satisfaction via Systematic Pruning',
+  coreInsight: 'Backtracking is DFS with intelligent pruning: explore a decision tree, make a choice, recursively solve the remaining problem, then undo the choice if it doesn\'t lead to a solution (backtrack). The key insight is pruning: check constraints early to eliminate whole subtrees without full exploration. Each level of the tree represents a decision point. When you hit a dead-end (constraint violation), backtrack to the last decision and try an alternative. This is how solvers work: N-Queens (no two queens on same row/column/diagonal), Sudoku (cells must have unique digits in row/column/box), generating combinations/permutations (backtrack on duplicates).',
+  commonAcross: [
+    'N-Queens problem',
+    'Sudoku solver',
+    'Permutations/Combinations',
+    'Word search',
+    'Rat in maze',
+    'Knight\'s tour',
+    'Graph coloring',
+    'Constraint satisfaction problems',
+  ],
+};

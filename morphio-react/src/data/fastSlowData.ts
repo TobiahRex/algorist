@@ -459,3 +459,124 @@ def isHappy(n):
             return False`,
   },
 };
+
+export const fastSlowLeetCode = [
+  {
+    id: 141,
+    title: 'Linked List Cycle',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/linked-list-cycle/',
+    keyTakeaway: 'Slow moves 1 step, fast 2 steps - if they meet, cycle exists',
+    patternFocus: 'Foundation: Basic fast/slow pattern',
+  },
+  {
+    id: 142,
+    title: 'Linked List Cycle II',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/linked-list-cycle-ii/',
+    keyTakeaway: 'Find cycle entry point after detecting cycle',
+    patternFocus: 'Extension: Find cycle start location',
+  },
+  {
+    id: 202,
+    title: 'Happy Number',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/happy-number/',
+    keyTakeaway: 'Detect cycle in sum of squares sequence',
+    patternFocus: 'Application: Fast/slow on numerical sequences',
+  },
+  {
+    id: 287,
+    title: 'Find the Duplicate Number',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/find-the-duplicate-number/',
+    keyTakeaway: 'Treat array as linked list, use cycle detection',
+    patternFocus: 'Clever: Array as linked list with fast/slow',
+  },
+  {
+    id: 876,
+    title: 'Middle of the Linked List',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/middle-of-the-linked-list/',
+    keyTakeaway: 'When fast reaches end, slow is at middle',
+    patternFocus: 'Foundation: Find middle position',
+  },
+  {
+    id: 19,
+    title: 'Remove Nth Node From End of List',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/remove-nth-node-from-end-of-list/',
+    keyTakeaway: 'Gap of N between fast and slow pointers',
+    patternFocus: 'Variant: Fixed distance between pointers',
+  },
+  {
+    id: 234,
+    title: 'Palindrome Linked List',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/palindrome-linked-list/',
+    keyTakeaway: 'Find middle, reverse second half, compare',
+    patternFocus: 'Application: Use middle-finding for comparison',
+  },
+];
+
+export const fastSlowCheatSheet = {
+  timeComplexity: 'O(n) - both pointers traverse at most once',
+  spaceComplexity: 'O(1) - constant extra space (no hash set needed)',
+  keyPoints: [
+    {
+      title: 'Pointer Speeds',
+      content: [
+        'Slow: 1 step per iteration',
+        'Fast: 2 steps per iteration (or custom ratio)',
+        'They will eventually meet if cycle exists',
+      ],
+    },
+    {
+      title: 'Cycle Detection',
+      content: [
+        'If they meet → cycle exists',
+        'If fast reaches null → no cycle',
+        'Gap when they meet reveals cycle properties',
+      ],
+    },
+    {
+      title: 'Applications',
+      content: [
+        'Find middle of linked list',
+        'Detect cycles in sequences',
+        'Find cycle entry point (2-pass approach)',
+        'Treat arrays as linked lists for cycle finding',
+      ],
+    },
+  ],
+  whenToUse: [
+    'Detecting cycles in linked lists',
+    'Finding middle node of linked list',
+    'Finding duplicate in arrays (array as linked list)',
+    'Space-optimized cycle detection (vs hash set)',
+    'Detecting cycles in numerical sequences',
+  ],
+  commonMistakes: [
+    'Fast pointer incrementing wrong amount (should be 2)',
+    'Not checking for null when fast moves',
+    'Confusing middle calculation (off-by-one)',
+    'Forgetting to handle single element lists',
+    'Assuming fast always catches slow (infinite loops if slow)',
+  ],
+};
+
+export const fastSlowSynthesizedCategory = {
+  icon: '🐢🐇',
+  title: 'Cycle Detection via Relative Velocity',
+  coreInsight: 'The fundamental insight: in any sequence or linked structure, if there\'s a cycle, two entities moving at different speeds through it will eventually collide. The slow pointer moves 1 step per iteration; the fast pointer moves 2. If they ever meet, a cycle exists. If the fast pointer reaches the end (null), there\'s no cycle. This single observation applies across completely different domains: detecting loops in linked lists, finding duplicates hidden as linked list cycles, detecting infinite loops in number sequences, identifying repeating patterns in temporal data. The pattern is purely about relative velocity, not the structure itself.',
+  commonAcross: [
+    'Linked list cycle detection',
+    'Duplicate finding (array as linked list)',
+    'Infinite loop detection',
+    'Happy number checking',
+    'Temporal data cycles',
+    'Network loop detection',
+    'Dependency cycle finding',
+    'State machine cycles',
+  ],
+};

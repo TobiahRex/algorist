@@ -346,3 +346,20 @@ def validPath(n, edges, start, end):
     return dfs(start)`,
   },
 };
+
+export const dfsSynthesizedCategory = {
+  icon: '📈',
+  title: 'Depth-First Exhaustive Search',
+  coreInsight: 'DFS explores as far as possible along each branch before backtracking. Process a node, recursively process one neighbor, then backtrack when stuck. This naturally handles problems requiring exhaustive exploration: finding all paths, detecting cycles, topological ordering, or computing connected components. Use recursion (call stack) or explicit stack to track the "current path". Unlike BFS which guarantees shortest distance, DFS guarantees exhaustive coverage of one branch before moving to another.',
+  commonAcross: [
+    'Tree/graph traversal',
+    'Cycle detection',
+    'Topological sorting',
+    'Connected components',
+    'All paths finding',
+    'Maze solving',
+    'Strongly connected components',
+    'Expression tree evaluation',
+  ],
+};
+

@@ -377,3 +377,19 @@ def numIslands(grid):
     return count`,
   },
 };
+
+export const bfsSynthesizedCategory = {
+  icon: '📊',
+  title: 'Layer-by-Layer Exploration',
+  coreInsight: 'BFS explores a space level-by-level before going deeper. Every node at distance D from the start is processed before any node at distance D+1. This level-by-layer guarantee makes BFS the natural choice when you need shortest paths, level-order information, or guaranteed distance metrics. Use a queue to always process the oldest (earliest-discovered) nodes first. Apply to: finding shortest paths in unweighted graphs, traversing trees by level, checking connectivity, finding all nodes at exactly distance D.',
+  commonAcross: [
+    'Shortest path (unweighted)',
+    'Level-order traversal',
+    'Graph connectivity',
+    'Bipartite checking',
+    'Queue simulations',
+    'Puzzle solving (fewest moves)',
+    'Network analysis',
+    'Social network distance',
+  ],
+};

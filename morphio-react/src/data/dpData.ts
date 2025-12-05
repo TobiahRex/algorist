@@ -433,3 +433,19 @@ def longestCommonSubsequence(s1, s2):
     return dp[m][n]`,
   },
 };
+
+export const dpSynthesizedCategory = {
+  icon: '🧩',
+  title: 'Overlapping Subproblems via Memoization',
+  coreInsight: 'Dynamic Programming solves problems by breaking them into overlapping subproblems and memoizing (caching) results to avoid recomputation. Two approaches: Top-down (recursion + memoization) or bottom-up (iteration + table). The key insight is recognizing when your recursion tree has repeated subproblems—if fib(5) appears 3 times in the tree, compute it once and reuse. Apply to: coin change (fewest coins for amount), longest increasing subsequence, edit distance (transforming strings), path counting (ways to reach destination), knapsack (optimal item selection), job scheduling, sequence alignment.',
+  commonAcross: [
+    'Coin change (optimal)',
+    'Longest increasing subsequence',
+    'Edit distance',
+    'Shortest path (with weights)',
+    'Knapsack problem',
+    'Sequence alignment (DNA)',
+    'Rod cutting',
+    'Matrix chain multiplication',
+  ],
+};

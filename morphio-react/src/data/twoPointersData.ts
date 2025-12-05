@@ -437,3 +437,139 @@ def threeSum(nums):
     return result`,
   },
 };
+
+export const twoPointersLeetCode = [
+  {
+    id: 1,
+    title: 'Two Sum',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/two-sum/',
+    keyTakeaway: 'Hash map for O(n) lookup, but sorted array two pointers also works',
+    patternFocus: 'Foundation: Basic pairing in unsorted arrays with hash maps',
+  },
+  {
+    id: 11,
+    title: 'Container With Most Water',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/container-with-most-water/',
+    keyTakeaway: 'Move inward from edges, greedy choice of moving shorter pointer',
+    patternFocus: 'Core: Opposite direction pointers, skip suboptimal states',
+  },
+  {
+    id: 15,
+    title: '3Sum',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/3sum/',
+    keyTakeaway: 'Fix one element, two pointers for remaining pair, handle duplicates',
+    patternFocus: 'Extension: Nested loop with two pointers for multi-target',
+  },
+  {
+    id: 16,
+    title: '3Sum Closest',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/3sum-closest/',
+    keyTakeaway: 'Two pointers track closest sum, adjust pointers based on gap',
+    patternFocus: 'Variant: Maximize/minimize metric with two pointers',
+  },
+  {
+    id: 167,
+    title: 'Two Sum II - Input Array Is Sorted',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/',
+    keyTakeaway: 'Classic sorted array + two pointers pattern, 1-indexed output',
+    patternFocus: 'Practice: Direct two pointers application',
+  },
+  {
+    id: 209,
+    title: 'Minimum Size Subarray Sum',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/minimum-size-subarray-sum/',
+    keyTakeaway: 'Two pointers/sliding window for contiguous elements',
+    patternFocus: 'Hybrid: Looks like sliding window, uses two pointer logic',
+  },
+  {
+    id: 283,
+    title: 'Move Zeroes',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/move-zeroes/',
+    keyTakeaway: 'Same direction pointers for in-place partitioning',
+    patternFocus: 'Core: Same-direction partition with swaps',
+  },
+  {
+    id: 557,
+    title: 'Reverse Words in a String III',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/reverse-words-in-a-string-iii/',
+    keyTakeaway: 'Two pointers within each word for reversal',
+    patternFocus: 'Application: Reverse pattern with character arrays',
+  },
+  {
+    id: 925,
+    title: 'Long Pressed Name',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/long-pressed-name/',
+    keyTakeaway: 'Two pointers on different strings, handle repeats',
+    patternFocus: 'Parallel tracking: Two pointers on two arrays',
+  },
+];
+
+export const twoPointersCheatSheet = {
+  timeComplexity: 'O(n) or O(n²) depending on nesting',
+  spaceComplexity: 'O(1) for in-place, O(n) if sorting needed',
+  keyPoints: [
+    {
+      title: 'Pattern Recognition',
+      content: [
+        'Sorted array + target value → opposite direction',
+        'In-place partition → same direction',
+        'Two sequences → parallel tracking',
+      ],
+    },
+    {
+      title: 'Pointer Movement',
+      content: [
+        'Opposite: L++ or R-- based on comparison',
+        'Same: Both advance when condition met',
+        'Skip duplicates to avoid redundant work',
+      ],
+    },
+    {
+      title: 'Common Mistakes',
+      content: [
+        'Forgetting to sort unsorted arrays first',
+        'Not handling duplicate values (off-by-one)',
+        'Comparing wrong indices in opposite move',
+      ],
+    },
+  ],
+  whenToUse: [
+    'Array is sorted or can be sorted',
+    'Need to find pairs/triplets with specific property',
+    'In-place modification requirement',
+    'Need O(1) space complexity',
+    'Linear pass through array sufficient',
+  ],
+  commonMistakes: [
+    'Moving pointer in wrong direction on comparison fail',
+    'Not updating result after finding match',
+    'Assuming all elements are positive/non-negative',
+    'Off-by-one errors with pointer boundaries',
+    'Duplicate handling - skipping duplicates only on outer loop',
+  ],
+};
+
+export const twoPointersSynthesizedCategory = {
+  icon: '👆',
+  title: 'Optimal Pairing & Matching',
+  coreInsight: 'Across all these domains, the core problem is identical: given two sorted collections (or one sorted collection searched from both ends), find a pair that satisfies a constraint. The "trick" is recognizing that sortedness lets you eliminate entire regions of the search space with each comparison. Move the pointer pointing to the larger element (L++) if you need bigger values; move the one pointing to the smaller element (R--) if you need smaller ones. This eliminates entire regions of the search space with each step.',
+  commonAcross: [
+    'Trading (match buyers/sellers)',
+    'Analytics (pair cohorts)',
+    'Energy (size systems)',
+    'Logistics (pack bins)',
+    'Gaming (balance players)',
+    'Warehouse ops (item-bin pairs)',
+    'Stock matching (order books)',
+    'Supply chain (supplier-demand pairs)',
+  ],
+};

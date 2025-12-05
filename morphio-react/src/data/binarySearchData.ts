@@ -486,3 +486,130 @@ def searchInsert(nums, target):
     return left`,
   },
 };
+
+export const binarySearchLeetCode = [
+  {
+    id: 33,
+    title: 'Search in Rotated Sorted Array',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/search-in-rotated-sorted-array/',
+    keyTakeaway: 'Determine which half is sorted, narrow search space accordingly',
+    patternFocus: 'Extension: Binary search with non-uniform data distribution',
+  },
+  {
+    id: 34,
+    title: 'Find First and Last Position of Element in Sorted Array',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/',
+    keyTakeaway: 'Two binary searches to find boundaries of target range',
+    patternFocus: 'Core: Binary search adapted for boundary finding',
+  },
+  {
+    id: 35,
+    title: 'Search Insert Position',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/search-insert-position/',
+    keyTakeaway: 'Binary search finds exact match or insertion point',
+    patternFocus: 'Foundation: Classic binary search template',
+  },
+  {
+    id: 74,
+    title: 'Search a 2D Matrix',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/search-a-2d-matrix/',
+    keyTakeaway: 'Treat 2D matrix as 1D sorted array for binary search',
+    patternFocus: 'Variant: Apply binary search to 2D data',
+  },
+  {
+    id: 153,
+    title: 'Find Minimum in Rotated Sorted Array',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/',
+    keyTakeaway: 'Identify which half is sorted to find minimum position',
+    patternFocus: 'Extension: Minimum/maximum finding with rotation',
+  },
+  {
+    id: 162,
+    title: 'Find Peak Element',
+    difficulty: 'Medium' as const,
+    url: 'https://leetcode.com/problems/find-peak-element/',
+    keyTakeaway: 'Binary search works even without sorting - just need monotonicity directions',
+    patternFocus: 'Application: Binary search on implicit ordering',
+  },
+  {
+    id: 278,
+    title: 'First Bad Version',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/first-bad-version/',
+    keyTakeaway: 'Binary search for first occurrence in boolean array',
+    patternFocus: 'Foundation: Simple binary search with API calls',
+  },
+  {
+    id: 704,
+    title: 'Binary Search',
+    difficulty: 'Easy' as const,
+    url: 'https://leetcode.com/problems/binary-search/',
+    keyTakeaway: 'Classic binary search template - find exact target',
+    patternFocus: 'Foundation: Textbook binary search implementation',
+  },
+];
+
+export const binarySearchCheatSheet = {
+  timeComplexity: 'O(log n) - eliminates half search space each iteration',
+  spaceComplexity: 'O(1) - iterative, O(log n) - recursive',
+  keyPoints: [
+    {
+      title: 'Core Principle',
+      content: [
+        'Requires monotonic (sorted) data or binary decision boundary',
+        'Eliminate half the search space each iteration',
+        'Left < Right maintains loop invariant',
+      ],
+    },
+    {
+      title: 'Boundary Management',
+      content: [
+        'left = 0, right = len(nums): right is exclusive',
+        'while left < right (not <=) with exclusive right',
+        'mid = left + (right - left) // 2 prevents overflow',
+      ],
+    },
+    {
+      title: 'Decision Logic',
+      content: [
+        'target < nums[mid]: right = mid (mid excluded)',
+        'target > nums[mid]: left = mid + 1 (mid excluded)',
+        'target == nums[mid]: found (or right = mid if finding first)',
+      ],
+    },
+  ],
+  whenToUse: [
+    'Array is sorted (or has binary search property)',
+    'Need O(log n) lookup instead of O(n)',
+    'Finding exact match, first/last occurrence, boundary',
+    'Rotated arrays, peak finding, implicit monotonicity',
+  ],
+  commonMistakes: [
+    'Using while left <= right then left/right = mid (off-by-one)',
+    'Integer overflow in mid calculation (use mid = left + (right - left) // 2)',
+    'Confusing left/right boundaries with inclusive vs exclusive ranges',
+    'Forgetting to handle duplicates in rotated arrays',
+    'Not considering that binary search works on implicit ordering',
+  ],
+};
+
+export const binarySearchSynthesizedCategory = {
+  icon: '🔍',
+  title: 'Logarithmic Search via Space Elimination',
+  coreInsight: `Binary search is fundamentally about eliminating half your problem space with each decision. You don't need a sorted array—you need a property where you can definitively eliminate half the candidates based on a single test. That test might be comparing to a midpoint (classic arrays), checking which half of a rotated array is correct, or asking is version X bad? Any problem where you can make a binary decision that eliminates half the search space is solvable in O(log n). This applies to: finding numbers in arrays, finding first/last occurrences, navigating rotated data, API-based binary search (first bad version), finding peaks where you can't see all elements, even searching in infinite arrays.`,
+  commonAcross: [
+    'Sorted array search',
+    'Rotated array problems',
+    'Finding first/last occurrence',
+    'API-based search (bad versions)',
+    'Peak finding',
+    'Implicit monotonicity (peaks)',
+    'Range queries',
+    'Infinity handling',
+  ],
+};
