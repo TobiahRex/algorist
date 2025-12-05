@@ -10,14 +10,14 @@ class Solution:
     def partition(self, arr, start, end):
         r = random.randint(start, end)
         self.swap(arr, start, r)
-        pivot = arr[start]
-        left = start
+        pivot_v = arr[start]
+        pivot_i = start
         for i in range(start+1, end+1):
-            if arr[i] < pivot:
-                left += 1
-                self.swap(arr, left, i)
-        self.swap(arr, start, left) # put pivot @ final index
-        return left
+            if arr[i] < pivot_v:
+                pivot_i += 1
+                self.swap(arr, pivot_i, i)
+        self.swap(arr, start, pivot_i)  # put pivot_v @ final index
+        return pivot_i
 
     def quick_sort(self, arr, start=None, end=None):
         if start is None and end is None:
@@ -46,14 +46,14 @@ def quick_sort(arr, start=None, end=None):
     if start < end:
         r = random.randint(start, end)
         swap(arr, start, r)
-        pivot, left = arr[start], start
+        pv, pi = arr[start], start
         for right in range(start+1, end+1):
-            if arr[right] < pivot:
-                left += 1
-                swap(arr, left, right)
-        swap(arr, start, left)
-        quick_sort(arr, start, left-1)
-        quick_sort(arr, left+1, end)
+            if arr[right] < pv:
+                pi += 1
+                swap(arr, pi, right)
+        swap(arr, start, pi)
+        quick_sort(arr, start, pi - 1)
+        quick_sort(arr, pi + 1, end)
     return arr
 
 

@@ -1,6 +1,6 @@
 from collections import deque
 
-
+# Kahn's algo
 def topological_sort(edges):
     g, in_degree = {}, {}
     for u, v in edges:

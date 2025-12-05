@@ -138,3 +138,24 @@ def kruskal(vertices, edges):
             union(u, v)
             mst.append((u, v, weight))
     return mst
+
+
+import heapq
+
+
+def prims(g):
+    start = next(iter(g))
+    # initialize heap, visited, mst
+    visited, mst, min_heap = set(), [], [(0, start, None)]
+
+    while min_heap:
+        w, v, u = heapq.heappop(min_heap)
+        if v in visited:
+            continue
+        visited.add(v)
+        if u is not None:
+            mst.append((u, v, w))
+        for nv, nw in g.get(v, {}).items():
+            if nv not in visited:
+                heapq.heappush(min_heap, (nw, nv, v))
+    return mst
