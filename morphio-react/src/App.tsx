@@ -17,7 +17,7 @@ function App() {
   return (
     <Router>
       <LeftSidebar />
-      <div style={{ minHeight: '100vh', paddingLeft: '280px', paddingTop: '0', transition: 'padding-left 0.3s ease' }}>
+      <div style={{ minHeight: '100vh', paddingLeft: '280px', paddingTop: '0', transition: 'padding-left 0.3s ease', width: '100%', maxWidth: '100vw', overflowX: 'hidden' }}>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/all-patterns" element={<AllPatternsView />} />
@@ -35,6 +35,7 @@ function App() {
                 problems={bfsProblems}
                 codeExamples={bfsCodeExamples}
                 defaultProblemId="levelOrderTraversal"
+                patternType="bfs"
               />
             }
           />
@@ -48,6 +49,7 @@ function App() {
                 problems={dfsProblems}
                 codeExamples={dfsCodeExamples}
                 defaultProblemId="preorderTraversal"
+                patternType="dfs"
               />
             }
           />
@@ -61,6 +63,7 @@ function App() {
                 problems={backtrackingProblems}
                 codeExamples={backtrackingCodeExamples}
                 defaultProblemId="permutations"
+                patternType="backtracking"
               />
             }
           />
@@ -74,6 +77,7 @@ function App() {
                 problems={dpProblems}
                 codeExamples={dpCodeExamples}
                 defaultProblemId="climbStairs"
+                patternType="dp"
               />
             }
           />

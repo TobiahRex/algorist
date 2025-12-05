@@ -45,6 +45,8 @@ export interface StepState {
   message: string;
   highlights?: number[];
   pointers?: { [key: string]: number };
+  windowStart?: number;
+  windowEnd?: number;
   values?: unknown;
 }
 

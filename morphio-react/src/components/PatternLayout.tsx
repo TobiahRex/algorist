@@ -5,6 +5,8 @@ import { ProblemSelector } from './ProblemSelector';
 import { MnemonicPanel } from './MnemonicPanel';
 import { RealWorldPanel } from './RealWorldPanel';
 import { CodeDisplay } from './CodeDisplay';
+import { LeetCodeProblems, type LeetCodeProblem } from './LeetCodeProblems';
+import { CheatSheet, type CheatSheetItem } from './CheatSheet';
 
 interface Tab {
   id: TabType;
@@ -32,6 +34,14 @@ interface PatternLayoutProps {
   onChangeCodeView: (view: 'verbose' | 'terse') => void;
   selectedProblem: PatternProblem | null;
   children?: ReactNode;
+  leetCodeProblems?: LeetCodeProblem[];
+  cheatSheetData?: {
+    timeComplexity: string;
+    spaceComplexity: string;
+    keyPoints: CheatSheetItem[];
+    whenToUse: string[];
+    commonMistakes: string[];
+  };
 }
 
 export const PatternLayout: React.FC<PatternLayoutProps> = ({
@@ -49,6 +59,8 @@ export const PatternLayout: React.FC<PatternLayoutProps> = ({
   onChangeCodeView,
   selectedProblem,
   children,
+  leetCodeProblems,
+  cheatSheetData,
 }) => {
   return (
     <div>
@@ -110,18 +122,20 @@ export const PatternLayout: React.FC<PatternLayoutProps> = ({
         </>
       )}
 
-      {activeTab === 'problems' && (
-        <div className="panel">
-          <h2>📋 All Problems</h2>
-          <div style={{ color: '#aaa' }}>Problem list coming soon...</div>
-        </div>
+      {activeTab === 'problems' && leetCodeProblems && (
+        <LeetCodeProblems problems={leetCodeProblems} patternName={title.replace(/[^a-zA-Z\s]/g, '').trim()} />
       )}
 
-      {activeTab === 'cheatsheet' && (
-        <div className="panel">
-          <h2>📝 Cheat Sheet</h2>
-          <div style={{ color: '#aaa' }}>Cheat sheet coming soon...</div>
-        </div>
+      {activeTab === 'cheatsheet' && cheatSheetData && (
+        <CheatSheet
+          patternName={title.replace(/[^a-zA-Z\s]/g, '').trim()}
+          patternEmoji={emoji}
+          timeComplexity={cheatSheetData.timeComplexity}
+          spaceComplexity={cheatSheetData.spaceComplexity}
+          keyPoints={cheatSheetData.keyPoints}
+          whenToUse={cheatSheetData.whenToUse}
+          commonMistakes={cheatSheetData.commonMistakes}
+        />
       )}
     </div>
   );
