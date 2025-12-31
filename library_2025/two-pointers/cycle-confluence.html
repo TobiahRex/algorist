@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cycle Confluence — Floyd's Algorithm Meets Trading</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.7rem;
+            background: linear-gradient(90deg, #22d3ee, #4ade80);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            color: #a78bfa;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* VISUALIZATION */
+        .viz-container {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* CONTROLS */
+        .controls {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 15px 0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-group label {
+            font-size: 0.75rem;
+            color: #888;
+        }
+
+        .control-group input,
+        .control-group select {
+            background: #1a1f35;
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+        }
+
+        button.active {
+            border-color: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+        }
+
+        /* CONFLUENCE SIGNALS */
+        .signals-panel {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .signal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .signal-count {
+            background: rgba(74, 222, 128, 0.2);
+            border: 1px solid rgba(74, 222, 128, 0.4);
+            color: #4ade80;
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+        }
+
+        .signal-list {
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .signal-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(74, 222, 128, 0.1);
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+        }
+
+        .signal-item .time {
+            color: #4ade80;
+            font-weight: bold;
+            min-width: 60px;
+        }
+
+        .signal-item .type {
+            color: #fbbf24;
+        }
+
+        /* THEORY SECTION */
+        .theory-box {
+            background: rgba(167, 139, 250, 0.1);
+            border-left: 3px solid #a78bfa;
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin-bottom: 15px;
+        }
+
+        .theory-box h4 {
+            color: #d8b4fe;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .theory-box p {
+            font-size: 0.85rem;
+            color: #c4b5fd;
+            line-height: 1.6;
+        }
+
+        .formula {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-family: 'Consolas', monospace;
+            color: #22d3ee;
+            margin: 10px 0;
+            text-align: center;
+        }
+
+        /* MAPPING TABLE */
+        .mapping-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .mapping-table th {
+            background: rgba(167, 139, 250, 0.2);
+            color: #d8b4fe;
+            padding: 10px;
+            text-align: left;
+        }
+
+        .mapping-table td {
+            padding: 10px;
+            border-bottom: 1px solid #2a2f45;
+        }
+
+        .mapping-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* PHASE INDICATOR */
+        .phase-display {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .phase-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .phase-item .label {
+            font-size: 0.7rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .phase-item .value {
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .phase-item.slow .value {
+            color: #f472b6;
+        }
+
+        .phase-item.fast .value {
+            color: #22d3ee;
+        }
+
+        .phase-item.confluence .value {
+            color: #4ade80;
+        }
+
+        .phase-item.next .value {
+            color: #fbbf24;
+        }
+
+        /* CODE SECTION */
+        .code-block {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            overflow-x: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.75rem;
+            line-height: 1.5;
+        }
+
+        .comment {
+            color: #6a737d;
+        }
+
+        .keyword {
+            color: #ff7b72;
+        }
+
+        .function {
+            color: #d2a8ff;
+        }
+
+        .string {
+            color: #a5d6ff;
+        }
+
+        .number {
+            color: #79c0ff;
+        }
+
+        /* INSIGHTS */
+        .insight-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .insight-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            border-top: 3px solid;
+        }
+
+        .insight-card.green {
+            border-color: #4ade80;
+        }
+
+        .insight-card.blue {
+            border-color: #22d3ee;
+        }
+
+        .insight-card.purple {
+            border-color: #a78bfa;
+        }
+
+        .insight-card.yellow {
+            border-color: #fbbf24;
+        }
+
+        .insight-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .insight-card p {
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔄 Cycle Confluence Detection</h1>
+    <p class="subtitle">Floyd's Tortoise & Hare Algorithm Applied to Multi-Timeframe Trading</p>
+
+    <!-- THEORY PANEL -->
+    <div class="panel">
+        <h2>📐 The Mathematical Connection</h2>
+        <div class="grid-2">
+            <div>
+                <div class="theory-box">
+                    <h4>Floyd's Cycle Detection — Core Principle</h4>
+                    <p>
+                        Two pointers moving at different speeds through a cycle MUST eventually meet.
+                        If <strong>Slow</strong> moves at speed <em>s</em> and <strong>Fast</strong> moves at speed
+                        <em>f</em>,
+                        they meet every <em>λ / gcd(f-s, λ)</em> iterations, where λ is the cycle length.
+                    </p>
+                    <div class="formula">
+                        Meeting Interval = λ / gcd(f - s, λ)
+                    </div>
+                    <p>
+                        The <strong>meeting point</strong> is deterministic — once you know the cycle lengths and
+                        speeds,
+                        you can predict exactly when and where the next collision occurs.
+                    </p>
+                </div>
+            </div>
+            <div>
+                <table class="mapping-table">
+                    <tr>
+                        <th>Floyd's Concept</th>
+                        <th>Trading Equivalent</th>
+                    </tr>
+                    <tr>
+                        <td>Slow pointer (1x)</td>
+                        <td>Higher timeframe cycle (Daily, 4H)</td>
+                    </tr>
+                    <tr>
+                        <td>Fast pointer (2x, 3x...)</td>
+                        <td>Lower timeframe cycle (1H, 15min)</td>
+                    </tr>
+                    <tr>
+                        <td>Cycle length (λ)</td>
+                        <td>Market cycle period (bars)</td>
+                    </tr>
+                    <tr>
+                        <td>Meeting point</td>
+                        <td><strong>Confluence entry signal</strong></td>
+                    </tr>
+                    <tr>
+                        <td>μ (cycle start)</td>
+                        <td>Beginning of trend leg</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- VISUALIZATION PANEL -->
+    <div class="panel">
+        <h2>⚡ Interactive Cycle Visualization</h2>
+        <div class="grid-2">
+            <div>
+                <div class="viz-container">
+                    <canvas id="cycleCanvas" width="450" height="350"></canvas>
+                </div>
+                <div class="controls">
+                    <div class="control-group">
+                        <label>Slow Cycle (Higher TF)</label>
+                        <input type="range" id="slowPeriod" min="10" max="40" value="20">
+                        <span id="slowPeriodVal">20 bars</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Fast Cycle (Lower TF)</label>
+                        <input type="range" id="fastPeriod" min="3" max="15" value="5">
+                        <span id="fastPeriodVal">5 bars</span>
+                    </div>
+                    <div class="control-group">
+                        <label>Speed</label>
+                        <input type="range" id="animSpeed" min="50" max="500" value="200">
+                    </div>
+                </div>
+                <div class="controls">
+                    <button id="btnPlay">▶ Play</button>
+                    <button id="btnStep">Step →</button>
+                    <button id="btnReset">↺ Reset</button>
+                </div>
+            </div>
+            <div>
+                <div class="phase-display">
+                    <div class="phase-item slow">
+                        <div class="label">Slow Cycle Phase</div>
+                        <div class="value" id="slowPhase">0°</div>
+                    </div>
+                    <div class="phase-item fast">
+                        <div class="label">Fast Cycle Phase</div>
+                        <div class="value" id="fastPhase">0°</div>
+                    </div>
+                    <div class="phase-item confluence">
+                        <div class="label">Phase Alignment</div>
+                        <div class="value" id="phaseAlignment">0%</div>
+                    </div>
+                    <div class="phase-item next">
+                        <div class="label">Next Confluence In</div>
+                        <div class="value" id="nextConfluence">- bars</div>
+                    </div>
+                </div>
+
+                <div class="signals-panel">
+                    <div class="signal-header">
+                        <span style="color: #4ade80; font-weight: bold;">📍 Confluence Signals</span>
+                        <span class="signal-count" id="signalCount">0 signals</span>
+                    </div>
+                    <div class="signal-list" id="signalList">
+                        <div style="color: #666; font-size: 0.8rem; text-align: center; padding: 20px;">
+                            Press Play to detect confluence points...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TRADING APPLICATION -->
+    <div class="panel">
+        <h2>🎯 Trading Application</h2>
+        <div class="insight-grid">
+            <div class="insight-card green">
+                <h4>✅ When to Enter</h4>
+                <p>
+                    <strong>Confluence = Both cycles at same phase.</strong><br><br>
+                    When the higher timeframe (Daily) is at a pullback low AND the lower timeframe (4H)
+                    completes its own pullback simultaneously — that's the collision point.
+                    Both cycles are "pushing up" together.
+                </p>
+            </div>
+            <div class="insight-card blue">
+                <h4>📊 Practical Detection</h4>
+                <p>
+                    <strong>Track phase, not just direction.</strong><br><br>
+                    Direction (up/down) is binary. Phase is continuous (0°-360°).
+                    A cycle at 270° is "about to turn up" — that's the predictive edge.
+                    Confluence happens when both phases align at reversal points.
+                </p>
+            </div>
+            <div class="insight-card purple">
+                <h4>⏱️ Predicting Next Entry</h4>
+                <p>
+                    <strong>LCM of cycle periods = confluence interval.</strong><br><br>
+                    If Daily cycle = 20 bars, 4H cycle = 5 bars, they align every LCM(20,5) = 20 bars.
+                    But within that, there are 4 "mini confluences" where 4H completes a full cycle
+                    while Daily advances 90°.
+                </p>
+            </div>
+            <div class="insight-card yellow">
+                <h4>⚠️ The Critical Insight</h4>
+                <p>
+                    <strong>Speed RATIO determines collision frequency.</strong><br><br>
+                    Floyd's algorithm uses 2:1 speed ratio. In trading, Daily:4H = 6:1 (six 4H bars per day).
+                    The faster cycle "laps" the slower one — each lap creates a potential entry.
+                    More laps = more opportunities, but weaker individual signals.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ALGORITHM IMPLEMENTATION -->
+    <div class="panel">
+        <h2>💻 Implementation Concept</h2>
+        <div class="code-block">
+            <pre><span class="keyword">class</span> <span class="function">CycleConfluenceDetector</span>:
+    <span class="string">"""
+    Detects when multiple market cycles align for high-probability entries.
+    Based on Floyd's cycle detection principle: pointers at different speeds
+    will meet at predictable intervals inside a cycle.
+    """</span>
+    
+    <span class="keyword">def</span> <span class="function">__init__</span>(self, slow_period: <span class="keyword">int</span>, fast_period: <span class="keyword">int</span>):
+        self.slow_period = slow_period  <span class="comment"># e.g., 20 (Daily cycle)</span>
+        self.fast_period = fast_period  <span class="comment"># e.g., 5 (4H cycle)</span>
+        self.slow_phase = <span class="number">0</span>            <span class="comment"># Current phase 0-360°</span>
+        self.fast_phase = <span class="number">0</span>
+        self.bar_count = <span class="number">0</span>
+    
+    <span class="keyword">def</span> <span class="function">phase_to_degrees</span>(self, position: <span class="keyword">int</span>, period: <span class="keyword">int</span>) -> <span class="keyword">float</span>:
+        <span class="string">"""Convert position in cycle to degrees (0-360)."""</span>
+        <span class="keyword">return</span> (position % period) / period * <span class="number">360</span>
+    
+    <span class="keyword">def</span> <span class="function">advance</span>(self):
+        <span class="string">"""Move both cycles forward by one bar."""</span>
+        self.bar_count += <span class="number">1</span>
+        self.slow_phase = self.phase_to_degrees(self.bar_count, self.slow_period)
+        self.fast_phase = self.phase_to_degrees(self.bar_count, self.fast_period)
+    
+    <span class="keyword">def</span> <span class="function">phase_alignment</span>(self) -> <span class="keyword">float</span>:
+        <span class="string">"""
+        Calculate how aligned the two cycles are (0-100%).
+        100% = perfect confluence (both at same phase)
+        """</span>
+        diff = <span class="keyword">abs</span>(self.slow_phase - self.fast_phase)
+        diff = <span class="keyword">min</span>(diff, <span class="number">360</span> - diff)  <span class="comment"># Handle wraparound</span>
+        <span class="keyword">return</span> (<span class="number">1</span> - diff / <span class="number">180</span>) * <span class="number">100</span>
+    
+    <span class="keyword">def</span> <span class="function">is_confluence</span>(self, threshold: <span class="keyword">float</span> = <span class="number">90</span>) -> <span class="keyword">bool</span>:
+        <span class="string">"""Check if cycles are sufficiently aligned."""</span>
+        <span class="keyword">return</span> self.phase_alignment() >= threshold
+    
+    <span class="keyword">def</span> <span class="function">bars_to_next_confluence</span>(self) -> <span class="keyword">int</span>:
+        <span class="string">"""
+        Predict how many bars until next confluence.
+        Uses LCM-based calculation similar to Floyd's meeting point formula.
+        """</span>
+        <span class="keyword">from</span> math <span class="keyword">import</span> gcd
+        lcm = (self.slow_period * self.fast_period) // gcd(self.slow_period, self.fast_period)
+        current_pos = self.bar_count % lcm
+        <span class="keyword">return</span> lcm - current_pos <span class="keyword">if</span> current_pos > <span class="number">0</span> <span class="keyword">else</span> lcm
+    
+    <span class="keyword">def</span> <span class="function">detect_entry_type</span>(self) -> <span class="keyword">str</span>:
+        <span class="string">"""
+        Classify the confluence type based on cycle phases.
+        270°-360° = bottom of cycle (BUY zone)
+        90°-180° = top of cycle (SELL zone)
+        """</span>
+        <span class="keyword">if</span> self.is_confluence():
+            avg_phase = (self.slow_phase + self.fast_phase) / <span class="number">2</span>
+            <span class="keyword">if</span> <span class="number">270</span> <= avg_phase <= <span class="number">360</span> <span class="keyword">or</span> <span class="number">0</span> <= avg_phase <= <span class="number">45</span>:
+                <span class="keyword">return</span> <span class="string">"🟢 LONG ENTRY - Both cycles at bottom"</span>
+            <span class="keyword">elif</span> <span class="number">90</span> <= avg_phase <= <span class="number">180</span>:
+                <span class="keyword">return</span> <span class="string">"🔴 SHORT ENTRY - Both cycles at top"</span>
+        <span class="keyword">return</span> <span class="string">"⏳ NO SIGNAL - Cycles not aligned"</span>
+
+<span class="comment"># Usage with real price data:</span>
+<span class="comment"># 1. Detect cycle periods using FFT or autocorrelation</span>
+<span class="comment"># 2. Track phase using Hilbert Transform or zero-crossing</span>
+<span class="comment"># 3. Signal when phases align at reversal points</span>
+</pre>
+        </div>
+    </div>
+
+    <!-- KEY TAKEAWAYS -->
+    <div class="panel">
+        <h2>🧠 Key Takeaways</h2>
+        <div class="theory-box">
+            <h4>Why This Matters for Your Trading</h4>
+            <p>
+                <strong>1. Predictability:</strong> Just like Floyd's algorithm guarantees a meeting point,
+                cycle confluence is mathematically inevitable — the question is only "when," not "if."<br><br>
+
+                <strong>2. The Speed Ratio is Everything:</strong> In Steven Dux's methodology, you're looking at
+                retail exhaustion across timeframes. The ratio of Daily to 15min cycles determines how often
+                you get valid setups. Too similar = rare confluences. Too different = weak signal strength.<br><br>
+
+                <strong>3. Phase > Direction:</strong> Direction tells you what happened. Phase tells you what's
+                about to happen. A cycle at 270° (bottom) with strong volume is the "hare catching up to the tortoise" —
+                that's your entry.<br><br>
+
+                <strong>4. The Meeting Point is the Edge:</strong> When both timeframes show exhaustion simultaneously
+                (confluence), you have multiple "proofs" of the same thesis. This is why multi-timeframe analysis works
+                —
+                it's not just confirmation, it's geometric inevitability.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // CYCLE CONFLUENCE VISUALIZATION
+        // ═══════════════════════════════════════════════════════════════
+
+        const canvas = document.getElementById('cycleCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let state = {
+            slowPeriod: 20,
+            fastPeriod: 5,
+            barCount: 0,
+            signals: [],
+            isPlaying: false,
+            playInterval: null
+        };
+
+        function getSlowPhase() {
+            return (state.barCount % state.slowPeriod) / state.slowPeriod * 360;
+        }
+
+        function getFastPhase() {
+            return (state.barCount % state.fastPeriod) / state.fastPeriod * 360;
+        }
+
+        function getPhaseAlignment() {
+            const slowPhase = getSlowPhase();
+            const fastPhase = getFastPhase();
+            let diff = Math.abs(slowPhase - fastPhase);
+            diff = Math.min(diff, 360 - diff);
+            return (1 - diff / 180) * 100;
+        }
+
+        function isConfluence(threshold = 85) {
+            return getPhaseAlignment() >= threshold;
+        }
+
+        function gcd(a, b) {
+            return b === 0 ? a : gcd(b, a % b);
+        }
+
+        function lcm(a, b) {
+            return (a * b) / gcd(a, b);
+        }
+
+        function barsToNextConfluence() {
+            const cycleLcm = lcm(state.slowPeriod, state.fastPeriod);
+            const currentPos = state.barCount % cycleLcm;
+            return cycleLcm - currentPos || cycleLcm;
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            const centerX = canvas.width / 2;
+            const slowY = 100;
+            const fastY = 250;
+            const radius = 60;
+
+            // Draw slow cycle (outer ring)
+            ctx.strokeStyle = '#f472b6';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, slowY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Slow cycle position
+            const slowAngle = (getSlowPhase() - 90) * Math.PI / 180;
+            const slowX = centerX + Math.cos(slowAngle) * radius;
+            const slowPosY = slowY + Math.sin(slowAngle) * radius;
+
+            ctx.fillStyle = '#f472b6';
+            ctx.beginPath();
+            ctx.arc(slowX, slowPosY, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Label
+            ctx.fillStyle = '#f472b6';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('SLOW (Higher TF)', centerX, slowY - radius - 15);
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText(`Period: ${state.slowPeriod} bars`, centerX, slowY + radius + 20);
+
+            // Draw fast cycle (inner ring)
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(centerX, fastY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Fast cycle position
+            const fastAngle = (getFastPhase() - 90) * Math.PI / 180;
+            const fastX = centerX + Math.cos(fastAngle) * radius;
+            const fastPosY = fastY + Math.sin(fastAngle) * radius;
+
+            ctx.fillStyle = '#22d3ee';
+            ctx.beginPath();
+            ctx.arc(fastX, fastPosY, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Label
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = 'bold 12px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('FAST (Lower TF)', centerX, fastY - radius - 15);
+            ctx.fillStyle = '#888';
+            ctx.font = '11px sans-serif';
+            ctx.fillText(`Period: ${state.fastPeriod} bars`, centerX, fastY + radius + 20);
+
+            // Draw phase indicators (0°, 90°, 180°, 270°)
+            const phases = [
+                { angle: -90, label: '0° (Start)' },
+                { angle: 0, label: '90° (Peak)' },
+                { angle: 90, label: '180° (Mid)' },
+                { angle: 180, label: '270° (Trough)' }
+            ];
+
+            ctx.font = '9px sans-serif';
+            ctx.fillStyle = '#555';
+            phases.forEach(p => {
+                const rad = p.angle * Math.PI / 180;
+                // Slow
+                const sx = centerX + Math.cos(rad) * (radius + 25);
+                const sy = slowY + Math.sin(rad) * (radius + 25);
+                ctx.fillText(p.label, sx, sy);
+                // Fast
+                const fx = centerX + Math.cos(rad) * (radius + 25);
+                const fy = fastY + Math.sin(rad) * (radius + 25);
+                ctx.fillText(p.label, fx, fy);
+            });
+
+            // Confluence indicator
+            const alignment = getPhaseAlignment();
+            const confluenceColor = alignment > 85 ? '#4ade80' : alignment > 50 ? '#fbbf24' : '#666';
+
+            ctx.fillStyle = confluenceColor;
+            ctx.font = 'bold 14px sans-serif';
+            ctx.fillText(`Bar: ${state.barCount}`, centerX, 30);
+
+            if (isConfluence()) {
+                ctx.fillStyle = '#4ade80';
+                ctx.font = 'bold 16px sans-serif';
+                ctx.fillText('⚡ CONFLUENCE!', centerX, canvas.height - 20);
+
+                // Draw connecting line
+                ctx.strokeStyle = 'rgba(74, 222, 128, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(slowX, slowPosY);
+                ctx.lineTo(fastX, fastPosY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Update displays
+            document.getElementById('slowPhase').textContent = `${getSlowPhase().toFixed(0)}°`;
+            document.getElementById('fastPhase').textContent = `${getFastPhase().toFixed(0)}°`;
+            document.getElementById('phaseAlignment').textContent = `${alignment.toFixed(0)}%`;
+            document.getElementById('nextConfluence').textContent = `${barsToNextConfluence()} bars`;
+        }
+
+        function step() {
+            state.barCount++;
+
+            if (isConfluence()) {
+                const avgPhase = (getSlowPhase() + getFastPhase()) / 2;
+                let type = '⏳ Neutral';
+                if (avgPhase >= 270 || avgPhase <= 45) type = '🟢 LONG';
+                else if (avgPhase >= 90 && avgPhase <= 180) type = '🔴 SHORT';
+
+                state.signals.push({
+                    bar: state.barCount,
+                    type: type,
+                    alignment: getPhaseAlignment().toFixed(0)
+                });
+                updateSignalList();
+            }
+
+            draw();
+        }
+
+        function updateSignalList() {
+            const list = document.getElementById('signalList');
+            const count = document.getElementById('signalCount');
+
+            count.textContent = `${state.signals.length} signals`;
+
+            if (state.signals.length === 0) {
+                list.innerHTML = '<div style="color: #666; font-size: 0.8rem; text-align: center; padding: 20px;">Press Play to detect confluence points...</div>';
+                return;
+            }
+
+            list.innerHTML = state.signals.slice(-10).reverse().map(s => `
+                <div class="signal-item">
+                    <span class="time">Bar ${s.bar}</span>
+                    <span class="type">${s.type}</span>
+                    <span style="color: #4ade80;">${s.alignment}% aligned</span>
+                </div>
+            `).join('');
+        }
+
+        function reset() {
+            stopAnim();
+            state.barCount = 0;
+            state.signals = [];
+            updateSignalList();
+            draw();
+        }
+
+        function togglePlay() {
+            if (state.isPlaying) {
+                stopAnim();
+            } else {
+                state.isPlaying = true;
+                document.getElementById('btnPlay').textContent = '⏸ Pause';
+                document.getElementById('btnPlay').classList.add('active');
+                const speed = 550 - parseInt(document.getElementById('animSpeed').value);
+                state.playInterval = setInterval(step, speed);
+            }
+        }
+
+        function stopAnim() {
+            state.isPlaying = false;
+            document.getElementById('btnPlay').textContent = '▶ Play';
+            document.getElementById('btnPlay').classList.remove('active');
+            if (state.playInterval) {
+                clearInterval(state.playInterval);
+                state.playInterval = null;
+            }
+        }
+
+        // Event listeners
+        document.getElementById('btnPlay').addEventListener('click', togglePlay);
+        document.getElementById('btnStep').addEventListener('click', step);
+        document.getElementById('btnReset').addEventListener('click', reset);
+
+        document.getElementById('slowPeriod').addEventListener('input', (e) => {
+            state.slowPeriod = parseInt(e.target.value);
+            document.getElementById('slowPeriodVal').textContent = `${state.slowPeriod} bars`;
+            draw();
+        });
+
+        document.getElementById('fastPeriod').addEventListener('input', (e) => {
+            state.fastPeriod = parseInt(e.target.value);
+            document.getElementById('fastPeriodVal').textContent = `${state.fastPeriod} bars`;
+            draw();
+        });
+
+        document.getElementById('animSpeed').addEventListener('input', () => {
+            if (state.isPlaying) { stopAnim(); togglePlay(); }
+        });
+
+        // Initialize
+        draw();
+    </script>
+</body>
+
+</html>

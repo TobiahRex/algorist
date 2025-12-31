@@ -1,0 +1,2408 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeetCode Optimization Patterns — Visual Deep Dive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #f472b6, #a78bfa, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* CATEGORY TABS */
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 2px solid #2a2f45;
+            color: #888;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .category-tab:hover {
+            color: #ccc;
+            border-color: #4a4f65;
+        }
+
+        .category-tab.active {
+            border-color: var(--cat-color, #a78bfa);
+            color: var(--cat-color, #a78bfa);
+            background: linear-gradient(145deg, rgba(167, 139, 250, 0.15), rgba(167, 139, 250, 0.05));
+        }
+
+        .category-tab[data-cat="cp"] {
+            --cat-color: #a78bfa;
+        }
+
+        .category-tab[data-cat="knapsack"] {
+            --cat-color: #fb923c;
+        }
+
+        .category-tab[data-cat="scheduling"] {
+            --cat-color: #22d3ee;
+        }
+
+        .category-tab[data-cat="graph"] {
+            --cat-color: #4ade80;
+        }
+
+        .category-content {
+            display: none;
+        }
+
+        .category-content.active {
+            display: block;
+        }
+
+        /* PROBLEM SELECTOR */
+        .problem-selector {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .problem-btn {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 1px solid #2a2f45;
+            color: #888;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .problem-btn:hover {
+            border-color: #4a4f65;
+            color: #ccc;
+        }
+
+        .problem-btn.active {
+            border-color: var(--prob-color, #a78bfa);
+            color: var(--prob-color, #a78bfa);
+            background: rgba(167, 139, 250, 0.1);
+        }
+
+        .problem-btn .num {
+            font-weight: bold;
+            margin-right: 5px;
+            color: var(--prob-color, #a78bfa);
+        }
+
+        .difficulty-easy {
+            --prob-color: #4ade80;
+        }
+
+        .difficulty-medium {
+            --prob-color: #fbbf24;
+        }
+
+        .difficulty-hard {
+            --prob-color: #ef4444;
+        }
+
+        /* PANELS */
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* GRIDS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1000px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* PROBLEM HEADER */
+        .problem-header {
+            background: linear-gradient(145deg, #1a2535, #152030);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--diff-color, #fbbf24);
+        }
+
+        .problem-header h2 {
+            font-size: 1.3rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .problem-header .lc-num {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .problem-header .difficulty {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .difficulty.easy {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .difficulty.medium {
+            background: rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        .difficulty.hard {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        .problem-desc {
+            font-size: 0.9rem;
+            color: #aaa;
+            line-height: 1.6;
+            margin-top: 10px;
+        }
+
+        /* MNEMONIC */
+        .mnemonic-panel {
+            background: linear-gradient(145deg, #1a1025, #150d1f);
+            border: 1px solid #3a2050;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mnemonic-panel h3 {
+            color: #d8b4fe;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .poa-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 700px) {
+            .poa-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .poa-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .poa-card .emoji {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .poa-card .type {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .poa-card .content {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .poa-person .content {
+            color: #f472b6;
+        }
+
+        .poa-object .content {
+            color: #22d3ee;
+        }
+
+        .poa-action .content {
+            color: #4ade80;
+        }
+
+        .memory-story {
+            background: rgba(216, 180, 254, 0.1);
+            border-left: 3px solid #d8b4fe;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #c4b5fd;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        /* ANIMATION */
+        .anim-container {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+        }
+
+        button.playing {
+            border-color: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+        }
+
+        .state-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .state-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .state-item .label {
+            font-size: 0.65rem;
+            color: #666;
+        }
+
+        .state-item .value {
+            font-size: 0.9rem;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }
+
+        .message-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #aaa;
+            min-height: 50px;
+            text-align: center;
+        }
+
+        .message-box.success {
+            background: rgba(74, 222, 128, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+        }
+
+        .message-box.backtrack {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+        }
+
+        /* PHILOSOPHY */
+        .philosophy-panel {
+            background: linear-gradient(145deg, #0d1a2a, #0a1520);
+            border: 1px solid #1a3a5a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .philosophy-panel h3 {
+            color: #38bdf8;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .philosophy-content {
+            font-size: 0.9rem;
+            color: #7dd3fc;
+            line-height: 1.7;
+        }
+
+        .philosophy-content strong {
+            color: #38bdf8;
+        }
+
+        .key-insight {
+            background: rgba(56, 189, 248, 0.1);
+            border-left: 3px solid #38bdf8;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 15px;
+            font-size: 0.9rem;
+        }
+
+        /* REAL WORLD */
+        .realworld-panel {
+            background: linear-gradient(145deg, #0d1a1a, #0a1515);
+            border: 1px solid #1a3a3a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .realworld-panel h3 {
+            color: #22d3ee;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .realworld-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .scenario-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 14px;
+            border-left: 3px solid #2a4a4a;
+            transition: all 0.2s;
+        }
+
+        .scenario-box:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-left-color: #4ade80;
+        }
+
+        .scenario-icon {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .scenario-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+
+        .scenario-desc {
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.55;
+        }
+
+        .pattern-synthesis {
+            background: linear-gradient(145deg, rgba(167, 139, 250, 0.1), rgba(244, 114, 182, 0.1));
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .pattern-synthesis h4 {
+            color: #d8b4fe;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .pattern-synthesis .category {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #f472b6;
+            margin-bottom: 8px;
+        }
+
+        .pattern-synthesis .insight {
+            font-size: 0.85rem;
+            color: #c4b5fd;
+            line-height: 1.6;
+        }
+
+        /* INVARIANT */
+        .invariant-box {
+            background: rgba(251, 146, 60, 0.1);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .invariant-box h4 {
+            color: #fb923c;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .invariant-box pre {
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: #fbbf24;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* CODE */
+        .code-panel {
+            background: #0d1117;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #161b22;
+            padding: 10px 15px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .code-tab {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            color: #888;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .code-tab.active {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        .code-body {
+            padding: 15px;
+            max-height: 400px;
+            overflow: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .comment {
+            color: #6a737d;
+        }
+
+        .keyword {
+            color: #ff7b72;
+        }
+
+        .function {
+            color: #d2a8ff;
+        }
+
+        .string {
+            color: #a5d6ff;
+        }
+
+        .number {
+            color: #79c0ff;
+        }
+
+        /* COMPLEXITY */
+        .complexity-box {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 15px;
+        }
+
+        .complexity-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 10px 15px;
+        }
+
+        .complexity-item .label {
+            font-size: 0.7rem;
+            color: #888;
+            margin-bottom: 3px;
+        }
+
+        .complexity-item .value {
+            font-family: 'Consolas', monospace;
+            color: #fbbf24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎯 LeetCode Optimization Patterns</h1>
+    <p class="subtitle">Constraint Programming • Knapsack/MIP • Scheduling • Graph Coloring</p>
+
+    <!-- CATEGORY TABS -->
+    <div class="category-tabs">
+        <button class="category-tab active" data-cat="cp">🧩 Constraint Programming</button>
+        <button class="category-tab" data-cat="knapsack">🎒 Knapsack / MIP</button>
+        <button class="category-tab" data-cat="scheduling">📅 Scheduling</button>
+        <button class="category-tab" data-cat="graph">🎨 Graph Coloring</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- CONSTRAINT PROGRAMMING -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content active" id="cat-cp">
+        <div class="problem-selector" id="cp-problems"></div>
+        <div id="cp-content"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- KNAPSACK / MIP -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content" id="cat-knapsack">
+        <div class="problem-selector" id="knapsack-problems"></div>
+        <div id="knapsack-content"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SCHEDULING -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content" id="cat-scheduling">
+        <div class="problem-selector" id="scheduling-problems"></div>
+        <div id="scheduling-content"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- GRAPH COLORING -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content" id="cat-graph">
+        <div class="problem-selector" id="graph-problems"></div>
+        <div id="graph-content"></div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // PROBLEM DATA
+        // ═══════════════════════════════════════════════════════════════
+
+        const problems = {
+            // ─────────────────────────────────────────────────────────────
+            // CONSTRAINT PROGRAMMING
+            // ─────────────────────────────────────────────────────────────
+            'nqueens': {
+                num: 51,
+                title: 'N-Queens',
+                difficulty: 'hard',
+                category: 'cp',
+                link: 'https://leetcode.com/problems/n-queens/',
+                description: 'Place n queens on an n×n chessboard such that no two queens attack each other. Return all distinct solutions.',
+                mnemonic: {
+                    emoji: '👸',
+                    person: 'Medieval Queens at a Round Table',
+                    object: 'A Chessboard Kingdom',
+                    action: 'Each queen claims her row, but must negotiate columns and diagonals',
+                    story: '"Eight queens must each rule a row of the kingdom (one per row guaranteed). But queens are jealous — none can share a column or diagonal line of sight. Queen 1 picks a column. Queen 2 must pick a column that\'s not attacked. If Queen 5 has nowhere safe to sit, Queen 4 must move (backtrack). The negotiation continues until all 8 find peace — or we prove it\'s impossible."'
+                },
+                philosophy: {
+                    title: 'The Constraint Satisfaction Paradigm',
+                    content: `The N-Queens problem is the <strong>canonical example of Constraint Satisfaction Problems (CSP)</strong>. It teaches a fundamental truth: <strong>constraints eliminate choices</strong>.
+
+When Queen 1 sits at column 3, she doesn't just take that column — she also <strong>propagates</strong> her influence diagonally. This is <strong>constraint propagation</strong> in action. Every decision ripples through the board, shrinking the domains of future queens.
+
+The philosophical insight: <strong>In constrained systems, early decisions have cascading consequences</strong>. A poor early choice doesn't just affect that choice — it poisons the entire downstream search space. This is why <strong>variable ordering</strong> (Most Constrained Variable) and <strong>value ordering</strong> (Least Constraining Value) matter enormously.`,
+                    keyInsight: 'The search space is n^n (each queen could be anywhere), but constraints reduce it to roughly n! (permutations). Good propagation reduces it further to near-linear in practice. The gap between theoretical and practical complexity is where constraint programming shines.'
+                },
+                invariant: `At depth d (placing queen d):
+┌─────────────────────────────────────────────────────────────┐
+│  Queens 0..d-1 are placed with NO conflicts                 │
+│  Each placed queen "attacks" certain columns & diagonals    │
+│  Available columns for queen d = {0..n-1} - attacked        │
+│                                                             │
+│  If available columns is EMPTY → BACKTRACK                  │
+│  If d == n → SOLUTION FOUND                                 │
+│  Otherwise → try each available column, recurse             │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Mutual Exclusion & Resource Non-Interference',
+                        insight: 'Every N-Queens use case shares the same structure: N entities must each claim a resource from the same pool, but certain pairs of claims are incompatible. The "diagonal" constraint generalizes to any pairwise exclusion rule. The backtracking solution is universal — try assignments, propagate constraints, backtrack on conflicts.'
+                    },
+                    cases: [
+                        { icon: '📡', title: 'Radio Frequency Assignment', desc: 'Cell towers must be assigned frequencies. Towers within range of each other cannot share frequencies (interference). Each tower is a "queen," each frequency is a "column," and proximity creates "diagonal" conflicts. The FCC and telecom companies solve massive frequency assignment problems using constraint propagation techniques derived from N-Queens research.' },
+                        { icon: '🖥️', title: 'Register Allocation in Compilers', desc: 'CPU registers are scarce (8-32 typically). Variables in a program need registers, but two variables "live" at the same time can\'t share a register. This is graph coloring, which generalizes N-Queens. GCC, LLVM use constraint-based register allocators. The "queens" are variables, "columns" are registers, "attacks" are live-range overlaps.' },
+                        { icon: '🏭', title: 'Parallel Machine Scheduling', desc: 'Jobs must be assigned to machines. Certain job pairs conflict (share resources, have dependencies). Each job is a queen, each machine is a column, conflicts are diagonals. Manufacturing plants use constraint solvers for this daily. Toyota\'s production system implicitly solves N-Queens-like problems for assembly line balancing.' },
+                        { icon: '🧪', title: 'VLSI Circuit Layout', desc: 'Place circuit components on a chip so no wires cross unnecessarily. Components are queens, positions are columns, wire crossings are conflicts. Intel, AMD use constraint-based placement. The original N-Queens paper (1850!) was motivated by placing non-attacking pieces, but the math applies directly to VLSI.' },
+                        { icon: '🎓', title: 'Exam Scheduling', desc: 'Schedule exams so no student has two exams at the same time. Exams are queens, time slots are columns, shared students create conflicts. Universities worldwide use constraint solvers for this. The problem is exactly N-Queens with a non-uniform conflict graph (some pairs conflict, others don\'t).' }
+                    ]
+                },
+                complexity: { time: 'O(n!)', space: 'O(n)' },
+                code: {
+                    terse: `def solveNQueens(n):
+    res, cols, diag1, diag2 = [], set(), set(), set()
+    
+    def backtrack(r, board):
+        if r == n:
+            res.append(["".join(row) for row in board])
+            return
+        for c in range(n):
+            if c in cols or r-c in diag1 or r+c in diag2:
+                continue
+            cols.add(c); diag1.add(r-c); diag2.add(r+c)
+            board[r][c] = 'Q'
+            backtrack(r + 1, board)
+            board[r][c] = '.'
+            cols.remove(c); diag1.remove(r-c); diag2.remove(r+c)
+    
+    backtrack(0, [['.']*n for _ in range(n)])
+    return res`,
+                    verbose: `class NQueensSolver:
+    """
+    N-Queens via Constraint Satisfaction / Backtracking.
+    
+    Mental Model: Queens Negotiating at a Round Table
+    - Each queen MUST sit in her own row (constraint built-in)
+    - Queens negotiate columns: no two in same column
+    - Queens check diagonals: no two on same diagonal
+    - If a queen has no safe seat → previous queen must move
+    
+    Constraint Propagation:
+    - cols: set of taken columns
+    - diag1: set of taken "/" diagonals (row - col is constant)
+    - diag2: set of taken "\\" diagonals (row + col is constant)
+    
+    Key Insight: 
+    We don't store the whole board — just the CONSTRAINTS.
+    Checking if a position is safe is O(1), not O(n).
+    """
+    
+    def __init__(self, n: int):
+        self.n = n
+        self.solutions = []
+        
+        # Constraint sets (the "attack zones")
+        self.cols = set()      # Columns under attack
+        self.diag1 = set()     # "/" diagonals (r - c)
+        self.diag2 = set()     # "\\" diagonals (r + c)
+        
+        # Current board state (for solution reconstruction)
+        self.board = [['.' for _ in range(n)] for _ in range(n)]
+    
+    def is_safe(self, row: int, col: int) -> bool:
+        """
+        Check if position (row, col) is under attack.
+        
+        A position is safe if:
+        - Column is not taken
+        - "/" diagonal is not taken (row - col identifies it)
+        - "\\" diagonal is not taken (row + col identifies it)
+        
+        This is O(1) because we use sets, not O(n) board scanning!
+        """
+        if col in self.cols:
+            return False
+        if (row - col) in self.diag1:
+            return False
+        if (row + col) in self.diag2:
+            return False
+        return True
+    
+    def place_queen(self, row: int, col: int):
+        """
+        Place queen and propagate constraints.
+        
+        Adding to constraint sets is the "propagation" —
+        future queens will see these positions as attacked.
+        """
+        self.cols.add(col)
+        self.diag1.add(row - col)
+        self.diag2.add(row + col)
+        self.board[row][col] = 'Q'
+    
+    def remove_queen(self, row: int, col: int):
+        """
+        Remove queen and undo constraint propagation.
+        
+        This is the "backtrack" step — restore state
+        so we can try a different column.
+        """
+        self.cols.remove(col)
+        self.diag1.remove(row - col)
+        self.diag2.remove(row + col)
+        self.board[row][col] = '.'
+    
+    def backtrack(self, row: int):
+        """
+        Place queens row by row using backtracking.
+        
+        Base case: All queens placed → record solution
+        Recursive: Try each safe column, recurse to next row
+        
+        The magic: constraint sets make safety check O(1),
+        turning exponential into manageable.
+        """
+        # Base case: all queens placed successfully
+        if row == self.n:
+            # Record solution (deep copy the board)
+            solution = ["".join(r) for r in self.board]
+            self.solutions.append(solution)
+            return
+        
+        # Try each column in this row
+        for col in range(self.n):
+            if self.is_safe(row, col):
+                # Place queen (propagate constraints)
+                self.place_queen(row, col)
+                
+                # Recurse to next row
+                self.backtrack(row + 1)
+                
+                # Backtrack (undo constraints)
+                self.remove_queen(row, col)
+    
+    def solve(self) -> list:
+        """Entry point: solve and return all solutions."""
+        self.backtrack(0)
+        return self.solutions
+
+# Usage:
+# solver = NQueensSolver(8)
+# solutions = solver.solve()
+# print(f"Found {len(solutions)} solutions")`
+                }
+            },
+
+            'sudoku': {
+                num: 37,
+                title: 'Sudoku Solver',
+                difficulty: 'hard',
+                category: 'cp',
+                link: 'https://leetcode.com/problems/sudoku-solver/',
+                description: 'Write a program to solve a Sudoku puzzle by filling empty cells. A valid sudoku has exactly one solution.',
+                mnemonic: {
+                    emoji: '🔢',
+                    person: 'Hermione Granger',
+                    object: 'A Magical Number Grid',
+                    action: 'Writing in pencil, erasing instantly when rules are broken',
+                    story: '"Hermione approaches the Sudoku like a spell — methodical and logical. She finds an empty cell, checks which numbers are possible (not in row, column, or box). She writes \'1\' in pencil. Immediately, magic propagates — some cells now have fewer options. If any cell becomes impossible (no valid numbers), her writing vanishes (backtrack) and she tries \'2\'. She never guesses randomly — she always picks the most constrained cell first."'
+                },
+                philosophy: {
+                    title: 'Domain Reduction & Arc Consistency',
+                    content: `Sudoku is constraint propagation made tangible. Every number you place <strong>reduces the domain</strong> of cells in its row, column, and box. The key insight: <strong>propagation can solve most cells without any guessing</strong>.
+
+The "Naked Singles" technique (cell has only one possibility) is basic propagation. "Hidden Singles" (number has only one valid cell in a unit) is stronger propagation. "Naked Pairs," "X-Wing," etc., are increasingly sophisticated propagation rules.
+
+The philosophical truth: <strong>Most of the solution is determined by constraints, not search</strong>. Backtracking is only needed when propagation can't make progress. A well-implemented Sudoku solver uses search for maybe 1% of cells — the rest is pure deduction.`,
+                    keyInsight: 'The hardest Sudokus (like "AI Escargot") require ~50-60 search nodes with good propagation vs 10^20 nodes without. The ratio of propagation to search determines practical difficulty.'
+                },
+                invariant: `At each step:
+┌─────────────────────────────────────────────────────────────┐
+│  All filled cells satisfy Sudoku rules (no duplicates)      │
+│  Each empty cell has a DOMAIN of possible values            │
+│  Domain = {1-9} - (row values ∪ col values ∪ box values)   │
+│                                                             │
+│  If any domain becomes EMPTY → BACKTRACK (invalid state)    │
+│  If cell has domain size 1 → PROPAGATE (forced value)       │
+│  Otherwise → pick cell with smallest domain (MRV), guess    │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Domain Reduction in Structured Constraint Networks',
+                        insight: 'Sudoku represents any problem where entities must be assigned values from a shared domain, with local consistency requirements. The 9x9 grid with row/column/box constraints generalizes to any network where nodes have domains and edges represent "must be different" constraints. Arc consistency algorithms from Sudoku research power industrial constraint solvers.'
+                    },
+                    cases: [
+                        { icon: '🗓️', title: 'Timetable Scheduling', desc: 'Assign classes to time slots and rooms. Each class has a domain (valid slots). Constraints: no teacher teaches two classes at once, no room double-booked, student conflicts. This is exactly Sudoku with irregular boxes. Universities use constraint solvers derived from Sudoku research. A 1000-class schedule is a 1000-cell Sudoku with complex constraint topology.' },
+                        { icon: '🧬', title: 'Protein Structure Prediction', desc: 'Assign amino acids to 3D positions. Each position has a domain (possible configurations). Constraints: bonds, steric clashes, energy minimization. Simplified lattice models are literally Sudoku-like. Folding@home uses constraint propagation techniques. The "box" constraint becomes local structure motifs.' },
+                        { icon: '🔐', title: 'Cryptarithmetic & Code Breaking', desc: 'SEND + MORE = MONEY — assign digits to letters. Each letter has domain {0-9}. Constraints: different letters get different digits, arithmetic must work. Classic puzzles, but also real code breaking. Constraint propagation plus backtracking cracks these. Bletchley Park techniques for Enigma included constraint propagation.' },
+                        { icon: '📊', title: 'Latin Square Experimental Designs', desc: 'In agricultural experiments, assign treatments to plots. Each treatment appears once per row (block) and column (replicate). This IS a Latin square (Sudoku without boxes). Fisher\'s experimental design methodology from 1920s is constraint-based. Modern clinical trials use similar "balanced" designs solved by constraint propagation.' },
+                        { icon: '🎮', title: 'Puzzle Game Generation', desc: 'Generate valid Sudoku puzzles with unique solutions. Start with filled grid, remove numbers while maintaining unique solvability. This requires running the solver repeatedly. Puzzle games (Sudoku apps, crosswords) use constraint techniques for generation. The constraint model ensures solvability without guessing.' }
+                    ]
+                },
+                complexity: { time: 'O(9^(n²)) worst case, O(n²) typical with propagation', space: 'O(n²)' },
+                code: {
+                    terse: `def solveSudoku(board):
+    def is_valid(r, c, num):
+        for i in range(9):
+            if board[r][i] == num or board[i][c] == num:
+                return False
+            if board[3*(r//3) + i//3][3*(c//3) + i%3] == num:
+                return False
+        return True
+    
+    def solve():
+        for r in range(9):
+            for c in range(9):
+                if board[r][c] == '.':
+                    for num in '123456789':
+                        if is_valid(r, c, num):
+                            board[r][c] = num
+                            if solve(): return True
+                            board[r][c] = '.'
+                    return False
+        return True
+    
+    solve()`,
+                    verbose: `class SudokuSolver:
+    """
+    Sudoku Solver with Constraint Propagation + Backtracking.
+    
+    Mental Model: Hermione with a Magical Grid
+    - Each empty cell has a "domain" of possible values
+    - Placing a number propagates constraints (reduces other domains)
+    - If any cell has empty domain → backtrack
+    - If cell has single value in domain → forced (propagate more)
+    
+    Techniques Implemented:
+    1. Basic constraint checking (row, col, box)
+    2. MRV heuristic (Most Constrained Variable first)
+    3. Domain tracking for efficient propagation
+    
+    Key Insight:
+    Most cells are determined by propagation alone.
+    Backtracking handles the ~1-5% that need guessing.
+    """
+    
+    def __init__(self, board: list):
+        self.board = board
+        self.domains = [[set() for _ in range(9)] for _ in range(9)]
+        self.initialize_domains()
+    
+    def initialize_domains(self):
+        """
+        Initialize possible values for each empty cell.
+        
+        For filled cells: domain = {value}
+        For empty cells: domain = {1-9} - (row ∪ col ∪ box values)
+        """
+        for r in range(9):
+            for c in range(9):
+                if self.board[r][c] == '.':
+                    self.domains[r][c] = self.get_possible_values(r, c)
+                else:
+                    self.domains[r][c] = {self.board[r][c]}
+    
+    def get_possible_values(self, row: int, col: int) -> set:
+        """
+        Calculate valid values for cell (row, col).
+        
+        Valid = {1-9} - (row values) - (col values) - (box values)
+        """
+        possible = set('123456789')
+        
+        # Remove row values
+        for c in range(9):
+            possible.discard(self.board[row][c])
+        
+        # Remove column values
+        for r in range(9):
+            possible.discard(self.board[r][col])
+        
+        # Remove box values
+        box_r, box_c = 3 * (row // 3), 3 * (col // 3)
+        for r in range(box_r, box_r + 3):
+            for c in range(box_c, box_c + 3):
+                possible.discard(self.board[r][c])
+        
+        return possible
+    
+    def find_mrv_cell(self):
+        """
+        Find empty cell with Minimum Remaining Values (MRV).
+        
+        MRV heuristic: Choose the most constrained cell first.
+        Why? If it has few options, we'll discover conflicts sooner.
+        Fail-fast = less wasted search.
+        """
+        min_options = 10
+        best_cell = None
+        
+        for r in range(9):
+            for c in range(9):
+                if self.board[r][c] == '.':
+                    num_options = len(self.domains[r][c])
+                    if num_options < min_options:
+                        min_options = num_options
+                        best_cell = (r, c)
+                        if min_options == 1:  # Can't do better
+                            return best_cell
+        
+        return best_cell
+    
+    def propagate(self, row: int, col: int, num: str) -> bool:
+        """
+        Propagate constraint after placing num at (row, col).
+        
+        Remove num from domains of all cells in same row, col, box.
+        If any domain becomes empty → return False (invalid state).
+        """
+        # Row propagation
+        for c in range(9):
+            if c != col and self.board[row][c] == '.':
+                self.domains[row][c].discard(num)
+                if not self.domains[row][c]:
+                    return False
+        
+        # Column propagation
+        for r in range(9):
+            if r != row and self.board[r][col] == '.':
+                self.domains[r][col].discard(num)
+                if not self.domains[r][col]:
+                    return False
+        
+        # Box propagation
+        box_r, box_c = 3 * (row // 3), 3 * (col // 3)
+        for r in range(box_r, box_r + 3):
+            for c in range(box_c, box_c + 3):
+                if (r, c) != (row, col) and self.board[r][c] == '.':
+                    self.domains[r][c].discard(num)
+                    if not self.domains[r][c]:
+                        return False
+        
+        return True
+    
+    def solve(self) -> bool:
+        """
+        Main solving loop with backtracking.
+        
+        1. Find most constrained empty cell (MRV)
+        2. If none → puzzle solved!
+        3. Try each value in cell's domain
+        4. Place value, propagate, recurse
+        5. If dead end → backtrack
+        """
+        cell = self.find_mrv_cell()
+        
+        if cell is None:
+            return True  # All cells filled = solved!
+        
+        row, col = cell
+        
+        # Save domain state for backtracking
+        saved_domains = [[d.copy() for d in row] for row in self.domains]
+        
+        for num in list(self.domains[row][col]):
+            # Place number
+            self.board[row][col] = num
+            self.domains[row][col] = {num}
+            
+            # Propagate and recurse
+            if self.propagate(row, col, num):
+                if self.solve():
+                    return True
+            
+            # Backtrack: restore state
+            self.board[row][col] = '.'
+            self.domains = [[d.copy() for d in row] for row in saved_domains]
+        
+        return False
+
+# Usage:
+# solver = SudokuSolver(board)
+# solver.solve()
+# # board is now filled`
+                }
+            },
+
+            'combination-sum': {
+                num: 39,
+                title: 'Combination Sum',
+                difficulty: 'medium',
+                category: 'cp',
+                link: 'https://leetcode.com/problems/combination-sum/',
+                description: 'Find all unique combinations of candidates that sum to target. Same number may be used unlimited times.',
+                mnemonic: {
+                    emoji: '🎰',
+                    person: 'A Slot Machine Player',
+                    object: 'Coin Denominations',
+                    action: 'Pulling the lever repeatedly, tracking running total',
+                    story: '"You\'re at a magical slot machine with coin buttons [2, 3, 6, 7]. You need exactly $7 to win. Press 2 → total is 2. Press 2 again → total is 4. Press 3 → total is 7. JACKPOT! But wait, you can also get 7 by just pressing 7 once. The machine tracks all winning combinations. If your total exceeds 7, the round resets (backtrack) and you try the next coin."'
+                },
+                philosophy: {
+                    title: 'Unbounded Search with Pruning',
+                    content: `Combination Sum reveals the power of <strong>branch and bound</strong> even in simple problems. The key insight: <strong>once the running sum exceeds target, the entire subtree is worthless</strong>.
+
+Without pruning, we'd explore infinitely many combinations (we can reuse numbers). With pruning, we cut off branches the moment they become infeasible. This is the essence of intelligent search — not brute force, but <strong>informed exploration with early termination</strong>.
+
+The philosophical lesson: <strong>Knowing when to stop is as important as knowing where to go</strong>. The "remaining = target - sum" value is a bound. When remaining < 0, we've bounded away an infinite subtree with a single comparison.`,
+                    keyInsight: 'By sorting candidates and stopping when candidate > remaining, we prune even more aggressively. If candidates = [2,3,6,7] and remaining = 1, we don\'t even try 2 (or anything after). This transforms exponential into practical.'
+                },
+                invariant: `At each recursive call with remaining target r:
+┌─────────────────────────────────────────────────────────────┐
+│  Current combination sums to (target - r)                   │
+│  All elements in combination are from candidates            │
+│  Elements are in non-decreasing order (avoid duplicates)    │
+│                                                             │
+│  If r == 0 → FOUND valid combination                        │
+│  If r < 0 → PRUNE (overshot)                                │
+│  If r > 0 → try adding each candidate ≥ last used          │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Unbounded Subset Selection with Target Constraint',
+                        insight: 'Combination Sum models any scenario where you select items (possibly multiple times) to hit a target exactly. The candidates are resources, the target is a goal, and the combinations are strategies. Pruning by remaining capacity is universal — once you can\'t possibly reach the goal, stop searching.'
+                    },
+                    cases: [
+                        { icon: '💰', title: 'Coin Change Enumeration', desc: 'Given coin denominations, find all ways to make change for an amount. Vending machines don\'t just need one way — they need to know ALL ways to optimize coin inventory. This IS Combination Sum. The candidates are coin values, target is the amount. Real currency systems (US: 1,5,10,25,50,100) have specific combination patterns.' },
+                        { icon: '🧪', title: 'Chemical Mixture Formulation', desc: 'Combine base chemicals in integer proportions to achieve target properties. Each chemical has a "contribution value" (like pH, concentration). Find all mixtures hitting target. Pharmaceutical companies use constraint solvers for this. The candidates are contribution values, target is desired property. Pruning avoids infeasible mixtures.' },
+                        { icon: '📦', title: 'Container Loading Configurations', desc: 'Load containers into a ship to hit exact weight targets for balance. Each container type has a weight. Find all loading configurations for target weight. Shipping companies need redundancy — multiple valid configurations. This is Combination Sum with physical constraints. Candidates are container weights.' },
+                        { icon: '🎵', title: 'Musical Rhythm Generation', desc: 'Compose rhythms using note durations to fill a measure. A 4/4 measure needs 4 beats. Notes: whole (4), half (2), quarter (1), eighth (0.5). Find all rhythms. Music software uses combinatorial generation. Candidates are note durations, target is measure length. This generates all possible rhythmic patterns.' },
+                        { icon: '🔋', title: 'Battery Pack Configuration', desc: 'Combine battery cells to achieve target voltage. Cells in series add voltage. Given cell options (1.5V, 3V, 3.7V, etc.), find all configurations for target. Hardware engineers need this for product design. Candidates are cell voltages, target is required voltage. Pruning when exceeded is essential for large cell counts.' }
+                    ]
+                },
+                complexity: { time: 'O(n^(t/m)) where t=target, m=min candidate', space: 'O(t/m) recursion depth' },
+                code: {
+                    terse: `def combinationSum(candidates, target):
+    res = []
+    candidates.sort()
+    
+    def backtrack(start, path, remain):
+        if remain == 0:
+            res.append(path[:])
+            return
+        for i in range(start, len(candidates)):
+            if candidates[i] > remain:
+                break  # Pruning!
+            path.append(candidates[i])
+            backtrack(i, path, remain - candidates[i])
+            path.pop()
+    
+    backtrack(0, [], target)
+    return res`,
+                    verbose: `class CombinationSumSolver:
+    """
+    Find all combinations summing to target (with repetition allowed).
+    
+    Mental Model: Slot Machine with Coin Buttons
+    - Each button adds that coin's value to running total
+    - Can press same button multiple times
+    - If total == target → JACKPOT (record combination)
+    - If total > target → round over, try different sequence
+    
+    Key Optimizations:
+    1. Sort candidates: enables early termination
+    2. Start index: avoids duplicate combinations like [2,3] and [3,2]
+    3. Pruning: if candidate > remaining, skip it AND all larger ones
+    
+    The Pruning Power:
+    Without pruning: infinite search (can always add more)
+    With pruning: bounded by target/min_candidate depth
+    """
+    
+    def __init__(self, candidates: list, target: int):
+        self.candidates = sorted(candidates)  # Sort for pruning
+        self.target = target
+        self.results = []
+    
+    def backtrack(self, start: int, path: list, remaining: int):
+        """
+        Recursive backtracking with pruning.
+        
+        Args:
+            start: Index to start trying candidates (avoids duplicates)
+            path: Current combination being built
+            remaining: How much more we need to reach target
+        
+        The 'start' parameter is crucial:
+        - We only try candidates[start:] to avoid [2,3] and [3,2] duplicates
+        - We CAN reuse the same candidate (start=i, not i+1)
+        """
+        # Base case: exact target reached
+        if remaining == 0:
+            self.results.append(path[:])  # Copy the path
+            return
+        
+        # Try each candidate from 'start' onwards
+        for i in range(start, len(self.candidates)):
+            candidate = self.candidates[i]
+            
+            # PRUNING: If this candidate exceeds remaining,
+            # all subsequent candidates (larger due to sort) will too.
+            # Stop searching this branch entirely.
+            if candidate > remaining:
+                break
+            
+            # Choose: add candidate to path
+            path.append(candidate)
+            
+            # Explore: recurse with same start (can reuse)
+            # remaining decreases by candidate value
+            self.backtrack(i, path, remaining - candidate)
+            
+            # Unchoose: remove candidate (backtrack)
+            path.pop()
+    
+    def solve(self) -> list:
+        """Entry point: find all valid combinations."""
+        self.backtrack(0, [], self.target)
+        return self.results
+
+# Usage:
+# solver = CombinationSumSolver([2, 3, 6, 7], 7)
+# print(solver.solve())  # [[2,2,3], [7]]`
+                }
+            },
+
+            // ─────────────────────────────────────────────────────────────
+            // KNAPSACK / MIP
+            // ─────────────────────────────────────────────────────────────
+            'partition-equal': {
+                num: 416,
+                title: 'Partition Equal Subset Sum',
+                difficulty: 'medium',
+                category: 'knapsack',
+                link: 'https://leetcode.com/problems/partition-equal-subset-sum/',
+                description: 'Given an integer array nums, determine if you can partition the array into two subsets such that the sum of elements in both subsets is equal.',
+                mnemonic: {
+                    emoji: '⚖️',
+                    person: 'King Solomon',
+                    object: 'A Treasure to Divide',
+                    action: 'Splitting gold coins into two equal piles for disputing parties',
+                    story: '"Two claimants arrive at Solomon\'s court, each wanting a fair share of inherited gold coins. Solomon weighs the total — say 22 coins of gold value. He realizes: if the total is odd, equal division is impossible. If even, he needs to find if ANY subset sums to exactly half (11). He considers each coin: include in pile A or not? This is the 0/1 knapsack decision, with target = totalSum/2."'
+                },
+                philosophy: {
+                    title: 'The 0/1 Knapsack Paradigm',
+                    content: `This problem introduces the most fundamental MIP pattern: <strong>binary choice per item</strong>. Each element is either in subset A or not. This is the essence of Mixed-Integer Programming — some variables are restricted to 0 or 1.
+
+The key insight: <strong>we only need to find ONE subset summing to half</strong>. The other subset is automatic (everything not chosen). This transforms "partition into two equal subsets" into "find subset with target sum" — a dramatic simplification.
+
+The DP solution is essentially <strong>implicit enumeration with memoization</strong>. We're exploring the 2^n possible subsets, but DP collapses states that reach the same partial sum. This is analogous to how Branch & Bound uses relaxations to avoid explicit enumeration.`,
+                    keyInsight: 'The DP table dp[i][s] answers: "Can we form sum s using first i elements?" This is a FEASIBILITY question, not optimization. But the structure is identical to knapsack: dp[i][s] = dp[i-1][s] OR dp[i-1][s-nums[i]].'
+                },
+                invariant: `DP state dp[s] = True means:
+┌─────────────────────────────────────────────────────────────┐
+│  There EXISTS a subset of elements seen so far              │
+│  that sums to exactly s                                     │
+│                                                             │
+│  Transition: For each new element num,                      │
+│              dp[s] = dp[s] OR dp[s - num]                   │
+│                                                             │
+│  Answer: dp[target] where target = totalSum / 2             │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Binary Selection for Balance/Feasibility',
+                        insight: 'Partition problems appear whenever you must divide resources into groups with equality constraints. The 0/1 nature (each item goes somewhere) makes it integer programming. The target-half transformation is a powerful technique: instead of checking two sums equal, check one sum equals half. This halves the state space.'
+                    },
+                    cases: [
+                        { icon: '⚖️', title: 'Load Balancing Across Servers', desc: 'Distribute tasks across two servers for equal load. Each task has a "weight" (CPU time, memory). Find assignment minimizing load difference. This is partition with "minimize |sum_A - sum_B|" objective. Cloud providers (AWS, GCP) solve this constantly. If total is even and partition exists, difference is 0 — optimal.' },
+                        { icon: '👥', title: 'Team Splitting for Fair Competition', desc: 'Divide players into two teams of equal total skill. Each player has a skill rating. Find partition where team sums are equal (or closest). Sports apps, game matchmaking use this. The problem is exactly subset sum with target = total_skill/2. Fair teams = partition exists.' },
+                        { icon: '💼', title: 'Inheritance Division', desc: 'Divide assets between two heirs fairly. Each asset has value. Find partition where both get equal value. Estate lawyers face this. If no exact partition exists, minimize difference (variation: closest subset sum). The binary nature (asset goes to one heir) makes it 0/1 knapsack.' },
+                        { icon: '🔌', title: 'Two-Phase Electrical Load Balancing', desc: 'In split-phase electrical systems, balance loads across two phases. Each appliance has wattage. Assign to phases for equal draw. Electricians and building designers use this. Unbalanced phases cause problems — partition ensures balance. This is literally the subset sum problem.' },
+                        { icon: '📊', title: 'A/B Test Traffic Splitting', desc: 'Divide user cohorts into equal-value groups for testing. Each cohort has "value" (expected revenue, engagement). Find partition where test and control have equal expected value. Data scientists at Netflix, Google do this. Equal-value partition ensures unbiased comparison.' }
+                    ]
+                },
+                complexity: { time: 'O(n × sum)', space: 'O(sum) with 1D optimization' },
+                code: {
+                    terse: `def canPartition(nums):
+    total = sum(nums)
+    if total % 2: return False
+    target = total // 2
+    
+    dp = [False] * (target + 1)
+    dp[0] = True
+    
+    for num in nums:
+        for s in range(target, num - 1, -1):  # Reverse!
+            dp[s] = dp[s] or dp[s - num]
+    
+    return dp[target]`,
+                    verbose: `class PartitionEqualSubsetSum:
+    """
+    Determine if array can be partitioned into two equal-sum subsets.
+    
+    Mental Model: King Solomon Dividing Treasure
+    - Total gold = sum of all coins
+    - If odd → impossible (can't split odd number equally)
+    - If even → find subset summing to total/2
+    - Each coin: include in subset or not (0/1 decision)
+    
+    Key Insight:
+    We don't need to find BOTH subsets.
+    If subset A sums to total/2, subset B (everything else) does too.
+    Problem reduces to: "Does any subset sum to target?"
+    
+    This is the classic 0/1 Knapsack structure:
+    - Items: array elements
+    - Capacity: total/2
+    - Goal: exact capacity (not maximize)
+    
+    DP Optimization:
+    - 2D: dp[i][s] = can first i elements make sum s?
+    - 1D: dp[s] = can ANY subset make sum s?
+    - Iterate nums, update dp in REVERSE (prevent double-counting)
+    """
+    
+    def __init__(self, nums: list):
+        self.nums = nums
+        self.total = sum(nums)
+    
+    def is_possible(self) -> bool:
+        """
+        Check if equal partition is possible.
+        
+        Returns False immediately if total is odd.
+        Otherwise, runs subset sum DP for target = total/2.
+        """
+        # Odd total → impossible to split equally
+        if self.total % 2 == 1:
+            return False
+        
+        target = self.total // 2
+        
+        # dp[s] = True if some subset sums to s
+        dp = [False] * (target + 1)
+        dp[0] = True  # Empty subset sums to 0
+        
+        for num in self.nums:
+            # CRITICAL: Iterate BACKWARDS
+            # Why? If we go forward, we might use same num twice.
+            # Example: num=5, if dp[0]=True, we'd set dp[5]=True,
+            # then dp[10]=True (using 5 twice). Wrong!
+            # Backward iteration ensures each num used at most once.
+            
+            for s in range(target, num - 1, -1):
+                # dp[s] = True if:
+                #   - Already True (don't need this num), OR
+                #   - dp[s - num] was True (add this num to reach s)
+                dp[s] = dp[s] or dp[s - num]
+        
+        return dp[target]
+    
+    def solve_with_reconstruction(self) -> list:
+        """
+        Extended version: also return the actual partition.
+        Uses 2D DP for path reconstruction.
+        """
+        if self.total % 2 == 1:
+            return None
+        
+        target = self.total // 2
+        n = len(self.nums)
+        
+        # dp[i][s] = True if first i elements can make sum s
+        dp = [[False] * (target + 1) for _ in range(n + 1)]
+        dp[0][0] = True
+        
+        for i in range(1, n + 1):
+            num = self.nums[i - 1]
+            for s in range(target + 1):
+                dp[i][s] = dp[i-1][s]  # Don't take num
+                if s >= num:
+                    dp[i][s] = dp[i][s] or dp[i-1][s - num]  # Take num
+        
+        if not dp[n][target]:
+            return None
+        
+        # Reconstruct subset
+        subset = []
+        s = target
+        for i in range(n, 0, -1):
+            if s >= self.nums[i-1] and dp[i-1][s - self.nums[i-1]]:
+                subset.append(self.nums[i-1])
+                s -= self.nums[i-1]
+        
+        return subset
+
+# Usage:
+# solver = PartitionEqualSubsetSum([1, 5, 11, 5])
+# print(solver.is_possible())  # True (subsets [1,5,5] and [11])`
+                }
+            },
+
+            'coin-change': {
+                num: 322,
+                title: 'Coin Change',
+                difficulty: 'medium',
+                category: 'knapsack',
+                link: 'https://leetcode.com/problems/coin-change/',
+                description: 'Return the fewest number of coins needed to make up that amount. If impossible, return -1.',
+                mnemonic: {
+                    emoji: '🏧',
+                    person: 'An ATM Machine',
+                    object: 'Stacks of Bills',
+                    action: 'Dispensing minimum bills to satisfy withdrawal',
+                    story: '"The ATM has stacks of $1, $5, $10, $20 bills. Customer wants $37. The greedy approach (largest first) gives $20 + $10 + $5 + $1 + $1 = 5 bills. But wait — is that optimal? The ATM\'s algorithm builds up: \'How many bills for $1? For $2? ... For $37?\' Each amount learns from smaller amounts. For $37: try $37-1, $37-5, $37-10, $37-20 and pick the best +1."'
+                },
+                philosophy: {
+                    title: 'Unbounded Knapsack & Optimal Substructure',
+                    content: `Coin Change is the <strong>unbounded knapsack</strong> — we can use each coin infinitely many times. The key insight is <strong>optimal substructure</strong>: the optimal solution for amount N builds on optimal solutions for smaller amounts.
+
+This is where <strong>greedy fails</strong>. For coins [1, 3, 4] and amount 6, greedy gives 4+1+1 = 3 coins. Optimal is 3+3 = 2 coins. DP explores ALL possibilities and keeps the best.
+
+The philosophical point: <strong>local optimization ≠ global optimization</strong>. Greedy makes locally optimal choices (biggest coin first) but can miss globally optimal solutions. DP's exhaustive-but-memoized approach guarantees global optimum.`,
+                    keyInsight: 'The recurrence dp[amount] = min(dp[amount - coin] + 1) for all coins is Bellman\'s equation. It\'s the foundation of dynamic programming, named after Richard Bellman who developed DP in the 1950s at RAND Corporation.'
+                },
+                invariant: `DP state dp[a] = minimum coins for amount a:
+┌─────────────────────────────────────────────────────────────┐
+│  dp[0] = 0 (zero coins for zero amount)                     │
+│  dp[a] = min over all coins c of: dp[a - c] + 1             │
+│          (take coin c, then solve for remaining)            │
+│                                                             │
+│  If dp[a - c] is ∞ (impossible), skip that coin             │
+│  Final answer: dp[amount] (or -1 if ∞)                      │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Minimum-Cost Unbounded Resource Composition',
+                        insight: 'Coin Change models any scenario where you compose a target from unlimited copies of base units, minimizing the count (or cost). The DP approach guarantees optimality where greedy fails. The unbounded nature (reuse allowed) distinguishes it from 0/1 knapsack. The "minimum" objective makes it optimization, not just feasibility.'
+                    },
+                    cases: [
+                        { icon: '🏧', title: 'ATM Cash Dispensing', desc: 'Dispense exact amount with minimum bills. Real ATMs solve this — the algorithm must be fast and optimal. For standard denominations (1,5,10,20,50,100), greedy works. But vending machines with odd change (1,3,4) need DP. The problem is so classic that ATM is the canonical example.' },
+                        { icon: '📦', title: 'Shipping Container Optimization', desc: 'Fill a target volume with minimum containers. Container sizes: 10, 25, 50 cubic feet. For 80 cubic feet: greedy gives 50+25+10-5 (doesn\'t work). DP finds 50+25+10-5... wait, we need exactly 80. This is coin change with volume as "amount." Logistics companies optimize this for LTL (less-than-truckload) shipping.' },
+                        { icon: '⏱️', title: 'Task Duration Filling', desc: 'Fill a time slot with minimum number of activities. Activities have fixed durations (15, 30, 45 minutes). Fill a 2-hour slot with minimum activities. This is coin change with time. Scheduling systems use this for batch processing — minimize context switches by using fewer, longer tasks.' },
+                        { icon: '🧬', title: 'Gene Sequence Assembly', desc: 'Compose a target DNA sequence from fragments. Fragments are "coins," target length is "amount." Minimize fragments used. Bioinformatics uses similar DP. Of course, sequences must also match — this is simplified. But the "minimum pieces" structure is coin change.' },
+                        { icon: '🎮', title: 'Game Currency Purchase', desc: 'Buy in-game currency with minimum purchases. Packages: $5 for 500 coins, $10 for 1100 coins, $25 for 3000 coins. To get exactly 5500 coins, which packages minimize spending or count? Game economies are designed around these optimization problems. Players intuitively solve coin change.' }
+                    ]
+                },
+                complexity: { time: 'O(amount × coins)', space: 'O(amount)' },
+                code: {
+                    terse: `def coinChange(coins, amount):
+    dp = [float('inf')] * (amount + 1)
+    dp[0] = 0
+    
+    for a in range(1, amount + 1):
+        for coin in coins:
+            if coin <= a:
+                dp[a] = min(dp[a], dp[a - coin] + 1)
+    
+    return dp[amount] if dp[amount] != float('inf') else -1`,
+                    verbose: `class CoinChangeSolver:
+    """
+    Find minimum coins to make target amount (unbounded knapsack).
+    
+    Mental Model: ATM Dispensing Bills
+    - ATM has unlimited bills of each denomination
+    - Customer wants exact amount
+    - ATM minimizes number of bills dispensed
+    
+    Why Greedy Fails:
+    Coins = [1, 3, 4], Amount = 6
+    Greedy: 4 + 1 + 1 = 3 coins
+    Optimal: 3 + 3 = 2 coins
+    
+    DP Solution:
+    Build from bottom up: "What's min coins for $1? $2? ... $amount?"
+    Each amount learns from smaller amounts.
+    
+    Recurrence (Bellman's Equation):
+    dp[a] = min over all coins c: (dp[a - c] + 1)
+    
+    "To make amount a with minimum coins:
+     try each coin, see what's best for remainder, add 1."
+    """
+    
+    def __init__(self, coins: list, amount: int):
+        self.coins = coins
+        self.amount = amount
+    
+    def solve(self) -> int:
+        """
+        Bottom-up DP: compute min coins for each amount 0 to target.
+        
+        Time: O(amount × len(coins))
+        Space: O(amount)
+        """
+        # dp[a] = minimum coins to make amount a
+        # Initialize with infinity (impossible until proven otherwise)
+        dp = [float('inf')] * (self.amount + 1)
+        dp[0] = 0  # Zero coins needed for amount 0
+        
+        # Build up from 1 to amount
+        for a in range(1, self.amount + 1):
+            # Try each coin denomination
+            for coin in self.coins:
+                if coin <= a:  # Coin can fit
+                    # dp[a - coin] + 1: use this coin, then optimally
+                    # solve for the remainder
+                    dp[a] = min(dp[a], dp[a - coin] + 1)
+        
+        # Check if possible
+        return dp[self.amount] if dp[self.amount] != float('inf') else -1
+    
+    def solve_with_coins_used(self) -> tuple:
+        """
+        Extended: also return which coins were used.
+        """
+        dp = [float('inf')] * (self.amount + 1)
+        dp[0] = 0
+        parent = [-1] * (self.amount + 1)  # Track which coin was used
+        
+        for a in range(1, self.amount + 1):
+            for coin in self.coins:
+                if coin <= a and dp[a - coin] + 1 < dp[a]:
+                    dp[a] = dp[a - coin] + 1
+                    parent[a] = coin  # Record coin used
+        
+        if dp[self.amount] == float('inf'):
+            return -1, []
+        
+        # Reconstruct coins used
+        coins_used = []
+        remaining = self.amount
+        while remaining > 0:
+            coin = parent[remaining]
+            coins_used.append(coin)
+            remaining -= coin
+        
+        return dp[self.amount], coins_used
+
+# Usage:
+# solver = CoinChangeSolver([1, 2, 5], 11)
+# print(solver.solve())  # 3 (5+5+1)
+# print(solver.solve_with_coins_used())  # (3, [5, 5, 1])`
+                }
+            },
+
+            'job-scheduling': {
+                num: 1235,
+                title: 'Maximum Profit in Job Scheduling',
+                difficulty: 'hard',
+                category: 'knapsack',
+                link: 'https://leetcode.com/problems/maximum-profit-in-job-scheduling/',
+                description: 'Given n jobs with start time, end time, and profit, find maximum profit subset where no two jobs overlap.',
+                mnemonic: {
+                    emoji: '💼',
+                    person: 'A Freelancer',
+                    object: 'A Calendar of Gigs',
+                    action: 'Selecting non-overlapping projects for maximum income',
+                    story: '"A freelancer has many project offers, each with start date, end date, and payment. She can only work one project at a time — no overlaps. She sorts by end time, then for each project asks: \'Take it or skip it?\' If she takes it, she adds its profit plus the best she could do before it started. Binary search finds the latest non-conflicting project. She picks the better option."'
+                },
+                philosophy: {
+                    title: 'Weighted Interval Scheduling & Binary Search Optimization',
+                    content: `This problem combines <strong>dynamic programming with binary search</strong> — a powerful technique for interval-based optimization. The key insight: when intervals have weights (profits), greedy no longer works.
+
+Unweighted interval scheduling is greedy: sort by end time, always take the earliest-ending non-conflicting job. But with weights, a later job might be worth much more. We need DP.
+
+The binary search optimization is crucial. For each job, we need "the last non-conflicting job." Naive search is O(n) per job → O(n²). Binary search makes it O(log n) per job → O(n log n) total. This is a <strong>divide-and-conquer speedup of DP</strong>.`,
+                    keyInsight: 'The recurrence dp[i] = max(dp[i-1], profit[i] + dp[last_non_conflict[i]]) is the binary choice: skip this job OR take it (and get best up to last compatible). Binary search finds last_non_conflict efficiently.'
+                },
+                invariant: `After processing jobs 0..i (sorted by end time):
+┌─────────────────────────────────────────────────────────────┐
+│  dp[i] = maximum profit achievable using jobs 0..i          │
+│                                                             │
+│  For job i with profit p_i:                                 │
+│  - Skip: dp[i] = dp[i-1]                                    │
+│  - Take: dp[i] = p_i + dp[j] where j is latest job          │
+│                         ending before job i starts          │
+│                                                             │
+│  dp[i] = max(skip, take)                                    │
+│  Binary search finds j in O(log n)                          │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Weighted Non-Overlapping Selection Optimization',
+                        insight: 'Any time you have time-based resources with different values and exclusivity constraints, this pattern applies. The weights make greedy insufficient — you must consider all possibilities (DP). The sorted-by-end-time + binary-search structure is reusable for any weighted interval selection problem.'
+                    },
+                    cases: [
+                        { icon: '🏨', title: 'Hotel Room Revenue Optimization', desc: 'Bookings have check-in, check-out, and price. Maximize revenue. If a $200/night stay conflicts with a $300/night, which? Hotels use optimization systems (Marriott, Hilton). This is exactly weighted interval scheduling. The binary search finds latest checkout before each check-in.' },
+                        { icon: '📺', title: 'TV Ad Slot Allocation', desc: 'Advertisers bid for time slots. Each ad has duration and bid. Maximize revenue without overlapping ads. Networks (NBC, CBS) solve this daily. The "jobs" are ad slots, "profits" are bids. Some slots are worth more during prime time — weights vary dramatically.' },
+                        { icon: '🚗', title: 'Ride-Share Driver Trip Selection', desc: 'Driver sees upcoming ride requests with estimated times and fares. Select non-overlapping trips for max earnings. Uber, Lyft drivers face this constantly. The app could optimize it — some do show "trip chains." This is job scheduling for the gig economy.' },
+                        { icon: '🎪', title: 'Event Venue Booking', desc: 'Venue receives event requests with times and rental fees. Maximize revenue without double-booking. Convention centers, arenas solve this. A multi-day conference might pay more than three single-day events — weights matter. The structure is identical to job scheduling.' },
+                        { icon: '☁️', title: 'Cloud Spot Instance Scheduling', desc: 'AWS spot instances have windows and prices. Schedule workloads to minimize cost (or maximize value within budget). Cloud architects optimize this. The instances are "jobs," their compute time is "profit." Non-overlapping constraint ensures resources aren\'t exceeded.' }
+                    ]
+                },
+                complexity: { time: 'O(n log n)', space: 'O(n)' },
+                code: {
+                    terse: `def jobScheduling(startTime, endTime, profit):
+    import bisect
+    jobs = sorted(zip(endTime, startTime, profit))
+    ends, dp = [0], [0]
+    
+    for e, s, p in jobs:
+        i = bisect.bisect_right(ends, s) - 1
+        if dp[i] + p > dp[-1]:
+            dp.append(dp[i] + p)
+            ends.append(e)
+        else:
+            dp.append(dp[-1])
+            ends.append(e)
+    
+    return dp[-1]`,
+                    verbose: `class JobScheduler:
+    """
+    Maximum profit from non-overlapping jobs (weighted interval scheduling).
+    
+    Mental Model: Freelancer Selecting Gigs
+    - Each gig has start, end, and payment
+    - Can't work two gigs at once
+    - Want maximum total payment
+    
+    Algorithm:
+    1. Sort jobs by end time
+    2. For each job, decide: take it or skip it?
+       - Skip: profit = best so far
+       - Take: profit = this job + best ending before this starts
+    3. Binary search finds "best ending before this starts"
+    
+    Why Sort by End Time:
+    After processing job i, dp[i] represents the optimal solution
+    for all jobs ending by time end[i]. This monotonicity enables DP.
+    
+    Why Binary Search:
+    Finding "latest job ending before start[i]" naively is O(n).
+    Since we sorted by end time, binary search finds it in O(log n).
+    """
+    
+    def __init__(self, startTime, endTime, profit):
+        import bisect
+        self.jobs = sorted(zip(endTime, startTime, profit))
+        self.n = len(self.jobs)
+    
+    def find_last_non_conflict(self, idx, ends):
+        """
+        Find index of latest job ending before job[idx] starts.
+        Uses binary search on sorted end times.
+        
+        Returns index in dp array (0-indexed, where 0 is "no jobs").
+        """
+        import bisect
+        start = self.jobs[idx][1]  # Start time of current job
+        # Find rightmost end time <= start
+        return bisect.bisect_right(ends, start) - 1
+    
+    def solve(self) -> int:
+        """
+        DP with binary search optimization.
+        
+        dp[i] = max profit using first i jobs (1-indexed)
+        ends[i] = end time of i-th job (for binary search)
+        
+        Transition:
+        dp[i] = max(dp[i-1],  # Skip job i
+                    profit[i] + dp[last_non_conflict(i)])  # Take job i
+        """
+        import bisect
+        
+        # dp[0] = 0, ends[0] = 0 (dummy for "no jobs")
+        dp = [0]
+        ends = [0]
+        
+        for end, start, profit in self.jobs:
+            # Find last job that ends before this one starts
+            last_idx = bisect.bisect_right(ends, start) - 1
+            
+            # Option 1: Skip this job (keep previous best)
+            skip_profit = dp[-1]
+            
+            # Option 2: Take this job
+            take_profit = dp[last_idx] + profit
+            
+            # Choose better option
+            best = max(skip_profit, take_profit)
+            
+            dp.append(best)
+            ends.append(end)
+        
+        return dp[-1]
+    
+    def solve_with_jobs(self) -> tuple:
+        """
+        Extended: also return which jobs were selected.
+        """
+        import bisect
+        
+        dp = [0]
+        ends = [0]
+        choices = [None]  # Track decisions for reconstruction
+        
+        for i, (end, start, profit) in enumerate(self.jobs):
+            last_idx = bisect.bisect_right(ends, start) - 1
+            skip_profit = dp[-1]
+            take_profit = dp[last_idx] + profit
+            
+            if take_profit > skip_profit:
+                dp.append(take_profit)
+                choices.append(('take', last_idx, i))
+            else:
+                dp.append(skip_profit)
+                choices.append(('skip', len(dp) - 2, None))
+            
+            ends.append(end)
+        
+        # Reconstruct selected jobs
+        selected = []
+        idx = len(dp) - 1
+        while idx > 0:
+            action, prev_idx, job_idx = choices[idx]
+            if action == 'take':
+                selected.append(self.jobs[job_idx])
+                idx = prev_idx
+            else:
+                idx = prev_idx
+        
+        return dp[-1], selected[::-1]
+
+# Usage:
+# scheduler = JobScheduler([1,2,3,3], [3,4,5,6], [50,10,40,70])
+# print(scheduler.solve())  # 120 (jobs [1,3]→50 + [3,6]→70)`
+                }
+            },
+
+            // ─────────────────────────────────────────────────────────────
+            // SCHEDULING
+            // ─────────────────────────────────────────────────────────────
+            'meeting-rooms-ii': {
+                num: 253,
+                title: 'Meeting Rooms II',
+                difficulty: 'medium',
+                category: 'scheduling',
+                link: 'https://leetcode.com/problems/meeting-rooms-ii/',
+                description: 'Given an array of meeting time intervals, find the minimum number of conference rooms required.',
+                mnemonic: {
+                    emoji: '🏢',
+                    person: 'A Building Manager',
+                    object: 'Conference Room Keys',
+                    action: 'Tracking how many rooms are in use at any moment',
+                    story: '"The building manager has a pegboard with room keys. At each meeting start, a key is taken (room occupied). At each meeting end, a key is returned (room freed). The manager walks through time: 9am start → take key. 9:30am start → take another key. 10am end → return key. The MAXIMUM keys out at any moment equals the minimum rooms needed."'
+                },
+                philosophy: {
+                    title: 'Event-Driven Simulation & Peak Load',
+                    content: `Meeting Rooms II teaches a profound scheduling insight: <strong>minimum resources = maximum concurrent demand</strong>. You don't need to track which meeting uses which room — just count how many rooms are needed simultaneously.
+
+The event-based approach (separate starts and ends, sort, sweep) is the key technique. By treating starts as +1 and ends as -1, we convert interval problems into cumulative sum problems. The maximum cumulative value is our answer.
+
+This is the foundation of <strong>resource capacity planning</strong>. Whether it's CPU cores, network bandwidth, or conference rooms, the principle is the same: provision for peak concurrent load.`,
+                    keyInsight: 'The two-pointer technique (sort starts and ends separately) is faster and conceptually cleaner than a heap. But the heap approach generalizes better to "assign specific rooms" variations.'
+                },
+                invariant: `At any time t during sweep:
+┌─────────────────────────────────────────────────────────────┐
+│  rooms_in_use = # meetings that have started but not ended  │
+│                                                             │
+│  At a start event: rooms_in_use += 1                        │
+│  At an end event: rooms_in_use -= 1                         │
+│                                                             │
+│  Answer = max(rooms_in_use) over all events                 │
+│  This equals the peak concurrent demand                     │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Peak Concurrent Load & Resource Provisioning',
+                        insight: 'Any shared resource problem where demand varies over time reduces to this pattern. The minimum provision equals maximum simultaneous demand. The event sweep technique (sort events, track cumulative) is O(n log n) and universally applicable to interval counting problems.'
+                    },
+                    cases: [
+                        { icon: '🏥', title: 'Hospital Bed Capacity Planning', desc: 'Patients have admission and discharge times. Minimum beds = max concurrent patients. Hospital administrators must plan for peak. This is exactly Meeting Rooms II. Real hospitals use similar algorithms for daily capacity forecasting. COVID surges highlighted the criticality of this calculation.' },
+                        { icon: '🚗', title: 'Parking Lot Capacity', desc: 'Cars have entry and exit times. Minimum spaces = max concurrent cars. Parking systems track this for pricing and capacity signs. The "rooms" are parking spaces. Event-based tracking enables real-time "X spaces available" displays.' },
+                        { icon: '📞', title: 'Call Center Staffing', desc: 'Calls have start and end times. Minimum agents = max concurrent calls. Call centers optimize staffing hourly. Historical data provides intervals. Meeting Rooms II tells you how many agents needed at peak. This drives hiring and shift scheduling.' },
+                        { icon: '☁️', title: 'Cloud VM Allocation', desc: 'Workloads have start and end times. Minimum VMs = max concurrent workloads. Cloud platforms (AWS, GCP) auto-scale based on this. The algorithm runs continuously, tracking scheduled and running jobs. Billing is based on peak VM usage.' },
+                        { icon: '🚌', title: 'Bus/Train Fleet Sizing', desc: 'Routes have departure and return times. Minimum vehicles = max concurrent trips. Transit authorities size fleets this way. Each "meeting" is a vehicle-in-service interval. Peak hour determines fleet size. This is classic operations research.' }
+                    ]
+                },
+                complexity: { time: 'O(n log n)', space: 'O(n)' },
+                code: {
+                    terse: `def minMeetingRooms(intervals):
+    starts = sorted(i[0] for i in intervals)
+    ends = sorted(i[1] for i in intervals)
+    rooms = max_rooms = 0
+    s = e = 0
+    
+    while s < len(starts):
+        if starts[s] < ends[e]:
+            rooms += 1
+            max_rooms = max(max_rooms, rooms)
+            s += 1
+        else:
+            rooms -= 1
+            e += 1
+    
+    return max_rooms`,
+                    verbose: `class MeetingRoomsII:
+    """
+    Find minimum conference rooms needed for all meetings.
+    
+    Mental Model: Building Manager with Room Keys
+    - At meeting start: take a key (room now occupied)
+    - At meeting end: return a key (room freed)
+    - Maximum keys out at once = minimum rooms needed
+    
+    Key Insight:
+    We don't care WHICH room each meeting uses.
+    We only care HOW MANY are needed simultaneously.
+    
+    Algorithm (Two-Pointer):
+    1. Sort start times and end times SEPARATELY
+    2. Walk through events:
+       - If next event is a start → rooms_in_use++
+       - If next event is an end → rooms_in_use--
+    3. Track maximum rooms_in_use
+    
+    Why Separate Sorting Works:
+    We only need to count, not match meetings to rooms.
+    A start at time 10 uses a room whether the earliest
+    end is from meeting A or meeting B.
+    """
+    
+    def __init__(self, intervals: list):
+        self.intervals = intervals
+    
+    def min_rooms_two_pointer(self) -> int:
+        """
+        Two-pointer approach: O(n log n) time, O(n) space.
+        
+        Sort starts and ends separately.
+        Sweep through, tracking rooms in use.
+        """
+        if not self.intervals:
+            return 0
+        
+        starts = sorted(i[0] for i in self.intervals)
+        ends = sorted(i[1] for i in self.intervals)
+        
+        rooms_in_use = 0
+        max_rooms = 0
+        s_ptr = e_ptr = 0
+        n = len(self.intervals)
+        
+        while s_ptr < n:
+            # Is next event a start or an end?
+            if starts[s_ptr] < ends[e_ptr]:
+                # Meeting starts → need a room
+                rooms_in_use += 1
+                max_rooms = max(max_rooms, rooms_in_use)
+                s_ptr += 1
+            else:
+                # Meeting ends → room freed
+                rooms_in_use -= 1
+                e_ptr += 1
+        
+        return max_rooms
+    
+    def min_rooms_heap(self) -> int:
+        """
+        Heap approach: track room availability.
+        
+        Sort by start time.
+        Heap contains end times of rooms in use.
+        When meeting starts:
+          - If earliest end <= this start: reuse room (pop & push new end)
+          - Else: need new room (push new end)
+        """
+        import heapq
+        
+        if not self.intervals:
+            return 0
+        
+        sorted_meetings = sorted(self.intervals)
+        rooms = []  # Min-heap of end times
+        
+        for start, end in sorted_meetings:
+            # Can we reuse a room?
+            if rooms and rooms[0] <= start:
+                heapq.heappop(rooms)  # Room freed
+            
+            heapq.heappush(rooms, end)  # Use/add room
+        
+        # Number of rooms in heap = rooms in use at end
+        # But this equals max concurrent (heap never shrinks below max)
+        return len(rooms)
+    
+    def solve(self) -> int:
+        """Entry point using two-pointer method."""
+        return self.min_rooms_two_pointer()
+
+# Usage:
+# solver = MeetingRoomsII([[0,30], [5,10], [15,20]])
+# print(solver.solve())  # 2 (meetings [0,30] and [5,10] overlap)`
+                }
+            },
+
+            'course-schedule': {
+                num: 207,
+                title: 'Course Schedule',
+                difficulty: 'medium',
+                category: 'scheduling',
+                link: 'https://leetcode.com/problems/course-schedule/',
+                description: 'Determine if you can finish all courses given prerequisites. Return true if possible.',
+                mnemonic: {
+                    emoji: '🎓',
+                    person: 'A University Registrar',
+                    object: 'Course Dependency Chart',
+                    action: 'Checking if graduation is possible without circular requirements',
+                    story: '"The registrar reviews the course catalog. MATH101 requires nothing. CALC201 requires MATH101. But wait — PHYS301 requires CHEM201, which requires PHYS301?! That\'s a cycle — impossible to complete! The registrar draws arrows from prerequisites to dependents. If the graph has any cycle, some students will be stuck forever. Topological sort succeeds iff no cycles exist."'
+                },
+                philosophy: {
+                    title: 'Precedence Constraints & DAG Detection',
+                    content: `Course Schedule is <strong>cycle detection in a directed graph</strong>. The philosophical insight: <strong>precedence constraints define a partial order, and a valid schedule is a linearization of that order</strong>.
+
+This is the foundation of <strong>project management</strong> (CPM, PERT), <strong>build systems</strong> (make, Bazel), and <strong>task orchestration</strong> (Airflow, Luigi). Any system with dependencies must verify that dependencies are acyclic.
+
+The algorithm choice matters: DFS with coloring detects cycles elegantly. BFS (Kahn's algorithm) finds a valid ordering. Both are O(V+E) and foundational to understanding computation itself — compilers use topological sort for instruction scheduling.`,
+                    keyInsight: 'The three-color DFS (WHITE=unvisited, GRAY=in-progress, BLACK=done) detects back edges. A back edge to a GRAY node means we found a cycle — a node is its own ancestor in the DFS tree. This is the standard cycle detection algorithm.'
+                },
+                invariant: `During DFS traversal:
+┌─────────────────────────────────────────────────────────────┐
+│  WHITE (0): Node not yet visited                            │
+│  GRAY (1): Node being processed (on current path)           │
+│  BLACK (2): Node fully processed (all descendants done)     │
+│                                                             │
+│  If we reach a GRAY node from another GRAY → CYCLE!         │
+│  (We've found a back edge in the DFS tree)                  │
+│                                                             │
+│  If all nodes turn BLACK without finding cycle → POSSIBLE   │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Precedence Feasibility & Directed Acyclic Graph Verification',
+                        insight: 'Any system with "X must happen before Y" constraints needs cycle detection. Cycles mean deadlock — no valid execution order exists. Topological sort is the solution when acyclic. The pattern appears in compilers, databases (transaction ordering), CI/CD pipelines, and even spreadsheet calculation ordering.'
+                    },
+                    cases: [
+                        { icon: '🔨', title: 'Build System Dependency Resolution', desc: 'Makefile targets depend on others. "make all" must compile sources before linking. Cyclic dependencies (A→B→C→A) are build errors. Make, Bazel, Gradle all detect cycles. The graph is targets (courses), edges are dependencies (prerequisites). Cycle = build impossible.' },
+                        { icon: '📊', title: 'Spreadsheet Calculation Order', desc: 'Cell A1 = B1 + C1. B1 = C1 * 2. Spreadsheets compute cells in dependency order. Circular references (A1=B1, B1=A1) are errors. Excel\'s "circular reference" warning is cycle detection. The cells are courses, formulas define prerequisites.' },
+                        { icon: '🔄', title: 'Database Migration Ordering', desc: 'DB migrations have dependencies (can\'t add foreign key before table exists). Migration tools (Flyway, Alembic) detect cycles. A cycle means migrations can\'t be applied in any order. The graph is migrations, edges are dependencies. Topological sort gives execution order.' },
+                        { icon: '📦', title: 'Package Manager Installation', desc: 'npm, pip resolve dependencies. Package A needs B, B needs C. Circular dependencies are problematic. Package managers detect and sometimes break cycles. This is Course Schedule at massive scale — millions of packages, complex dependency graphs.' },
+                        { icon: '🤖', title: 'Workflow Orchestration (Airflow)', desc: 'Data pipelines have task dependencies. ETL job B runs after A. Cycle detection prevents deadlocks. Apache Airflow, Luigi, Prefect all do this. The DAG (Directed Acyclic Graph) is central to workflow tools — they REQUIRE acyclicity.' }
+                    ]
+                },
+                complexity: { time: 'O(V + E)', space: 'O(V + E)' },
+                code: {
+                    terse: `def canFinish(numCourses, prerequisites):
+    graph = [[] for _ in range(numCourses)]
+    for course, pre in prerequisites:
+        graph[pre].append(course)
+    
+    color = [0] * numCourses  # 0=white, 1=gray, 2=black
+    
+    def has_cycle(node):
+        color[node] = 1  # Gray
+        for neighbor in graph[node]:
+            if color[neighbor] == 1:  # Back edge!
+                return True
+            if color[neighbor] == 0 and has_cycle(neighbor):
+                return True
+        color[node] = 2  # Black
+        return False
+    
+    return not any(color[i] == 0 and has_cycle(i) for i in range(numCourses))`,
+                    verbose: `class CourseSchedule:
+    """
+    Determine if all courses can be finished (no cyclic dependencies).
+    
+    Mental Model: University Registrar with Dependency Chart
+    - Courses are nodes, prerequisites are directed edges
+    - If graph has cycle → impossible to complete all courses
+    - No cycle → topological order exists → possible
+    
+    Algorithm: DFS with 3-Color Marking
+    - WHITE (0): Unvisited
+    - GRAY (1): Currently in DFS stack (being processed)
+    - BLACK (2): Completely processed
+    
+    Cycle Detection:
+    If DFS reaches a GRAY node, we've found a back edge.
+    Back edge = cycle = no valid course order.
+    
+    Why 3 Colors?
+    - 2 colors can't distinguish "on current path" from "visited before"
+    - We need to know if we're revisiting an ANCESTOR (cycle)
+      vs a node visited in a different branch (ok)
+    """
+    
+    def __init__(self, num_courses: int, prerequisites: list):
+        self.num_courses = num_courses
+        
+        # Build adjacency list (pre -> [courses that need it])
+        self.graph = [[] for _ in range(num_courses)]
+        for course, pre in prerequisites:
+            self.graph[pre].append(course)
+        
+        # Color array: 0=white, 1=gray, 2=black
+        self.color = [0] * num_courses
+    
+    def has_cycle_from(self, node: int) -> bool:
+        """
+        DFS from node, checking for cycles.
+        
+        Returns True if cycle detected.
+        """
+        self.color[node] = 1  # Mark gray (in progress)
+        
+        for neighbor in self.graph[node]:
+            if self.color[neighbor] == 1:
+                # Back edge to gray node = CYCLE!
+                return True
+            
+            if self.color[neighbor] == 0:
+                # Unvisited node, explore it
+                if self.has_cycle_from(neighbor):
+                    return True
+        
+        self.color[node] = 2  # Mark black (done)
+        return False
+    
+    def can_finish(self) -> bool:
+        """
+        Check if all courses can be completed.
+        
+        Returns True if no cycles (feasible schedule exists).
+        """
+        # Try DFS from each unvisited node
+        for course in range(self.num_courses):
+            if self.color[course] == 0:  # Unvisited
+                if self.has_cycle_from(course):
+                    return False
+        
+        return True
+    
+    def get_order(self) -> list:
+        """
+        If possible, return a valid course order (topological sort).
+        Uses DFS with post-order collection.
+        """
+        if not self.can_finish():
+            return []
+        
+        # Reset colors
+        self.color = [0] * self.num_courses
+        order = []
+        
+        def dfs(node):
+            self.color[node] = 1
+            for neighbor in self.graph[node]:
+                if self.color[neighbor] == 0:
+                    dfs(neighbor)
+            order.append(node)  # Post-order
+        
+        for course in range(self.num_courses):
+            if self.color[course] == 0:
+                dfs(course)
+        
+        return order[::-1]  # Reverse post-order = topological order
+
+# Usage:
+# scheduler = CourseSchedule(4, [[1,0], [2,1], [3,2]])
+# print(scheduler.can_finish())  # True
+# print(scheduler.get_order())   # [0, 1, 2, 3]`
+                }
+            },
+
+            // ─────────────────────────────────────────────────────────────
+            // GRAPH COLORING
+            // ─────────────────────────────────────────────────────────────
+            'bipartite': {
+                num: 785,
+                title: 'Is Graph Bipartite?',
+                difficulty: 'medium',
+                category: 'graph',
+                link: 'https://leetcode.com/problems/is-graph-bipartite/',
+                description: 'Given an undirected graph, return true if and only if it is bipartite (nodes can be 2-colored such that no adjacent nodes share a color).',
+                mnemonic: {
+                    emoji: '🎨',
+                    person: 'A Map Colorist',
+                    object: 'Two Paint Buckets (Red & Blue)',
+                    action: 'Coloring regions so no neighbors share a color',
+                    story: '"The colorist has only two colors. She starts at any region, paints it red. All neighbors must be blue. Their neighbors must be red. She continues, propagating colors. If she ever needs to paint a region that\'s already the wrong color, the map can\'t be 2-colored — it\'s NOT bipartite. If she finishes without conflict, success!"'
+                },
+                philosophy: {
+                    title: 'Graph 2-Coloring & Odd Cycle Detection',
+                    content: `Bipartiteness is equivalent to <strong>not having odd-length cycles</strong>. This is a beautiful theorem: a graph is bipartite iff it contains no odd cycles.
+
+The BFS/DFS coloring is essentially <strong>constraint propagation</strong>. Assigning a color to a node propagates the opposite color to neighbors. A conflict means the constraints are unsatisfiable.
+
+This connects to <strong>SAT solving</strong>: 2-coloring is a 2-SAT instance. Each edge (u,v) is the clause (u=red XOR v=red). The propagation-based algorithm is how 2-SAT solvers work. More complex coloring (3+) becomes NP-complete, but 2-coloring is linear time.`,
+                    keyInsight: 'The coloring is a partition into two sets where all edges cross between sets. This is exactly the definition of bipartite graphs. The algorithm simultaneously verifies bipartiteness AND finds the partition.'
+                },
+                invariant: `During BFS/DFS coloring:
+┌─────────────────────────────────────────────────────────────┐
+│  Each visited node has a color (0 or 1)                     │
+│  All edges between visited nodes connect different colors   │
+│                                                             │
+│  When visiting node u with color c:                         │
+│  - All neighbors of u must have color 1-c                   │
+│  - If neighbor already has color c → CONFLICT → NOT BIPARTITE │
+│  - If neighbor uncolored → assign color 1-c, continue       │
+│                                                             │
+│  If all nodes colored without conflict → BIPARTITE          │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Binary Classification Under Mutual Exclusion',
+                        insight: 'Bipartite graphs model any scenario where entities fall into two groups with relationships only BETWEEN groups, not within. The 2-coloring algorithm is constraint propagation in its simplest form. The odd-cycle theorem gives a structural characterization. Many matching and scheduling problems require bipartite structure.'
+                    },
+                    cases: [
+                        { icon: '💑', title: 'Dating App Matching', desc: 'Users are nodes, potential matches are edges. For a hetero dating app, the graph should be bipartite (men-women). If it\'s not, there\'s a data bug (same-gender edge). Bipartite verification is a sanity check. The partition algorithm also separates users into gender groups if metadata is missing.' },
+                        { icon: '🏫', title: 'Student-Class Bipartite Graphs', desc: 'Students and classes are nodes. Enrollment creates edges. This is inherently bipartite (students connect to classes, not other students). Bipartite algorithms power school scheduling, classroom assignment. The structure guarantees certain matching algorithms (Hungarian) work correctly.' },
+                        { icon: '🧬', title: 'Protein Interaction Networks', desc: 'Some biological networks are bipartite: enzymes interact with substrates, not other enzymes. Testing bipartiteness validates network structure. Non-bipartiteness might indicate contamination or false positives. Bioinformatics tools check graph structure as quality control.' },
+                        { icon: '🔌', title: 'Job-Machine Assignment', desc: 'Jobs can run on certain machines (edges). This is bipartite: jobs connect to machines, not other jobs. Maximum bipartite matching finds optimal assignment. If the graph weren\'t bipartite, the matching algorithm wouldn\'t apply. Structure verification is a prerequisite.' },
+                        { icon: '📊', title: 'Conflict-Free Scheduling', desc: 'Events conflict with certain time slots. If events only conflict with slots (not each other directly), the graph is bipartite. This enables polynomial-time scheduling. If events conflict with each other too, it\'s general graph coloring (NP-hard). Bipartiteness is a tractability boundary.' }
+                    ]
+                },
+                complexity: { time: 'O(V + E)', space: 'O(V)' },
+                code: {
+                    terse: `def isBipartite(graph):
+    n = len(graph)
+    color = [-1] * n
+    
+    for start in range(n):
+        if color[start] != -1:
+            continue
+        stack = [start]
+        color[start] = 0
+        while stack:
+            node = stack.pop()
+            for neighbor in graph[node]:
+                if color[neighbor] == color[node]:
+                    return False
+                if color[neighbor] == -1:
+                    color[neighbor] = 1 - color[node]
+                    stack.append(neighbor)
+    return True`,
+                    verbose: `class BipartiteChecker:
+    """
+    Check if graph is bipartite (2-colorable).
+    
+    Mental Model: Map Colorist with Two Paints
+    - Start anywhere, paint it red
+    - All neighbors must be blue (propagate constraint)
+    - Continue until done or conflict
+    - Conflict = not bipartite
+    
+    Key Theorem:
+    A graph is bipartite IFF it contains no odd-length cycles.
+    
+    Algorithm:
+    BFS/DFS coloring. Assign color to node, opposite to neighbors.
+    If neighbor already has same color → odd cycle → not bipartite.
+    
+    Why It Works:
+    In a bipartite graph, alternating colors along any path works.
+    An odd cycle would require a node to have both colors — contradiction.
+    """
+    
+    def __init__(self, graph: list):
+        """
+        graph[i] = list of neighbors of node i (adjacency list)
+        """
+        self.graph = graph
+        self.n = len(graph)
+        self.color = [-1] * self.n  # -1 = uncolored, 0/1 = colors
+    
+    def bfs_color(self, start: int) -> bool:
+        """
+        BFS coloring from start node.
+        
+        Returns False if conflict detected (not bipartite).
+        """
+        from collections import deque
+        
+        queue = deque([start])
+        self.color[start] = 0  # Assign first color
+        
+        while queue:
+            node = queue.popleft()
+            current_color = self.color[node]
+            
+            for neighbor in self.graph[node]:
+                if self.color[neighbor] == current_color:
+                    # CONFLICT! Neighbor has same color
+                    # This means odd cycle exists
+                    return False
+                
+                if self.color[neighbor] == -1:
+                    # Uncolored → assign opposite color
+                    self.color[neighbor] = 1 - current_color
+                    queue.append(neighbor)
+        
+        return True
+    
+    def is_bipartite(self) -> bool:
+        """
+        Check if entire graph is bipartite.
+        
+        Must handle disconnected components.
+        """
+        for node in range(self.n):
+            if self.color[node] == -1:  # Unvisited component
+                if not self.bfs_color(node):
+                    return False
+        
+        return True
+    
+    def get_partition(self) -> tuple:
+        """
+        If bipartite, return the two partitions.
+        """
+        if not self.is_bipartite():
+            return None, None
+        
+        set_a = [i for i in range(self.n) if self.color[i] == 0]
+        set_b = [i for i in range(self.n) if self.color[i] == 1]
+        
+        return set_a, set_b
+
+# Usage:
+# checker = BipartiteChecker([[1,3], [0,2], [1,3], [0,2]])
+# print(checker.is_bipartite())  # True
+# print(checker.get_partition())  # ([0,2], [1,3])`
+                }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // RENDERING FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        function highlightSyntax(code) {
+            return code
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/(#.*)/g, '<span class="comment">$1</span>')
+                .replace(/"""[\s\S]*?"""/g, m => '<span class="string">' + m + '</span>')
+                .replace(/('.*?')/g, '<span class="string">$1</span>')
+                .replace(/\b(def|class|if|elif|else|while|for|in|return|and|or|not|range|len|max|min|True|False|None|import|from|as|with|try|except|yield|lambda|any|all)\b/g, '<span class="keyword">$1</span>')
+                .replace(/\b(\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+        }
+
+        function renderProblem(key) {
+            const p = problems[key];
+            if (!p) return '';
+
+            const diffClass = p.difficulty;
+            const diffColor = p.difficulty === 'easy' ? '#4ade80' : p.difficulty === 'medium' ? '#fbbf24' : '#ef4444';
+
+            return `
+                <!-- HEADER -->
+                <div class="problem-header" style="--diff-color: ${diffColor}">
+                    <h2>
+                        <span class="lc-num">#${p.num}</span>
+                        ${p.title}
+                        <span class="difficulty ${diffClass}">${p.difficulty}</span>
+                    </h2>
+                    <p class="problem-desc">${p.description}</p>
+                    <a href="${p.link}" target="_blank" style="color: ${diffColor}; font-size: 0.85rem;">View on LeetCode →</a>
+                </div>
+                
+                <!-- MNEMONIC -->
+                <div class="mnemonic-panel">
+                    <h3>🧠 Memory Hook (Person → Object → Action)</h3>
+                    <div class="poa-grid">
+                        <div class="poa-card poa-person">
+                            <div class="emoji">${p.mnemonic.emoji}</div>
+                            <div class="type">Person</div>
+                            <div class="content">${p.mnemonic.person}</div>
+                        </div>
+                        <div class="poa-card poa-object">
+                            <div class="emoji">🎯</div>
+                            <div class="type">Object</div>
+                            <div class="content">${p.mnemonic.object}</div>
+                        </div>
+                        <div class="poa-card poa-action">
+                            <div class="emoji">⚡</div>
+                            <div class="type">Action</div>
+                            <div class="content">${p.mnemonic.action}</div>
+                        </div>
+                    </div>
+                    <div class="memory-story">${p.mnemonic.story}</div>
+                </div>
+                
+                <!-- PHILOSOPHY -->
+                <div class="philosophy-panel">
+                    <h3>💭 ${p.philosophy.title}</h3>
+                    <div class="philosophy-content">${p.philosophy.content}</div>
+                    <div class="key-insight"><strong>Key Insight:</strong> ${p.philosophy.keyInsight}</div>
+                </div>
+                
+                <!-- INVARIANT -->
+                <div class="invariant-box">
+                    <h4>🔒 The Invariant (What's Always True)</h4>
+                    <pre>${p.invariant}</pre>
+                </div>
+                
+                <!-- REAL WORLD -->
+                <div class="realworld-panel">
+                    <h3>🏗️ Real-World Engineering Use Cases</h3>
+                    <div class="realworld-grid">
+                        ${p.realWorld.cases.map(c => `
+                            <div class="scenario-box">
+                                <div class="scenario-icon">${c.icon}</div>
+                                <div class="scenario-title">${c.title}</div>
+                                <div class="scenario-desc">${c.desc}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="pattern-synthesis">
+                        <h4>🎯 Synthesized Pattern Category</h4>
+                        <div class="category">${p.realWorld.synthesis.category}</div>
+                        <div class="insight">${p.realWorld.synthesis.insight}</div>
+                    </div>
+                </div>
+                
+                <!-- CODE -->
+                <div class="panel">
+                    <h2 style="color: #4ade80;">💻 Implementation</h2>
+                    <div class="complexity-box">
+                        <div class="complexity-item">
+                            <div class="label">Time Complexity</div>
+                            <div class="value">${p.complexity.time}</div>
+                        </div>
+                        <div class="complexity-item">
+                            <div class="label">Space Complexity</div>
+                            <div class="value">${p.complexity.space}</div>
+                        </div>
+                    </div>
+                    <div class="code-panel" style="margin-top: 15px;">
+                        <div class="code-header">
+                            <span>${p.title}</span>
+                            <div class="code-tabs">
+                                <button class="code-tab active" onclick="showCode('${key}', 'terse', this)">Terse</button>
+                                <button class="code-tab" onclick="showCode('${key}', 'verbose', this)">Verbose</button>
+                            </div>
+                        </div>
+                        <div class="code-body" id="code-${key}">
+                            <pre>${highlightSyntax(p.code.terse)}</pre>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showCode(key, type, btn) {
+            const p = problems[key];
+            const codeBody = document.getElementById(`code-${key}`);
+            codeBody.innerHTML = `<pre>${highlightSyntax(type === 'terse' ? p.code.terse : p.code.verbose)}</pre>`;
+
+            btn.parentElement.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        function initializeCategory(category, selectorId, contentId) {
+            const selector = document.getElementById(selectorId);
+            const content = document.getElementById(contentId);
+
+            const categoryProblems = Object.entries(problems)
+                .filter(([k, v]) => v.category === category);
+
+            // Create problem buttons
+            selector.innerHTML = categoryProblems.map(([key, p]) => `
+                <button class="problem-btn difficulty-${p.difficulty}" data-prob="${key}">
+                    <span class="num">${p.num}</span>${p.title}
+                </button>
+            `).join('');
+
+            // Add event listeners
+            selector.querySelectorAll('.problem-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    selector.querySelectorAll('.problem-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    content.innerHTML = renderProblem(btn.dataset.prob);
+                });
+            });
+
+            // Initialize with first problem
+            if (categoryProblems.length > 0) {
+                const firstBtn = selector.querySelector('.problem-btn');
+                if (firstBtn) {
+                    firstBtn.classList.add('active');
+                    content.innerHTML = renderProblem(firstBtn.dataset.prob);
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ═══════════════════════════════════════════════════════════════
+
+        // Category tabs
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.category-content').forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.getElementById(`cat-${tab.dataset.cat}`).classList.add('active');
+            });
+        });
+
+        // Initialize all categories
+        initializeCategory('cp', 'cp-problems', 'cp-content');
+        initializeCategory('knapsack', 'knapsack-problems', 'knapsack-content');
+        initializeCategory('scheduling', 'scheduling-problems', 'scheduling-content');
+        initializeCategory('graph', 'graph-problems', 'graph-content');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1828 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Job Scheduling Deep Dive — #1235</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+            background: linear-gradient(90deg, #fb923c, #f472b6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* TABS */
+        .tab-container {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 2px solid #2a2f45;
+            color: #888;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .tab-btn:hover {
+            border-color: #4a4f65;
+            color: #ccc;
+        }
+
+        .tab-btn.active {
+            border-color: #fb923c;
+            color: #fb923c;
+            background: rgba(251, 146, 60, 0.1);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* PANELS */
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: #fb923c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel h3 {
+            font-size: 0.95rem;
+            margin: 15px 0 10px;
+            color: #a78bfa;
+        }
+
+        /* GRID */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* CANVAS CONTAINER */
+        .canvas-container {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        /* CONTROLS */
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.primary {
+            background: linear-gradient(145deg, #fb923c, #ea580c);
+            border-color: #fb923c;
+        }
+
+        button.primary:hover {
+            background: linear-gradient(145deg, #fdba74, #fb923c);
+        }
+
+        /* STATE DISPLAY */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .state-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .state-box .label {
+            font-size: 0.7rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .state-box .value {
+            font-size: 1.1rem;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }
+
+        .state-box.highlight {
+            border: 2px solid #4ade80;
+            box-shadow: 0 0 15px rgba(74, 222, 128, 0.3);
+        }
+
+        /* MESSAGE BOX */
+        .message-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            min-height: 80px;
+        }
+
+        .message-box.insight {
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid rgba(167, 139, 250, 0.3);
+        }
+
+        .message-box.decision {
+            background: rgba(251, 146, 60, 0.15);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+        }
+
+        .message-box strong {
+            color: #fb923c;
+        }
+
+        .message-box code {
+            background: rgba(0, 0, 0, 0.4);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Consolas', monospace;
+            color: #4ade80;
+        }
+
+        /* DP TABLE */
+        .dp-table-container {
+            overflow-x: auto;
+            margin: 15px 0;
+        }
+
+        .dp-table {
+            border-collapse: collapse;
+            font-family: 'Consolas', monospace;
+            font-size: 0.85rem;
+            margin: 0 auto;
+        }
+
+        .dp-table th,
+        .dp-table td {
+            border: 1px solid #3a3f55;
+            padding: 10px 15px;
+            text-align: center;
+        }
+
+        .dp-table th {
+            background: rgba(251, 146, 60, 0.2);
+            color: #fb923c;
+        }
+
+        .dp-table td {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .dp-table td.current {
+            background: rgba(251, 146, 60, 0.3);
+            border: 2px solid #fb923c;
+        }
+
+        .dp-table td.computed {
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+
+        .dp-table td.path {
+            background: rgba(244, 114, 182, 0.3);
+            border: 2px solid #f472b6;
+        }
+
+        /* CONCEPT BOXES */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+            margin: 15px 0;
+        }
+
+        .concept-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid #666;
+        }
+
+        .concept-box.pattern-1 {
+            border-left-color: #4ade80;
+        }
+
+        .concept-box.pattern-2 {
+            border-left-color: #22d3ee;
+        }
+
+        .concept-box.pattern-3 {
+            border-left-color: #f472b6;
+        }
+
+        .concept-box.pattern-4 {
+            border-left-color: #fbbf24;
+        }
+
+        .concept-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .concept-box.pattern-1 h4 {
+            color: #4ade80;
+        }
+
+        .concept-box.pattern-2 h4 {
+            color: #22d3ee;
+        }
+
+        .concept-box.pattern-3 h4 {
+            color: #f472b6;
+        }
+
+        .concept-box.pattern-4 h4 {
+            color: #fbbf24;
+        }
+
+        .concept-box p {
+            font-size: 0.85rem;
+            color: #aaa;
+            line-height: 1.6;
+        }
+
+        /* INVARIANT */
+        .invariant-box {
+            background: rgba(251, 146, 60, 0.1);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .invariant-box h4 {
+            color: #fb923c;
+            margin-bottom: 10px;
+        }
+
+        .invariant-box pre {
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: #fbbf24;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        /* TIMELINE LEGEND */
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+            font-size: 0.8rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        /* CODE */
+        .code-block {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            overflow-x: auto;
+        }
+
+        .code-block .line {
+            display: block;
+            padding: 2px 0;
+        }
+
+        .code-block .line.highlight {
+            background: rgba(251, 146, 60, 0.2);
+            margin: 0 -15px;
+            padding: 2px 15px;
+            border-left: 3px solid #fb923c;
+        }
+
+        .code-block .comment {
+            color: #6a737d;
+        }
+
+        .code-block .keyword {
+            color: #ff7b72;
+        }
+
+        .code-block .function {
+            color: #d2a8ff;
+        }
+
+        .code-block .string {
+            color: #a5d6ff;
+        }
+
+        .code-block .number {
+            color: #79c0ff;
+        }
+
+        /* STEP INDICATOR */
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 15px 0;
+        }
+
+        .step-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #2a2f45;
+            transition: all 0.3s;
+        }
+
+        .step-dot.active {
+            background: #fb923c;
+        }
+
+        .step-dot.completed {
+            background: #4ade80;
+        }
+
+        /* SPEED SLIDER */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .speed-control label {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .speed-control input[type="range"] {
+            width: 120px;
+            accent-color: #fb923c;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎯 LeetCode #1235: Maximum Profit in Job Scheduling</h1>
+    <p class="subtitle">Deep Dive — Decomposing the Patterns</p>
+
+    <!-- TAB NAVIGATION -->
+    <div class="tab-container">
+        <button class="tab-btn active" data-tab="overview">📚 Overview</button>
+        <button class="tab-btn" data-tab="patterns">🧩 Pattern Decomposition</button>
+        <button class="tab-btn" data-tab="sorting">1️⃣ Sorting Phase</button>
+        <button class="tab-btn" data-tab="binary-search">2️⃣ Binary Search</button>
+        <button class="tab-btn" data-tab="dp">3️⃣ DP Decisions</button>
+        <button class="tab-btn" data-tab="full-sim">🎬 Full Simulation</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OVERVIEW TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content active" id="tab-overview">
+        <div class="panel">
+            <h2>📋 The Problem</h2>
+            <div class="message-box">
+                You have <strong>n jobs</strong>, each with a <code>startTime</code>, <code>endTime</code>, and
+                <code>profit</code>.
+                <br><br>
+                Find the <strong>maximum profit</strong> you can achieve by selecting a subset of jobs where <strong>no
+                    two jobs overlap</strong>.
+                <br><br>
+                <em>Think: A freelancer choosing non-conflicting gigs to maximize income.</em>
+            </div>
+
+            <h3>Example Input</h3>
+            <div class="canvas-container">
+                <canvas id="overviewCanvas" width="700" height="200"></canvas>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #4ade80;"></div>Job 0: [1,3] $50
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #22d3ee;"></div>Job 1: [2,5] $20
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #f472b6;"></div>Job 2: [4,6] $70
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: #fbbf24;"></div>Job 3: [6,7] $60
+                </div>
+            </div>
+
+            <div class="message-box insight">
+                <strong>The Challenge:</strong> Jobs 0 and 1 overlap. Jobs 1 and 2 overlap. We can't take all of them.
+                <br><br>
+                Should we take Job 1 ($20) or skip it for Jobs 0+2 ($50+$70)?
+                <br>
+                The answer isn't obvious — we need a systematic approach.
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>🧠 The Mental Model</h2>
+            <div class="grid-2">
+                <div>
+                    <div class="message-box">
+                        <strong>Person:</strong> A Military Logistics Officer
+                        <br><br>
+                        <strong>Object:</strong> Transport mission requests with time windows and priority scores
+                        <br><br>
+                        <strong>Action:</strong> For each mission, deciding "take it or skip it" based on what's
+                        achievable before it starts
+                    </div>
+                </div>
+                <div>
+                    <div class="message-box">
+                        <em>"The officer sorts missions by completion time. For each mission, she asks: 'If I take this,
+                            what's the best I could have done before it started?' She uses a quick lookup (binary
+                            search) to find the answer. She picks whichever is better: taking this mission or skipping
+                            it."</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>🔑 The Key Insight</h2>
+            <div class="invariant-box">
+                <h4>The Recurrence Relation</h4>
+                <pre>
+For job i (sorted by end time):
+
+    dp[i] = max(
+        dp[i-1],                          // SKIP: best without this job
+        profit[i] + dp[lastNonConflict]   // TAKE: this job + best compatible
+    )
+
+Where lastNonConflict = latest job that ends before job i starts
+                </pre>
+            </div>
+            <div class="message-box insight">
+                <strong>Why does this work?</strong>
+                <br><br>
+                • Sorting by end time ensures dp[i-1] represents "best ending by time end[i-1]"
+                <br>
+                • Binary search finds the last job that doesn't conflict in O(log n)
+                <br>
+                • The max() captures the fundamental choice: include this job or not
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- PATTERNS TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-patterns">
+        <div class="panel">
+            <h2>🧩 Four Interlocking Patterns</h2>
+            <p style="color: #888; margin-bottom: 15px;">This problem combines four distinct algorithmic patterns:</p>
+
+            <div class="concept-grid">
+                <div class="concept-box pattern-1">
+                    <h4>🟢 Pattern 1: Sort by End Time</h4>
+                    <p>
+                        <strong>Why:</strong> Creates a natural order where dp[i] means "best profit using jobs 0..i"
+                        <br><br>
+                        <strong>Insight:</strong> After processing job i, we've considered ALL jobs ending by time
+                        end[i]. No future job can affect past decisions.
+                        <br><br>
+                        <strong>Analogy:</strong> Like reading a timeline left-to-right. Once we pass a point, it's
+                        settled.
+                    </p>
+                </div>
+
+                <div class="concept-box pattern-2">
+                    <h4>🔵 Pattern 2: Binary Search for Last Compatible</h4>
+                    <p>
+                        <strong>Why:</strong> Finding "last job ending before start[i]" naively is O(n). Binary search
+                        makes it O(log n).
+                        <br><br>
+                        <strong>Insight:</strong> Since jobs are sorted by end time, end times form a sorted array. We
+                        search for the rightmost end ≤ start[i].
+                        <br><br>
+                        <strong>Analogy:</strong> Like binary searching a phone book for the last person whose name
+                        comes before yours.
+                    </p>
+                </div>
+
+                <div class="concept-box pattern-3">
+                    <h4>🟣 Pattern 3: Take-or-Skip DP Decision</h4>
+                    <p>
+                        <strong>Why:</strong> Each job has exactly two possibilities: we take it or we don't.
+                        <br><br>
+                        <strong>Insight:</strong> This is the 0/1 Knapsack pattern. The "weight" is time-based
+                        (conflicts), the "value" is profit.
+                        <br><br>
+                        <strong>Analogy:</strong> Like packing a suitcase. Each item: pack it or leave it. But here,
+                        "fitting" means no time conflict.
+                    </p>
+                </div>
+
+                <div class="concept-box pattern-4">
+                    <h4>🟡 Pattern 4: Optimal Substructure</h4>
+                    <p>
+                        <strong>Why:</strong> The best solution for jobs 0..i builds on best solutions for smaller
+                        subproblems.
+                        <br><br>
+                        <strong>Insight:</strong> If we take job i, we need the best solution for jobs ending before
+                        start[i]. This is a smaller, already-solved subproblem.
+                        <br><br>
+                        <strong>Analogy:</strong> Like building a tower. Each level rests on optimally-built lower
+                        levels.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>🔗 How The Patterns Connect</h2>
+            <div class="canvas-container">
+                <canvas id="patternFlowCanvas" width="700" height="300"></canvas>
+            </div>
+            <div class="message-box">
+                <strong>The Flow:</strong>
+                <br><br>
+                1. <span style="color: #4ade80;">Sort</span> creates the foundation — jobs in end-time order
+                <br>
+                2. For each job, <span style="color: #22d3ee;">Binary Search</span> finds the last compatible job
+                <br>
+                3. <span style="color: #f472b6;">DP Decision</span> compares take vs skip using <span
+                    style="color: #fbbf24;">Optimal Substructure</span>
+                <br>
+                4. Final answer is dp[n-1] — best using all jobs
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>⚠️ Why Greedy Fails</h2>
+            <div class="grid-2">
+                <div>
+                    <h3 style="color: #ef4444;">❌ Greedy by Profit</h3>
+                    <div class="message-box">
+                        "Always take the highest-profit available job"
+                        <br><br>
+                        <strong>Counterexample:</strong>
+                        <br>
+                        Job A: [1,10] $100
+                        <br>
+                        Job B: [1,5] $60
+                        <br>
+                        Job C: [6,10] $60
+                        <br><br>
+                        Greedy takes A ($100), but B+C = $120 is better!
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #ef4444;">❌ Greedy by End Time</h3>
+                    <div class="message-box">
+                        "Always take the earliest-ending job"
+                        <br><br>
+                        <strong>Counterexample:</strong>
+                        <br>
+                        Job A: [1,2] $10
+                        <br>
+                        Job B: [1,5] $100
+                        <br><br>
+                        Greedy takes A ($10), but B alone = $100 is better!
+                        <br><br>
+                        <em>Greedy works for unweighted intervals, but weights break it.</em>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- SORTING TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-sorting">
+        <div class="panel">
+            <h2>1️⃣ Sorting Phase: Why End Time?</h2>
+
+            <div class="canvas-container">
+                <canvas id="sortingCanvas" width="700" height="280"></canvas>
+            </div>
+
+            <div class="controls">
+                <button id="sortBtn" class="primary">▶ Animate Sorting</button>
+                <button id="sortResetBtn">↺ Reset</button>
+            </div>
+
+            <div class="message-box" id="sortMessage">
+                Click "Animate Sorting" to see why we sort by end time.
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>🤔 Why Not Sort by Start Time?</h2>
+            <div class="grid-2">
+                <div>
+                    <h3 style="color: #4ade80;">✓ Sorting by End Time</h3>
+                    <div class="message-box">
+                        <strong>Invariant:</strong> After processing job i, we've considered all jobs that FINISH by
+                        time end[i].
+                        <br><br>
+                        This means dp[i] is the complete answer for "what's the best we can do with jobs ending by
+                        end[i]?"
+                        <br><br>
+                        When we process job i+1, its start time matters for compatibility. The answer dp[lastCompatible]
+                        is ready because all earlier jobs are already processed.
+                    </div>
+                </div>
+                <div>
+                    <h3 style="color: #ef4444;">✗ Sorting by Start Time</h3>
+                    <div class="message-box">
+                        <strong>Problem:</strong> When processing job i, we might not know the best solution for jobs
+                        that START after job i but END before it!
+                        <br><br>
+                        <strong>Example:</strong>
+                        <br>
+                        Job A: [1, 10]
+                        <br>
+                        Job B: [2, 4]
+                        <br><br>
+                        By start time, A comes first. But B ends before A ends, so B might combine with later jobs in
+                        ways A can't.
+                    </div>
+                </div>
+            </div>
+
+            <div class="invariant-box">
+                <h4>The Critical Property</h4>
+                <pre>
+After sorting by end time:
+┌─────────────────────────────────────────────────────────────┐
+│  For any job i, ALL jobs that could potentially combine     │
+│  with it (ending before it starts) have SMALLER indices.    │
+│                                                             │
+│  This means: dp[0..j] is COMPLETE when we process job i,    │
+│  where j = last job ending before job i starts.             │
+│                                                             │
+│  We never need to "look forward" — only backward!           │
+└─────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- BINARY SEARCH TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-binary-search">
+        <div class="panel">
+            <h2>2️⃣ Binary Search: Finding Last Non-Conflicting Job</h2>
+
+            <div class="canvas-container">
+                <canvas id="binarySearchCanvas" width="700" height="320"></canvas>
+            </div>
+
+            <div class="state-grid">
+                <div class="state-box">
+                    <div class="label">Current Job</div>
+                    <div class="value" id="bsCurrent" style="color: #f472b6;">-</div>
+                </div>
+                <div class="state-box">
+                    <div class="label">Start Time</div>
+                    <div class="value" id="bsStartTime" style="color: #22d3ee;">-</div>
+                </div>
+                <div class="state-box">
+                    <div class="label">Searching In</div>
+                    <div class="value" id="bsSearchRange" style="color: #fbbf24;">-</div>
+                </div>
+                <div class="state-box">
+                    <div class="label">Left</div>
+                    <div class="value" id="bsLeft" style="color: #4ade80;">-</div>
+                </div>
+                <div class="state-box">
+                    <div class="label">Right</div>
+                    <div class="value" id="bsRight" style="color: #ef4444;">-</div>
+                </div>
+                <div class="state-box">
+                    <div class="label">Mid</div>
+                    <div class="value" id="bsMid" style="color: #a78bfa;">-</div>
+                </div>
+                <div class="state-box" id="bsResultBox">
+                    <div class="label">Last Compatible</div>
+                    <div class="value" id="bsResult" style="color: #fb923c;">-</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="bsStepBtn" class="primary">▶ Step</button>
+                <button id="bsAutoBtn">▶▶ Auto Run</button>
+                <button id="bsResetBtn">↺ Reset</button>
+            </div>
+
+            <div class="message-box" id="bsMessage">
+                We need to find: "What's the last job (by end time) that finishes BEFORE job 2 starts at time 4?"
+                <br><br>
+                Click "Step" to walk through the binary search.
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>🔍 The Binary Search Logic</h2>
+
+            <div class="code-block">
+                <span class="line"><span class="keyword">def</span> <span
+                        class="function">find_last_non_conflict</span>(job_idx, end_times, jobs):</span>
+                <span class="line"> <span class="comment"># We want: largest j where end_times[j] <=
+                            start[job_idx]</span></span>
+                    <span class="line"> target = jobs[job_idx].start</span>
+                    <span class="line"> </span>
+                    <span class="line"> left, right = <span class="number">0</span>, job_idx - <span
+                            class="number">1</span></span>
+                    <span class="line"> result = -<span class="number">1</span> <span class="comment"># -1 means "no
+                            compatible job"</span></span>
+                    <span class="line"> </span>
+                    <span class="line highlight"> <span class="keyword">while</span> left <= right:</span>
+                            <span class="line highlight"> mid = (left + right) // <span class="number">2</span></span>
+                            <span class="line highlight"> </span>
+                            <span class="line highlight"> <span class="keyword">if</span> end_times[mid] <=
+                                    target:</span>
+                                    <span class="line highlight"> <span class="comment"># This job is compatible! But
+                                            maybe there's a later one.</span></span>
+                                    <span class="line highlight"> result = mid</span>
+                                    <span class="line highlight"> left = mid + <span class="number">1</span> <span
+                                            class="comment"># Search right half for later compatible</span></span>
+                                    <span class="line highlight"> <span class="keyword">else</span>:</span>
+                                    <span class="line highlight"> <span class="comment"># This job ends too late —
+                                            conflicts!</span></span>
+                                    <span class="line highlight"> right = mid - <span class="number">1</span> <span
+                                            class="comment"># Search left half</span></span>
+                                    <span class="line"> </span>
+                                    <span class="line"> <span class="keyword">return</span> result</span>
+            </div>
+
+            <div class="message-box insight">
+                <strong>Key Point:</strong> This is a "rightmost" binary search variant.
+                <br><br>
+                We're looking for the <strong>largest index</strong> where <code>end_time ≤ target</code>.
+                <br><br>
+                When we find a compatible job, we don't stop — we keep searching RIGHT for a potentially later one. Only
+                when <code>end_time > target</code> do we search left.
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- DP TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-dp">
+        <div class="panel">
+            <h2>3️⃣ The DP Decision: Take or Skip?</h2>
+
+            <div class="canvas-container">
+                <canvas id="dpCanvas" width="700" height="250"></canvas>
+            </div>
+
+            <div class="dp-table-container">
+                <table class="dp-table" id="dpTable">
+                    <thead>
+                        <tr>
+                            <th>Job</th>
+                            <th>-</th>
+                            <th>0: [1,3] $50</th>
+                            <th>1: [2,5] $20</th>
+                            <th>2: [4,6] $70</th>
+                            <th>3: [6,7] $60</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>dp[i]</th>
+                            <td id="dp--1">0</td>
+                            <td id="dp-0">?</td>
+                            <td id="dp-1">?</td>
+                            <td id="dp-2">?</td>
+                            <td id="dp-3">?</td>
+                        </tr>
+                        <tr>
+                            <th>lastCompat</th>
+                            <td>-</td>
+                            <td id="lc-0">?</td>
+                            <td id="lc-1">?</td>
+                            <td id="lc-2">?</td>
+                            <td id="lc-3">?</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="state-grid">
+                <div class="state-box">
+                    <div class="label">Processing</div>
+                    <div class="value" id="dpCurrentJob" style="color: #f472b6;">-</div>
+                </div>
+                <div class="state-box">
+                    <div class="label">Skip Value</div>
+                    <div class="value" id="dpSkipValue" style="color: #22d3ee;">-</div>
+                </div>
+                <div class="state-box">
+                    <div class="label">Take Value</div>
+                    <div class="value" id="dpTakeValue" style="color: #4ade80;">-</div>
+                </div>
+                <div class="state-box" id="dpDecisionBox">
+                    <div class="label">Decision</div>
+                    <div class="value" id="dpDecision" style="color: #fb923c;">-</div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="dpStepBtn" class="primary">▶ Step</button>
+                <button id="dpAutoBtn">▶▶ Auto Run</button>
+                <button id="dpResetBtn">↺ Reset</button>
+            </div>
+
+            <div class="message-box decision" id="dpMessage">
+                Click "Step" to see the DP decision for each job.
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>🧮 The Decision Formula</h2>
+
+            <div class="invariant-box">
+                <h4>For each job i:</h4>
+                <pre>
+┌─────────────────────────────────────────────────────────────┐
+│  SKIP this job:                                             │
+│      value = dp[i-1]                                        │
+│      (Best we could do without this job)                    │
+│                                                             │
+│  TAKE this job:                                             │
+│      lastCompatible = binary_search(end_times, start[i])    │
+│      value = profit[i] + dp[lastCompatible]                 │
+│      (This job's profit + best before it starts)            │
+│                                                             │
+│  dp[i] = max(SKIP, TAKE)                                    │
+└─────────────────────────────────────────────────────────────┘
+                </pre>
+            </div>
+
+            <div class="message-box insight">
+                <strong>Why dp[lastCompatible] and not dp[i-1] for TAKE?</strong>
+                <br><br>
+                Because if we TAKE job i, we can only combine it with jobs that <strong>end before job i
+                    starts</strong>.
+                <br><br>
+                dp[i-1] might include jobs that overlap with job i! We need dp[lastCompatible] which only includes jobs
+                that definitely don't conflict.
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- FULL SIMULATION TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-full-sim">
+        <div class="panel">
+            <h2>🎬 Full Algorithm Simulation</h2>
+
+            <div class="canvas-container">
+                <canvas id="fullSimCanvas" width="700" height="280"></canvas>
+            </div>
+
+            <div class="step-indicator" id="stepIndicator">
+                <div class="step-dot" data-step="0"></div>
+                <div class="step-dot" data-step="1"></div>
+                <div class="step-dot" data-step="2"></div>
+                <div class="step-dot" data-step="3"></div>
+                <div class="step-dot" data-step="4"></div>
+            </div>
+
+            <div class="dp-table-container">
+                <table class="dp-table" id="fullDpTable">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>-1 (base)</th>
+                            <th>0</th>
+                            <th>1</th>
+                            <th>2</th>
+                            <th>3</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <th>End Time</th>
+                            <td>0</td>
+                            <td id="fEnd-0">3</td>
+                            <td id="fEnd-1">5</td>
+                            <td id="fEnd-2">6</td>
+                            <td id="fEnd-3">7</td>
+                        </tr>
+                        <tr>
+                            <th>Profit</th>
+                            <td>-</td>
+                            <td id="fProfit-0">$50</td>
+                            <td id="fProfit-1">$20</td>
+                            <td id="fProfit-2">$70</td>
+                            <td id="fProfit-3">$60</td>
+                        </tr>
+                        <tr>
+                            <th>dp[i]</th>
+                            <td id="fDp--1" class="computed">0</td>
+                            <td id="fDp-0">?</td>
+                            <td id="fDp-1">?</td>
+                            <td id="fDp-2">?</td>
+                            <td id="fDp-3">?</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="controls">
+                <button id="fullStepBtn" class="primary">▶ Next Step</button>
+                <button id="fullAutoBtn">▶▶ Auto Play</button>
+                <button id="fullResetBtn">↺ Reset</button>
+            </div>
+
+            <div class="speed-control">
+                <label>Speed:</label>
+                <input type="range" id="speedSlider" min="200" max="2000" value="800">
+                <span id="speedLabel">800ms</span>
+            </div>
+
+            <div class="message-box" id="fullSimMessage">
+                <strong>Ready to simulate!</strong>
+                <br><br>
+                Jobs (sorted by end time):
+                <br>
+                Job 0: [1,3] $50 | Job 1: [2,5] $20 | Job 2: [4,6] $70 | Job 3: [6,7] $60
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📊 Final Analysis</h2>
+            <div id="finalAnalysis" style="display: none;">
+                <div class="message-box insight">
+                    <strong>Optimal Solution: $180</strong>
+                    <br><br>
+                    <strong>Selected Jobs:</strong> Job 0 [1,3] $50 + Job 2 [4,6] $70 + Job 3 [6,7] $60
+                    <br><br>
+                    <strong>Why not Job 1?</strong>
+                    <br>
+                    Job 1 [2,5] conflicts with both Job 0 and Job 2. Taking Job 1 ($20) would mean giving up Job 0+2
+                    ($120). Not worth it!
+                </div>
+
+                <div class="canvas-container">
+                    <canvas id="solutionCanvas" width="700" height="150"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // DATA
+        // ═══════════════════════════════════════════════════════════════
+
+        const jobs = [
+            { id: 0, start: 1, end: 3, profit: 50, color: '#4ade80' },
+            { id: 1, start: 2, end: 5, profit: 20, color: '#22d3ee' },
+            { id: 2, start: 4, end: 6, profit: 70, color: '#f472b6' },
+            { id: 3, start: 6, end: 7, profit: 60, color: '#fbbf24' }
+        ];
+
+        // Already sorted by end time for this example
+        const sortedJobs = [...jobs].sort((a, b) => a.end - b.end);
+
+        // ═══════════════════════════════════════════════════════════════
+        // TAB SWITCHING
+        // ═══════════════════════════════════════════════════════════════
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // CANVAS UTILITIES
+        // ═══════════════════════════════════════════════════════════════
+
+        function drawTimeline(ctx, width, height, yOffset, maxTime = 8) {
+            const margin = 60;
+            const timelineWidth = width - 2 * margin;
+
+            ctx.strokeStyle = '#3a3f55';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(margin, yOffset);
+            ctx.lineTo(width - margin, yOffset);
+            ctx.stroke();
+
+            // Time markers
+            ctx.fillStyle = '#888';
+            ctx.font = '12px Consolas';
+            ctx.textAlign = 'center';
+            for (let t = 0; t <= maxTime; t++) {
+                const x = margin + (t / maxTime) * timelineWidth;
+                ctx.beginPath();
+                ctx.moveTo(x, yOffset - 5);
+                ctx.lineTo(x, yOffset + 5);
+                ctx.stroke();
+                ctx.fillText(t.toString(), x, yOffset + 18);
+            }
+
+            return { margin, timelineWidth, maxTime };
+        }
+
+        function drawJob(ctx, job, timeline, y, height, highlight = false, selected = false) {
+            const { margin, timelineWidth, maxTime } = timeline;
+            const x1 = margin + (job.start / maxTime) * timelineWidth;
+            const x2 = margin + (job.end / maxTime) * timelineWidth;
+
+            ctx.fillStyle = selected ? job.color : (highlight ? job.color : job.color + '88');
+            ctx.strokeStyle = highlight || selected ? '#fff' : job.color;
+            ctx.lineWidth = highlight || selected ? 3 : 2;
+
+            const radius = 6;
+            ctx.beginPath();
+            ctx.roundRect(x1, y, x2 - x1, height, radius);
+            ctx.fill();
+            ctx.stroke();
+
+            // Label
+            ctx.fillStyle = '#000';
+            ctx.font = 'bold 12px Segoe UI';
+            ctx.textAlign = 'center';
+            ctx.fillText(`$${job.profit}`, (x1 + x2) / 2, y + height / 2 + 4);
+
+            return { x1, x2, y, height };
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // OVERVIEW CANVAS
+        // ═══════════════════════════════════════════════════════════════
+
+        function drawOverview() {
+            const canvas = document.getElementById('overviewCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const timeline = drawTimeline(ctx, canvas.width, canvas.height, 170);
+
+            // Draw jobs at different heights
+            const heights = [30, 70, 30, 110];
+            jobs.forEach((job, i) => {
+                drawJob(ctx, job, timeline, heights[i], 35);
+            });
+
+            // Title
+            ctx.fillStyle = '#888';
+            ctx.font = '14px Segoe UI';
+            ctx.textAlign = 'left';
+            ctx.fillText('4 jobs with overlapping time windows', 60, 20);
+        }
+
+        drawOverview();
+
+        // ═══════════════════════════════════════════════════════════════
+        // PATTERN FLOW CANVAS
+        // ═══════════════════════════════════════════════════════════════
+
+        function drawPatternFlow() {
+            const canvas = document.getElementById('patternFlowCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const boxes = [
+                { x: 80, y: 40, w: 120, h: 60, label: '① Sort by\nEnd Time', color: '#4ade80' },
+                { x: 290, y: 40, w: 120, h: 60, label: '② Binary Search\nLast Compatible', color: '#22d3ee' },
+                { x: 500, y: 40, w: 120, h: 60, label: '③ DP Decision\nTake or Skip', color: '#f472b6' },
+                { x: 290, y: 180, w: 120, h: 60, label: '④ Optimal\nSubstructure', color: '#fbbf24' }
+            ];
+
+            // Draw connections
+            ctx.strokeStyle = '#4a4f65';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+
+            // 1 → 2
+            ctx.beginPath();
+            ctx.moveTo(200, 70);
+            ctx.lineTo(290, 70);
+            ctx.stroke();
+
+            // 2 → 3
+            ctx.beginPath();
+            ctx.moveTo(410, 70);
+            ctx.lineTo(500, 70);
+            ctx.stroke();
+
+            // 2 → 4
+            ctx.beginPath();
+            ctx.moveTo(350, 100);
+            ctx.lineTo(350, 180);
+            ctx.stroke();
+
+            // 4 → 3
+            ctx.beginPath();
+            ctx.moveTo(410, 210);
+            ctx.lineTo(560, 210);
+            ctx.lineTo(560, 100);
+            ctx.stroke();
+
+            ctx.setLineDash([]);
+
+            // Draw boxes
+            boxes.forEach(box => {
+                ctx.fillStyle = box.color + '33';
+                ctx.strokeStyle = box.color;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(box.x, box.y, box.w, box.h, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = box.color;
+                ctx.font = 'bold 13px Segoe UI';
+                ctx.textAlign = 'center';
+                const lines = box.label.split('\n');
+                lines.forEach((line, i) => {
+                    ctx.fillText(line, box.x + box.w / 2, box.y + 25 + i * 18);
+                });
+            });
+
+            // Loop label
+            ctx.fillStyle = '#888';
+            ctx.font = '12px Segoe UI';
+            ctx.fillText('For each job', 350, 150);
+            ctx.fillText('feeds into', 480, 150);
+        }
+
+        drawPatternFlow();
+
+        // ═══════════════════════════════════════════════════════════════
+        // SORTING ANIMATION
+        // ═══════════════════════════════════════════════════════════════
+
+        let sortState = { phase: 0, animating: false };
+
+        function drawSortingPhase() {
+            const canvas = document.getElementById('sortingCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const timeline = drawTimeline(ctx, canvas.width, canvas.height, 240);
+
+            // Unsorted label
+            ctx.fillStyle = '#888';
+            ctx.font = '14px Segoe UI';
+            ctx.textAlign = 'left';
+            ctx.fillText('Original order (by input):', 60, 25);
+
+            if (sortState.phase === 0) {
+                // Unsorted view
+                const heights = [50, 90, 130, 170];
+                jobs.forEach((job, i) => {
+                    drawJob(ctx, job, timeline, heights[i], 30);
+                    ctx.fillStyle = '#888';
+                    ctx.font = '11px Consolas';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`Job ${job.id}:`, 55, heights[i] + 20);
+                });
+            } else {
+                // Sorted view
+                ctx.fillStyle = '#4ade80';
+                ctx.fillText('Sorted by END TIME:', 60, 25);
+
+                const heights = [50, 90, 130, 170];
+                sortedJobs.forEach((job, i) => {
+                    drawJob(ctx, job, timeline, heights[i], 30, true);
+                    ctx.fillStyle = '#4ade80';
+                    ctx.font = '11px Consolas';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`[${i}] end=${job.end}:`, 55, heights[i] + 20);
+                });
+
+                // Draw end time markers
+                ctx.setLineDash([3, 3]);
+                ctx.strokeStyle = '#4ade80';
+                ctx.lineWidth = 1;
+                sortedJobs.forEach((job, i) => {
+                    const x = timeline.margin + (job.end / timeline.maxTime) * timeline.timelineWidth;
+                    ctx.beginPath();
+                    ctx.moveTo(x, heights[i] + 30);
+                    ctx.lineTo(x, 240);
+                    ctx.stroke();
+                });
+                ctx.setLineDash([]);
+            }
+        }
+
+        drawSortingPhase();
+
+        document.getElementById('sortBtn').addEventListener('click', () => {
+            if (sortState.animating) return;
+            sortState.animating = true;
+            sortState.phase = 1;
+            drawSortingPhase();
+            document.getElementById('sortMessage').innerHTML = `
+                <strong style="color: #4ade80;">Sorted by end time!</strong><br><br>
+                Notice: Job 0 ends first (time 3), then Job 1 (time 5), then Job 2 (time 6), then Job 3 (time 7).<br><br>
+                The dashed lines show end times increasing monotonically. This is crucial for the DP to work!
+            `;
+            sortState.animating = false;
+        });
+
+        document.getElementById('sortResetBtn').addEventListener('click', () => {
+            sortState.phase = 0;
+            drawSortingPhase();
+            document.getElementById('sortMessage').textContent = 'Click "Animate Sorting" to see why we sort by end time.';
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // BINARY SEARCH ANIMATION
+        // ═══════════════════════════════════════════════════════════════
+
+        const bsState = {
+            targetJob: 2,  // Job 2 starts at time 4, we search for last job ending <= 4
+            step: 0,
+            left: 0,
+            right: 1,  // Jobs 0 and 1 are before job 2
+            mid: 0,
+            result: -1,
+            steps: []
+        };
+
+        function initBinarySearch() {
+            bsState.step = 0;
+            bsState.left = 0;
+            bsState.right = 1;
+            bsState.mid = 0;
+            bsState.result = -1;
+            bsState.steps = [
+                { type: 'init', left: 0, right: 1, mid: null, result: -1, msg: 'Starting binary search. Looking for last job ending ≤ 4 (Job 2\'s start time).' },
+                { type: 'mid', left: 0, right: 1, mid: 0, result: -1, msg: 'Calculate mid = (0 + 1) / 2 = 0. Check Job 0: end time = 3.' },
+                { type: 'check', left: 0, right: 1, mid: 0, result: 0, msg: 'Job 0 ends at 3 ≤ 4 ✓ Compatible! Update result = 0. Search RIGHT for potentially later compatible job.' },
+                { type: 'move', left: 1, right: 1, mid: 0, result: 0, msg: 'Set left = mid + 1 = 1. New search range: [1, 1].' },
+                { type: 'mid2', left: 1, right: 1, mid: 1, result: 0, msg: 'Calculate mid = (1 + 1) / 2 = 1. Check Job 1: end time = 5.' },
+                { type: 'check2', left: 1, right: 1, mid: 1, result: 0, msg: 'Job 1 ends at 5 > 4 ✗ Conflicts! Keep result = 0. Search LEFT.' },
+                { type: 'move2', left: 1, right: 0, mid: 1, result: 0, msg: 'Set right = mid - 1 = 0. Now left (1) > right (0), so we\'re done!' },
+                { type: 'done', left: 1, right: 0, mid: 1, result: 0, msg: 'Binary search complete! Last compatible job is Job 0 (ends at time 3). dp[lastCompatible] = dp[0].' }
+            ];
+        }
+
+        initBinarySearch();
+
+        function drawBinarySearch() {
+            const canvas = document.getElementById('binarySearchCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const timeline = drawTimeline(ctx, canvas.width, canvas.height, 280);
+
+            // Draw all jobs
+            const heights = [50, 100, 150, 200];
+            sortedJobs.forEach((job, i) => {
+                const highlight = (bsState.step > 0 && i === bsState.mid) || i === bsState.targetJob;
+                const isTarget = i === bsState.targetJob;
+                drawJob(ctx, job, timeline, heights[i], 35, highlight, false);
+
+                // Label
+                ctx.fillStyle = isTarget ? '#f472b6' : '#888';
+                ctx.font = '11px Consolas';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Job ${i}: end=${job.end}`, 55, heights[i] + 22);
+            });
+
+            // Draw target start time line
+            if (bsState.step > 0) {
+                const targetStart = sortedJobs[bsState.targetJob].start;
+                const x = timeline.margin + (targetStart / timeline.maxTime) * timeline.timelineWidth;
+
+                ctx.setLineDash([5, 5]);
+                ctx.strokeStyle = '#f472b6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x, 30);
+                ctx.lineTo(x, 260);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#f472b6';
+                ctx.font = 'bold 12px Segoe UI';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Target: start = ${targetStart}`, x, 20);
+            }
+
+            // Draw search range indicators
+            const step = bsState.steps[bsState.step];
+            if (step && bsState.step > 0) {
+                // Left pointer
+                if (step.left <= 1) {
+                    ctx.fillStyle = '#4ade80';
+                    ctx.font = 'bold 14px Segoe UI';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('L', 30, heights[step.left] + 22);
+                }
+
+                // Right pointer
+                if (step.right >= 0 && step.right <= 1) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = 'bold 14px Segoe UI';
+                    ctx.fillText('R', 42, heights[step.right] + 22);
+                }
+
+                // Mid pointer
+                if (step.mid !== null && step.mid >= 0 && step.mid <= 1) {
+                    ctx.fillStyle = '#a78bfa';
+                    ctx.font = 'bold 14px Segoe UI';
+                    ctx.fillText('M', 18, heights[step.mid] + 22);
+                }
+
+                // Result indicator
+                if (step.result >= 0) {
+                    const job = sortedJobs[step.result];
+                    const x2 = timeline.margin + (job.end / timeline.maxTime) * timeline.timelineWidth;
+                    ctx.fillStyle = '#fb923c';
+                    ctx.beginPath();
+                    ctx.arc(x2, heights[step.result] + 35 + 10, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.fillStyle = '#000';
+                    ctx.font = 'bold 10px Segoe UI';
+                    ctx.fillText('✓', x2, heights[step.result] + 35 + 14);
+                }
+            }
+
+            // Update state display
+            if (step) {
+                document.getElementById('bsCurrent').textContent = `Job ${bsState.targetJob}`;
+                document.getElementById('bsStartTime').textContent = sortedJobs[bsState.targetJob].start;
+                document.getElementById('bsSearchRange').textContent = `[0, ${bsState.targetJob - 1}]`;
+                document.getElementById('bsLeft').textContent = step.left;
+                document.getElementById('bsRight').textContent = step.right;
+                document.getElementById('bsMid').textContent = step.mid !== null ? step.mid : '-';
+                document.getElementById('bsResult').textContent = step.result >= 0 ? `Job ${step.result}` : 'None';
+                document.getElementById('bsMessage').innerHTML = step.msg;
+
+                if (step.type === 'done') {
+                    document.getElementById('bsResultBox').classList.add('highlight');
+                } else {
+                    document.getElementById('bsResultBox').classList.remove('highlight');
+                }
+            }
+        }
+
+        drawBinarySearch();
+
+        document.getElementById('bsStepBtn').addEventListener('click', () => {
+            if (bsState.step < bsState.steps.length - 1) {
+                bsState.step++;
+                drawBinarySearch();
+            }
+        });
+
+        document.getElementById('bsAutoBtn').addEventListener('click', () => {
+            const interval = setInterval(() => {
+                if (bsState.step < bsState.steps.length - 1) {
+                    bsState.step++;
+                    drawBinarySearch();
+                } else {
+                    clearInterval(interval);
+                }
+            }, 1000);
+        });
+
+        document.getElementById('bsResetBtn').addEventListener('click', () => {
+            initBinarySearch();
+            drawBinarySearch();
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // DP ANIMATION
+        // ═══════════════════════════════════════════════════════════════
+
+        const dpState = {
+            step: -1,
+            dp: [0, null, null, null, null],  // dp[-1]=0, dp[0..3]=null
+            lastCompat: [null, null, null, null],
+            decisions: []
+        };
+
+        function initDP() {
+            dpState.step = -1;
+            dpState.dp = [0, null, null, null, null];
+            dpState.lastCompat = [null, null, null, null];
+            dpState.decisions = [
+                {
+                    job: 0,
+                    lastCompat: -1,
+                    skip: 0,
+                    take: 50,
+                    decision: 'TAKE',
+                    result: 50,
+                    msg: `<strong>Job 0:</strong> [1,3] $50<br>
+                          Last compatible: None (no jobs end before time 1)<br>
+                          SKIP = dp[-1] = $0<br>
+                          TAKE = $50 + dp[-1] = $50 + $0 = $50<br>
+                          <strong>Decision: TAKE ($50 > $0)</strong>`
+                },
+                {
+                    job: 1,
+                    lastCompat: -1,
+                    skip: 50,
+                    take: 20,
+                    decision: 'SKIP',
+                    result: 50,
+                    msg: `<strong>Job 1:</strong> [2,5] $20<br>
+                          Last compatible: None (Job 0 ends at 3 > start time 2)<br>
+                          SKIP = dp[0] = $50<br>
+                          TAKE = $20 + dp[-1] = $20 + $0 = $20<br>
+                          <strong>Decision: SKIP ($50 > $20)</strong>`
+                },
+                {
+                    job: 2,
+                    lastCompat: 0,
+                    skip: 50,
+                    take: 120,
+                    decision: 'TAKE',
+                    result: 120,
+                    msg: `<strong>Job 2:</strong> [4,6] $70<br>
+                          Last compatible: Job 0 (ends at 3 ≤ start time 4)<br>
+                          SKIP = dp[1] = $50<br>
+                          TAKE = $70 + dp[0] = $70 + $50 = $120<br>
+                          <strong>Decision: TAKE ($120 > $50)</strong>`
+                },
+                {
+                    job: 3,
+                    lastCompat: 2,
+                    skip: 120,
+                    take: 180,
+                    decision: 'TAKE',
+                    result: 180,
+                    msg: `<strong>Job 3:</strong> [6,7] $60<br>
+                          Last compatible: Job 2 (ends at 6 ≤ start time 6)<br>
+                          SKIP = dp[2] = $120<br>
+                          TAKE = $60 + dp[2] = $60 + $120 = $180<br>
+                          <strong>Decision: TAKE ($180 > $120)</strong>`
+                }
+            ];
+        }
+
+        initDP();
+
+        function drawDP() {
+            const canvas = document.getElementById('dpCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const timeline = drawTimeline(ctx, canvas.width, canvas.height, 220);
+
+            // Draw jobs
+            const heights = [40, 80, 120, 160];
+            sortedJobs.forEach((job, i) => {
+                const isActive = i === dpState.step;
+                const isSelected = dpState.step >= i && dpState.decisions[i]?.decision === 'TAKE';
+                drawJob(ctx, job, timeline, heights[i], 30, isActive, isSelected);
+            });
+
+            // Update table
+            for (let i = 0; i < 4; i++) {
+                const dpCell = document.getElementById(`dp-${i}`);
+                const lcCell = document.getElementById(`lc-${i}`);
+
+                if (dpState.dp[i + 1] !== null) {
+                    dpCell.textContent = `$${dpState.dp[i + 1]}`;
+                    dpCell.classList.add('computed');
+                } else {
+                    dpCell.textContent = '?';
+                    dpCell.classList.remove('computed');
+                }
+
+                if (i <= dpState.step) {
+                    dpCell.classList.toggle('current', i === dpState.step);
+                    const lc = dpState.decisions[i].lastCompat;
+                    lcCell.textContent = lc >= 0 ? lc : '-1';
+                } else {
+                    dpCell.classList.remove('current');
+                    lcCell.textContent = '?';
+                }
+            }
+
+            // Update state display
+            if (dpState.step >= 0) {
+                const d = dpState.decisions[dpState.step];
+                document.getElementById('dpCurrentJob').textContent = `Job ${d.job}`;
+                document.getElementById('dpSkipValue').textContent = `$${d.skip}`;
+                document.getElementById('dpTakeValue').textContent = `$${d.take}`;
+                document.getElementById('dpDecision').textContent = d.decision;
+                document.getElementById('dpMessage').innerHTML = d.msg;
+
+                document.getElementById('dpDecisionBox').classList.toggle('highlight', true);
+            } else {
+                document.getElementById('dpCurrentJob').textContent = '-';
+                document.getElementById('dpSkipValue').textContent = '-';
+                document.getElementById('dpTakeValue').textContent = '-';
+                document.getElementById('dpDecision').textContent = '-';
+                document.getElementById('dpMessage').innerHTML = 'Click "Step" to see the DP decision for each job.';
+                document.getElementById('dpDecisionBox').classList.remove('highlight');
+            }
+        }
+
+        drawDP();
+
+        document.getElementById('dpStepBtn').addEventListener('click', () => {
+            if (dpState.step < 3) {
+                dpState.step++;
+                const d = dpState.decisions[dpState.step];
+                dpState.dp[dpState.step + 1] = d.result;
+                dpState.lastCompat[dpState.step] = d.lastCompat;
+                drawDP();
+            }
+        });
+
+        document.getElementById('dpAutoBtn').addEventListener('click', () => {
+            const interval = setInterval(() => {
+                if (dpState.step < 3) {
+                    dpState.step++;
+                    const d = dpState.decisions[dpState.step];
+                    dpState.dp[dpState.step + 1] = d.result;
+                    dpState.lastCompat[dpState.step] = d.lastCompat;
+                    drawDP();
+                } else {
+                    clearInterval(interval);
+                }
+            }, 1500);
+        });
+
+        document.getElementById('dpResetBtn').addEventListener('click', () => {
+            initDP();
+            drawDP();
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // FULL SIMULATION
+        // ═══════════════════════════════════════════════════════════════
+
+        const fullState = {
+            step: -1,
+            dp: [0, null, null, null, null],
+            selected: [],
+            autoInterval: null
+        };
+
+        const fullSteps = [
+            { job: -1, msg: '<strong>Initialization:</strong><br>dp[-1] = 0 (base case: zero profit with no jobs)<br>Jobs are sorted by end time: [3, 5, 6, 7]' },
+            { job: 0, dp: 50, selected: [0], msg: '<strong>Job 0: [1,3] $50</strong><br>No jobs end before time 1, so lastCompat = -1<br>SKIP = dp[-1] = $0 | TAKE = $50 + dp[-1] = $50<br>max(0, 50) = 50 → <span style="color:#4ade80">TAKE</span>' },
+            { job: 1, dp: 50, selected: [0], msg: '<strong>Job 1: [2,5] $20</strong><br>Job 0 ends at 3 > 2, so no compatible jobs. lastCompat = -1<br>SKIP = dp[0] = $50 | TAKE = $20 + dp[-1] = $20<br>max(50, 20) = 50 → <span style="color:#ef4444">SKIP</span>' },
+            { job: 2, dp: 120, selected: [0, 2], msg: '<strong>Job 2: [4,6] $70</strong><br>Job 0 ends at 3 ≤ 4 ✓ lastCompat = 0<br>SKIP = dp[1] = $50 | TAKE = $70 + dp[0] = $70 + $50 = $120<br>max(50, 120) = 120 → <span style="color:#4ade80">TAKE</span>' },
+            { job: 3, dp: 180, selected: [0, 2, 3], msg: '<strong>Job 3: [6,7] $60</strong><br>Job 2 ends at 6 ≤ 6 ✓ lastCompat = 2<br>SKIP = dp[2] = $120 | TAKE = $60 + dp[2] = $60 + $120 = $180<br>max(120, 180) = 180 → <span style="color:#4ade80">TAKE</span>' }
+        ];
+
+        function drawFullSim() {
+            const canvas = document.getElementById('fullSimCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const timeline = drawTimeline(ctx, canvas.width, canvas.height, 250);
+
+            // Draw jobs
+            const heights = [40, 90, 140, 190];
+            sortedJobs.forEach((job, i) => {
+                const isActive = fullSteps[fullState.step + 1]?.job === i;
+                const isSelected = fullState.selected.includes(i);
+                drawJob(ctx, job, timeline, heights[i], 40, isActive, isSelected);
+
+                // Job label
+                ctx.fillStyle = isSelected ? job.color : '#888';
+                ctx.font = '11px Consolas';
+                ctx.textAlign = 'right';
+                ctx.fillText(`Job ${i}:`, 55, heights[i] + 25);
+            });
+
+            // Update step indicators
+            document.querySelectorAll('.step-dot').forEach((dot, i) => {
+                dot.classList.remove('active', 'completed');
+                if (i === fullState.step + 1) dot.classList.add('active');
+                if (i < fullState.step + 1) dot.classList.add('completed');
+            });
+
+            // Update table
+            for (let i = 0; i < 4; i++) {
+                const cell = document.getElementById(`fDp-${i}`);
+                if (fullState.dp[i + 1] !== null) {
+                    cell.textContent = `$${fullState.dp[i + 1]}`;
+                    cell.classList.add('computed');
+                    cell.classList.toggle('current', fullSteps[fullState.step + 1]?.job === i);
+                    cell.classList.toggle('path', fullState.selected.includes(i));
+                } else {
+                    cell.textContent = '?';
+                    cell.classList.remove('computed', 'current', 'path');
+                }
+            }
+
+            // Update message
+            if (fullState.step >= 0) {
+                document.getElementById('fullSimMessage').innerHTML = fullSteps[fullState.step + 1].msg;
+            }
+
+            // Show final analysis
+            if (fullState.step === 4) {
+                document.getElementById('finalAnalysis').style.display = 'block';
+                drawSolution();
+            }
+        }
+
+        function drawSolution() {
+            const canvas = document.getElementById('solutionCanvas');
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const timeline = drawTimeline(ctx, canvas.width, canvas.height, 120);
+
+            // Draw only selected jobs
+            [0, 2, 3].forEach((jobIdx, i) => {
+                const job = sortedJobs[jobIdx];
+                drawJob(ctx, job, timeline, 40, 50, false, true);
+            });
+
+            // Total
+            ctx.fillStyle = '#4ade80';
+            ctx.font = 'bold 16px Segoe UI';
+            ctx.textAlign = 'right';
+            ctx.fillText('Total: $180', canvas.width - 60, 70);
+        }
+
+        drawFullSim();
+
+        document.getElementById('fullStepBtn').addEventListener('click', () => {
+            if (fullState.step < 4) {
+                fullState.step++;
+                const step = fullSteps[fullState.step + 1];
+                if (step.dp !== undefined) {
+                    fullState.dp[fullState.step] = step.dp;
+                }
+                if (step.selected) {
+                    fullState.selected = step.selected;
+                }
+                drawFullSim();
+            }
+        });
+
+        document.getElementById('fullAutoBtn').addEventListener('click', () => {
+            if (fullState.autoInterval) {
+                clearInterval(fullState.autoInterval);
+                fullState.autoInterval = null;
+                return;
+            }
+
+            const speed = parseInt(document.getElementById('speedSlider').value);
+            fullState.autoInterval = setInterval(() => {
+                if (fullState.step < 4) {
+                    fullState.step++;
+                    const step = fullSteps[fullState.step + 1];
+                    if (step.dp !== undefined) {
+                        fullState.dp[fullState.step] = step.dp;
+                    }
+                    if (step.selected) {
+                        fullState.selected = step.selected;
+                    }
+                    drawFullSim();
+                } else {
+                    clearInterval(fullState.autoInterval);
+                    fullState.autoInterval = null;
+                }
+            }, speed);
+        });
+
+        document.getElementById('fullResetBtn').addEventListener('click', () => {
+            if (fullState.autoInterval) {
+                clearInterval(fullState.autoInterval);
+                fullState.autoInterval = null;
+            }
+            fullState.step = -1;
+            fullState.dp = [0, null, null, null, null];
+            fullState.selected = [];
+            document.getElementById('finalAnalysis').style.display = 'none';
+            drawFullSim();
+            document.getElementById('fullSimMessage').innerHTML = `
+                <strong>Ready to simulate!</strong><br><br>
+                Jobs (sorted by end time):<br>
+                Job 0: [1,3] $50 | Job 1: [2,5] $20 | Job 2: [4,6] $70 | Job 3: [6,7] $60
+            `;
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            document.getElementById('speedLabel').textContent = `${e.target.value}ms`;
+        });
+    </script>
+</body>
+
+</html>

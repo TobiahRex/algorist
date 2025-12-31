@@ -1,0 +1,2608 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two Pointers Pattern — Complete Deep Dive</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #f472b6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* TAB NAVIGATION */
+        .main-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .main-tab {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 1px solid #2a2f45;
+            color: #888;
+            padding: 12px 24px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .main-tab:hover {
+            color: #ccc;
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+        }
+
+        .main-tab.active {
+            background: linear-gradient(145deg, #2a1a4a, #1a1035);
+            border-color: #a78bfa;
+            color: #a78bfa;
+            border-bottom-color: transparent;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* PANEL STYLES */
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* PROBLEM SELECTOR */
+        .problem-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .problem-btn {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 1px solid #2a2f45;
+            color: #888;
+            padding: 8px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .problem-btn:hover {
+            border-color: #4a4f65;
+            color: #ccc;
+        }
+
+        .problem-btn.active {
+            border-color: #4ade80;
+            color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .problem-btn .diff {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+
+        .problem-btn .diff.easy {
+            background: #4ade80;
+        }
+
+        .problem-btn .diff.medium {
+            background: #fbbf24;
+        }
+
+        .problem-btn .diff.hard {
+            background: #f472b6;
+        }
+
+        /* MAIN LEARNING GRID */
+        .learning-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1100px) {
+            .learning-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ANIMATION PANEL */
+        .anim-panel {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+        }
+
+        button.active {
+            border-color: #22d3ee;
+            box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+        }
+
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .state-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .state-item .label {
+            font-size: 0.65rem;
+            color: #666;
+        }
+
+        .state-item .value {
+            font-size: 0.95rem;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }
+
+        .message-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #aaa;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .message-box.found {
+            background: rgba(74, 222, 128, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+        }
+
+        /* CODE PANEL */
+        .code-panel {
+            background: #0d1117;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-header {
+            background: #161b22;
+            padding: 10px 15px;
+            border-bottom: 1px solid #2a2f45;
+            font-size: 0.85rem;
+            color: #888;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .code-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .code-tab {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            color: #888;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            transition: all 0.2s;
+        }
+
+        .code-tab:hover {
+            color: #ccc;
+            border-color: #555;
+        }
+
+        .code-tab.active {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        .code-body {
+            padding: 15px;
+            overflow-x: auto;
+            flex: 1;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            padding: 2px 8px;
+            border-radius: 3px;
+            white-space: pre;
+            transition: all 0.3s;
+        }
+
+        .code-line.highlight {
+            background: rgba(251, 191, 36, 0.2);
+            border-left: 3px solid #fbbf24;
+            margin-left: -3px;
+        }
+
+        .code-line.executed {
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .comment {
+            color: #6a737d;
+        }
+
+        .keyword {
+            color: #ff7b72;
+        }
+
+        .function {
+            color: #d2a8ff;
+        }
+
+        .string {
+            color: #a5d6ff;
+        }
+
+        .number {
+            color: #79c0ff;
+        }
+
+        .variable {
+            color: #ffa657;
+        }
+
+        /* MNEMONIC PANEL */
+        .mnemonic-panel {
+            background: linear-gradient(145deg, #1a1025, #150d1f);
+            border: 1px solid #3a2050;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mnemonic-panel h3 {
+            color: #d8b4fe;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .poa-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 700px) {
+            .poa-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .poa-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .poa-card .emoji {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .poa-card .type {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .poa-card .content {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .poa-person .content {
+            color: #f472b6;
+        }
+
+        .poa-object .content {
+            color: #22d3ee;
+        }
+
+        .poa-action .content {
+            color: #4ade80;
+        }
+
+        .memory-story {
+            background: rgba(216, 180, 254, 0.1);
+            border-left: 3px solid #d8b4fe;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #c4b5fd;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        /* REAL WORLD PANEL */
+        .realworld-panel {
+            background: linear-gradient(145deg, #0d1a1a, #0a1515);
+            border: 1px solid #1a3a3a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .realworld-panel h3 {
+            color: #22d3ee;
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .realworld-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .scenario-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 14px;
+            border-left: 3px solid #2a4a4a;
+            transition: all 0.2s;
+        }
+
+        .scenario-box:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-left-color: #4ade80;
+        }
+
+        .scenario-icon {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .scenario-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+
+        .scenario-desc {
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.55;
+        }
+
+        .scenario-desc code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: #fbbf24;
+            font-size: 0.75rem;
+        }
+
+        .pattern-summary {
+            background: rgba(34, 211, 238, 0.1);
+            border-left: 3px solid #22d3ee;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #67e8f9;
+            margin-top: 12px;
+        }
+
+        .pattern-summary strong {
+            color: #22d3ee;
+        }
+
+        .pattern-synthesis {
+            background: linear-gradient(145deg, rgba(167, 139, 250, 0.1), rgba(244, 114, 182, 0.1));
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .pattern-synthesis h4 {
+            color: #d8b4fe;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pattern-synthesis .category {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #f472b6;
+            margin-bottom: 8px;
+        }
+
+        .pattern-synthesis .insight {
+            font-size: 0.85rem;
+            color: #c4b5fd;
+            line-height: 1.6;
+        }
+
+        .pattern-synthesis .examples {
+            font-size: 0.8rem;
+            color: #888;
+            margin-top: 10px;
+            font-style: italic;
+        }
+
+        /* VARIANTS OVERVIEW */
+        .variants-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 800px) {
+            .variants-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .variant-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            border-top: 3px solid;
+            text-align: center;
+        }
+
+        .variant-card h4 {
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .variant-card .arrows {
+            font-size: 1.8rem;
+            margin: 12px 0;
+            font-family: monospace;
+            letter-spacing: 3px;
+        }
+
+        .variant-card p {
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .variant-opposite {
+            border-color: #a78bfa;
+        }
+
+        .variant-opposite h4 {
+            color: #a78bfa;
+        }
+
+        .variant-same {
+            border-color: #22d3ee;
+        }
+
+        .variant-same h4 {
+            color: #22d3ee;
+        }
+
+        .variant-three {
+            border-color: #fb923c;
+        }
+
+        .variant-three h4 {
+            color: #fb923c;
+        }
+
+        /* FULL WIDTH */
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* SPEED CONTROL */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .speed-control input {
+            width: 80px;
+        }
+
+        /* PROBLEMS LIST */
+        .problems-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 15px;
+        }
+
+        .problem-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            border-left: 3px solid #444;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .problem-card:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .problem-card.selected {
+            border-left-color: #4ade80;
+            background: rgba(74, 222, 128, 0.1);
+        }
+
+        .problem-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .problem-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .difficulty {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .easy {
+            background: #1a3a2a;
+            color: #4ade80;
+        }
+
+        .medium {
+            background: #3a3a1a;
+            color: #fbbf24;
+        }
+
+        .hard {
+            background: #3a1a2a;
+            color: #f472b6;
+        }
+
+        .variant-tag {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: bold;
+            margin-left: auto;
+        }
+
+        .opposite {
+            background: #2a1a4a;
+            color: #a78bfa;
+        }
+
+        .same-dir {
+            background: #1a3a4a;
+            color: #22d3ee;
+        }
+
+        .three-ptr {
+            background: #4a2a1a;
+            color: #fb923c;
+        }
+
+        .problem-desc {
+            font-size: 0.8rem;
+            color: #888;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>👆👆 Two Pointers Pattern</h1>
+    <p class="subtitle">Shape: Linear Chain | Complexity: O(n) | The "sorted array / in-place" solver</p>
+
+    <!-- MAIN TAB NAVIGATION -->
+    <div class="main-tabs">
+        <button class="main-tab active" data-tab="learn">🎓 Learn & Visualize</button>
+        <button class="main-tab" data-tab="problems">📋 All Problems</button>
+        <button class="main-tab" data-tab="cheatsheet">📝 Cheat Sheet</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: LEARN & VISUALIZE -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content active" id="tab-learn">
+
+        <!-- PROBLEM SELECTOR -->
+        <div class="problem-selector">
+            <button class="problem-btn active" data-problem="twoSumII">
+                <span class="diff medium"></span>Two Sum II
+            </button>
+            <button class="problem-btn" data-problem="validPalindrome">
+                <span class="diff easy"></span>Palindrome
+            </button>
+            <button class="problem-btn" data-problem="containerWater">
+                <span class="diff medium"></span>Container
+            </button>
+            <button class="problem-btn" data-problem="threeSum">
+                <span class="diff medium"></span>3Sum
+            </button>
+            <button class="problem-btn" data-problem="removeDuplicates">
+                <span class="diff easy"></span>Remove Dups
+            </button>
+            <button class="problem-btn" data-problem="moveZeroes">
+                <span class="diff easy"></span>Move Zeroes
+            </button>
+            <button class="problem-btn" data-problem="sortColors">
+                <span class="diff medium"></span>Sort Colors
+            </button>
+            <button class="problem-btn" data-problem="trappingRain">
+                <span class="diff hard"></span>Trap Water
+            </button>
+        </div>
+
+        <!-- MNEMONIC PANEL -->
+        <div class="mnemonic-panel">
+            <h3>🧠 Memory Hook (Person → Object → Action)</h3>
+            <div class="poa-grid">
+                <div class="poa-card poa-person">
+                    <div class="emoji" id="mnemonic-emoji">🕴️</div>
+                    <div class="type">Person</div>
+                    <div class="content" id="mnemonic-person">Neo (The Matrix)</div>
+                </div>
+                <div class="poa-card poa-object">
+                    <div class="emoji">🎯</div>
+                    <div class="type">Object</div>
+                    <div class="content" id="mnemonic-object">Two Bullets</div>
+                </div>
+                <div class="poa-card poa-action">
+                    <div class="emoji">⚡</div>
+                    <div class="type">Action</div>
+                    <div class="content" id="mnemonic-action">Bending time to catch both</div>
+                </div>
+            </div>
+            <div class="memory-story" id="mnemonic-story">
+                "Neo sees two bullets coming from opposite ends of the hallway. If their combined force is too weak to
+                stop him, he leans right (L++). Too strong? He leans left (R--). When the forces balance perfectly, he
+                catches them both — target found."
+            </div>
+        </div>
+
+        <!-- REAL WORLD PANEL -->
+        <div class="realworld-panel">
+            <h3>🏗️ Real-World Engineering Use Cases</h3>
+            <div class="realworld-grid" id="realworldGrid">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="pattern-summary">
+                <strong>Pattern Essence:</strong> <span id="patternEssence">Loading...</span>
+            </div>
+            <div class="pattern-synthesis" id="patternSynthesis">
+                <h4>🎯 Synthesized Pattern Category</h4>
+                <div class="category" id="synthesisCategory">Loading...</div>
+                <div class="insight" id="synthesisInsight">Loading...</div>
+                <div class="examples" id="synthesisExamples">Loading...</div>
+            </div>
+        </div>
+
+        <!-- MAIN LEARNING GRID: ANIMATION + CODE SIDE BY SIDE -->
+        <div class="learning-grid">
+            <!-- LEFT: ANIMATION -->
+            <div class="panel">
+                <h2 style="color: #22d3ee;">⚡ Behavior Animation</h2>
+                <div class="anim-panel">
+                    <canvas id="animCanvas" width="420" height="130"></canvas>
+
+                    <div class="controls">
+                        <button id="btnStep">Step →</button>
+                        <button id="btnPlay">▶ Play</button>
+                        <button id="btnReset">↺ Reset</button>
+                        <div class="speed-control">
+                            <label>Speed:</label>
+                            <input type="range" id="speedSlider" min="100" max="1500" value="600">
+                        </div>
+                    </div>
+
+                    <div class="state-grid">
+                        <div class="state-item">
+                            <div class="label" id="leftLabel">Left (L)</div>
+                            <div class="value" style="color: #f472b6;" id="leftVal">0</div>
+                        </div>
+                        <div class="state-item">
+                            <div class="label" id="rightLabel">Right (R)</div>
+                            <div class="value" style="color: #22d3ee;" id="rightVal">0</div>
+                        </div>
+                        <div class="state-item">
+                            <div class="label" id="extraLabel">Current</div>
+                            <div class="value" style="color: #fbbf24;" id="extraVal">-</div>
+                        </div>
+                        <div class="state-item">
+                            <div class="label" id="resultLabel">Result</div>
+                            <div class="value" style="color: #4ade80;" id="resultVal">-</div>
+                        </div>
+                    </div>
+
+                    <div class="message-box" id="messageBox">
+                        Click Step or Play to see the algorithm in action!
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: SYNCHRONIZED CODE -->
+            <div class="panel">
+                <h2 style="color: #4ade80;">💻 Code (Line Synced)</h2>
+                <div class="code-panel">
+                    <div class="code-header">
+                        <span id="codeTitle">Two Sum II</span>
+                        <div class="code-tabs">
+                            <button class="code-tab active" data-code-tab="terse">Terse (Interview)</button>
+                            <button class="code-tab" data-code-tab="verbose">Verbose (Learning)</button>
+                        </div>
+                    </div>
+                    <div class="code-body" id="codeBody">
+                        <!-- Code lines will be injected here -->
+                    </div>
+                    <div class="code-body" id="codeBodyVerbose" style="display: none;">
+                        <!-- Verbose code will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: ALL PROBLEMS -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-problems">
+        <div class="panel">
+            <h2 style="color: #fbbf24;">🎯 Pattern Variants</h2>
+            <div class="variants-row">
+                <div class="variant-card variant-opposite">
+                    <h4>Opposite Direction</h4>
+                    <div class="arrows">L → ← R</div>
+                    <p>Start at ends, converge inward based on comparison</p>
+                </div>
+                <div class="variant-card variant-same">
+                    <h4>Same Direction</h4>
+                    <div class="arrows">S → F →</div>
+                    <p>Fast reads, Slow writes — filter in-place</p>
+                </div>
+                <div class="variant-card variant-three">
+                    <h4>Three Pointers</h4>
+                    <div class="arrows">L M → R</div>
+                    <p>Partition into 3 regions simultaneously</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #4ade80;">📚 Classic Problems</h2>
+            <div class="problems-grid">
+                <div class="problem-card" data-problem="twoSumII">
+                    <div class="problem-header">
+                        <span class="difficulty medium">Med</span>
+                        <span class="problem-title">Two Sum II - Sorted Array</span>
+                        <span class="variant-tag opposite">Opposite</span>
+                    </div>
+                    <div class="problem-desc">Find two numbers in sorted array that add to target.</div>
+                </div>
+
+                <div class="problem-card" data-problem="validPalindrome">
+                    <div class="problem-header">
+                        <span class="difficulty easy">Easy</span>
+                        <span class="problem-title">Valid Palindrome</span>
+                        <span class="variant-tag opposite">Opposite</span>
+                    </div>
+                    <div class="problem-desc">Check if string is palindrome (alphanumeric, case-insensitive).</div>
+                </div>
+
+                <div class="problem-card" data-problem="containerWater">
+                    <div class="problem-header">
+                        <span class="difficulty medium">Med</span>
+                        <span class="problem-title">Container With Most Water</span>
+                        <span class="variant-tag opposite">Opposite</span>
+                    </div>
+                    <div class="problem-desc">Find two lines forming container with max water.</div>
+                </div>
+
+                <div class="problem-card" data-problem="threeSum">
+                    <div class="problem-header">
+                        <span class="difficulty medium">Med</span>
+                        <span class="problem-title">3Sum</span>
+                        <span class="variant-tag opposite">Opposite</span>
+                    </div>
+                    <div class="problem-desc">Find all unique triplets that sum to zero.</div>
+                </div>
+
+                <div class="problem-card" data-problem="removeDuplicates">
+                    <div class="problem-header">
+                        <span class="difficulty easy">Easy</span>
+                        <span class="problem-title">Remove Duplicates</span>
+                        <span class="variant-tag same-dir">Same Dir</span>
+                    </div>
+                    <div class="problem-desc">Remove duplicates in-place from sorted array.</div>
+                </div>
+
+                <div class="problem-card" data-problem="moveZeroes">
+                    <div class="problem-header">
+                        <span class="difficulty easy">Easy</span>
+                        <span class="problem-title">Move Zeroes</span>
+                        <span class="variant-tag same-dir">Same Dir</span>
+                    </div>
+                    <div class="problem-desc">Move all zeroes to end, maintain order of non-zeroes.</div>
+                </div>
+
+                <div class="problem-card" data-problem="sortColors">
+                    <div class="problem-header">
+                        <span class="difficulty medium">Med</span>
+                        <span class="problem-title">Sort Colors (Dutch Flag)</span>
+                        <span class="variant-tag three-ptr">Three Ptr</span>
+                    </div>
+                    <div class="problem-desc">Sort array of 0s, 1s, 2s in-place in one pass.</div>
+                </div>
+
+                <div class="problem-card" data-problem="trappingRain">
+                    <div class="problem-header">
+                        <span class="difficulty hard">Hard</span>
+                        <span class="problem-title">Trapping Rain Water</span>
+                        <span class="variant-tag opposite">Opposite</span>
+                    </div>
+                    <div class="problem-desc">Calculate water trapped after raining on elevation map.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB 3: CHEAT SHEET -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-cheatsheet">
+        <div class="panel">
+            <h2 style="color: #f472b6;">🎯 Trigger Keywords</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">sorted
+                    array</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">pair
+                    / triplet</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">two
+                    sum</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">in-place</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">O(1)
+                    space</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">palindrome</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">remove
+                    duplicates</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">partition</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">container
+                    / area</span>
+                <span
+                    style="background: rgba(251,191,36,0.15); border: 1px solid rgba(251,191,36,0.3); color: #fbbf24; padding: 5px 12px; border-radius: 15px; font-size: 0.85rem;">move
+                    zeroes</span>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #22d3ee;">🧠 All Memory Hooks</h2>
+            <div style="display: grid; gap: 15px;">
+                <div
+                    style="background: rgba(167,139,250,0.1); border-left: 3px solid #a78bfa; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #a78bfa;">Opposite Direction:</strong> <span style="color: #f472b6;">Neo
+                        (Matrix)</span> catches <span style="color: #22d3ee;">two bullets</span> by <span
+                        style="color: #4ade80;">bending time until forces balance</span>
+                </div>
+                <div
+                    style="background: rgba(34,211,238,0.1); border-left: 3px solid #22d3ee; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #22d3ee;">Same Direction:</strong> <span style="color: #f472b6;">Forrest
+                        Gump</span> runs with a <span style="color: #22d3ee;">suitcase</span>, <span
+                        style="color: #4ade80;">collecting only good chocolates as he goes</span>
+                </div>
+                <div
+                    style="background: rgba(251,146,60,0.1); border-left: 3px solid #fb923c; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #fb923c;">Three Pointers:</strong> <span style="color: #f472b6;">Sorting Hat
+                        (Harry Potter)</span> waves <span style="color: #22d3ee;">three house flags</span>, <span
+                        style="color: #4ade80;">sorting students into Gryffindor, Hufflepuff, or Ravenclaw</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #4ade80;">📐 Template Code</h2>
+            <div class="code-panel" style="margin-top: 15px;">
+                <div class="code-body" style="max-height: 500px;">
+                    <pre style="font-family: Consolas, monospace; font-size: 0.8rem; line-height: 1.6;">
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="comment"># OPPOSITE DIRECTION</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="keyword">def</span> <span class="function">opposite</span>(arr, target):
+    l, r = <span class="number">0</span>, <span class="keyword">len</span>(arr) - <span class="number">1</span>
+    <span class="keyword">while</span> l < r:
+        curr = f(arr[l], arr[r])      <span class="comment"># sum, area, etc.</span>
+        <span class="keyword">if</span> curr == target: <span class="keyword">return</span> [l, r]
+        <span class="keyword">elif</span> curr < target: l += <span class="number">1</span>     <span class="comment"># need bigger</span>
+        <span class="keyword">else</span>: r -= <span class="number">1</span>                    <span class="comment"># need smaller</span>
+    <span class="keyword">return</span> []
+
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="comment"># SAME DIRECTION (Read/Write)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="keyword">def</span> <span class="function">same_direction</span>(arr):
+    slow = <span class="number">0</span>
+    <span class="keyword">for</span> fast <span class="keyword">in</span> <span class="keyword">range</span>(<span class="keyword">len</span>(arr)):
+        <span class="keyword">if</span> should_keep(arr[fast]):    <span class="comment"># condition</span>
+            arr[slow] = arr[fast]     <span class="comment"># or swap</span>
+            slow += <span class="number">1</span>
+    <span class="keyword">return</span> slow
+
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="comment"># THREE POINTERS (Dutch National Flag)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="keyword">def</span> <span class="function">three_pointers</span>(arr):
+    lo, mid, hi = <span class="number">0</span>, <span class="number">0</span>, <span class="keyword">len</span>(arr) - <span class="number">1</span>
+    <span class="keyword">while</span> mid <= hi:
+        <span class="keyword">if</span> arr[mid] == <span class="number">0</span>:             <span class="comment"># goes left</span>
+            swap(lo, mid); lo += <span class="number">1</span>; mid += <span class="number">1</span>
+        <span class="keyword">elif</span> arr[mid] == <span class="number">1</span>:           <span class="comment"># stays middle</span>
+            mid += <span class="number">1</span>
+        <span class="keyword">else</span>:                          <span class="comment"># goes right</span>
+            swap(mid, hi); hi -= <span class="number">1</span>   <span class="comment"># DON'T inc mid!</span>
+</pre>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // PROBLEM CONFIGURATIONS WITH MNEMONICS & REAL-WORLD SCENARIOS
+        // ═══════════════════════════════════════════════════════════════
+
+        const problemConfigs = {
+            twoSumII: {
+                name: 'Two Sum II',
+                type: 'opposite',
+                arr: [2, 7, 11, 15],
+                target: 9,
+                labels: { left: 'Left (L)', right: 'Right (R)', extra: 'Sum', result: 'Answer' },
+                mnemonic: {
+                    emoji: '🕴️',
+                    person: 'Neo (The Matrix)',
+                    object: 'Two Bullets',
+                    action: 'Bending time to catch both',
+                    story: '"Neo sees two bullets coming from opposite ends. If their combined force is too weak, he leans right (L++). Too strong? He leans left (R--). When the forces balance perfectly, he catches them both — target found."'
+                },
+                realWorld: {
+                    essence: 'Find two elements in sorted data that satisfy a target condition — O(n) by eliminating impossible pairs.',
+                    synthesis: {
+                        category: 'Optimal Pairing & Matching',
+                        insight: 'Across all these domains, the core problem is identical: given two sorted collections (or one sorted collection searched from both ends), find a pair that satisfies a constraint. The "trick" is recognizing that sortedness lets you make intelligent decisions about which direction to move — if the current pair undershoots the target, you need a bigger element (L++); if it overshoots, you need a smaller one (R--). This eliminates entire regions of the search space with each comparison.',
+                        examples: 'Trading (match buyers/sellers), Analytics (pair cohorts), Energy (size systems), Logistics (pack bins), Gaming (balance players)'
+                    },
+                    cases: [
+                        { icon: '📈', title: 'Order Book Matching Engine', desc: 'In stock exchanges like NASDAQ, the order book maintains buy orders sorted ascending by price (buyers want cheapest) and sell orders sorted descending (sellers want highest). To match trades: start with L pointing to lowest buy offer and R pointing to highest sell offer. If <code>buy_price + sell_price < minimum_spread</code>, the trade isn\'t profitable for the exchange, so L++ to try a higher buy. If the spread is too wide, R-- to try a lower sell. When they match the target spread, execute the trade. This runs millions of times per second — O(n) vs O(n²) saves real money in latency.' },
+                        { icon: '🎯', title: 'A/B Test Cohort Selection', desc: 'When setting up an A/B test, you have user segments sorted by size (e.g., [1K, 5K, 12K, 50K, 100K users]). You need exactly 75K users total split across two cohorts. L starts at smallest segment, R at largest. If <code>segments[L] + segments[R] < 75K</code>, you need more users so L++ to pick a larger small-segment. If sum > 75K, R-- to pick a smaller large-segment. This ensures statistically valid sample sizes without manual trial-and-error.' },
+                        { icon: '🔋', title: 'Renewable Energy System Design', desc: 'Solar installers have panels sorted by wattage output and batteries sorted by storage capacity. For a home needing exactly 10kWh daily, find a panel+battery combo that sums to the requirement. L points to smallest panel, R to largest battery. If combined capacity < 10kWh, need bigger panel (L++). If > 10kWh (wasteful/expensive), try smaller battery (R--). This optimization happens thousands of times when generating quotes for customers.' },
+                        { icon: '📦', title: 'Warehouse Bin Packing', desc: 'Fulfillment centers have items sorted by weight and bins sorted by capacity. When packing orders, find item+bin pairs where <code>item_weight + packing_material = bin_capacity</code> (no wasted space). L at lightest item, R at largest bin. If too much empty space (sum < target), L++ for heavier item. If won\'t fit, R-- for smaller bin. Amazon runs this algorithm millions of times daily to minimize shipping box waste.' },
+                        { icon: '🎮', title: 'Competitive Matchmaking', desc: 'Games like League of Legends sort players by MMR (skill rating). For fair 1v1 matches, find two players whose ratings sum to a target (e.g., 3000 combined for "Gold" tier match). L at lowest-rated player in queue, R at highest. If <code>MMR[L] + MMR[R] < 3000</code>, the match is too easy for high player, so L++ to find stronger opponent. If > 3000, too hard for low player, R--. This runs every few seconds across millions of concurrent players.' }
+                    ]
+                },
+                verboseCode: `class TwoSumSorted:
+    """
+    Finds two numbers in a SORTED array that add up to target.
+    Uses opposite-direction two pointers for O(n) time complexity.
+    
+    Mental Model: Neo catching two bullets from opposite ends.
+    - If combined force too weak → lean right (L++)
+    - If too strong → lean left (R--)
+    - Balance perfectly → caught!
+    """
+    
+    def __init__(self, numbers: list, target: int):
+        self.numbers = numbers
+        self.target = target
+        self.left = 0                      # Start at beginning
+        self.right = len(numbers) - 1      # Start at end
+    
+    def current_sum(self) -> int:
+        """Calculate sum of elements at current pointers."""
+        return self.numbers[self.left] + self.numbers[self.right]
+    
+    def found_target(self) -> bool:
+        """Check if current pair sums to target."""
+        return self.current_sum() == self.target
+    
+    def sum_too_small(self) -> bool:
+        """
+        If sum < target, we need BIGGER numbers.
+        Since array is sorted ascending, moving L right
+        gives us access to larger values.
+        """
+        return self.current_sum() < self.target
+    
+    def solve(self) -> list:
+        """
+        Main algorithm loop.
+        Each iteration either finds the answer or eliminates
+        an entire row/column of possibilities.
+        """
+        while self.left < self.right:
+            if self.found_target():
+                # Found it! Return 1-indexed positions
+                return [self.left + 1, self.right + 1]
+            
+            elif self.sum_too_small():
+                # Need bigger sum → move left pointer right
+                self.left += 1
+            
+            else:
+                # Sum too big → need smaller → move right left
+                self.right -= 1
+        
+        return []  # No valid pair found
+
+# Usage Example:
+# solver = TwoSumSorted([2, 7, 11, 15], target=9)
+# result = solver.solve()  # Returns [1, 2]`,
+                code: [
+                    { text: 'def twoSum(numbers, target):', highlight: false },
+                    { text: '    l, r = 0, len(numbers) - 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    while l < r:', highlight: false },
+                    { text: '        s = numbers[l] + numbers[r]', highlight: false },
+                    { text: '        ', highlight: false },
+                    { text: '        if s == target:', highlight: false },
+                    { text: '            return [l + 1, r + 1]', highlight: false },
+                    { text: '        elif s < target:', highlight: false },
+                    { text: '            l += 1  # need bigger', highlight: false },
+                    { text: '        else:', highlight: false },
+                    { text: '            r -= 1  # need smaller', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    return []', highlight: false },
+                ],
+                codeSteps: [1, 4, 5, 7, 8, 9, 10, 11, 12, 4, 5, 7, 8, 14],
+                init: function (state) {
+                    state.left = 0;
+                    state.right = this.arr.length - 1;
+                    state.arr = [...this.arr];
+                    state.target = this.target;
+                    state.result = '-';
+                    state.extra = '-';
+                    state.done = false;
+                    state.codeStep = 0;
+                },
+                step: function (state) {
+                    if (state.left >= state.right || state.done) {
+                        state.done = true;
+                        state.codeLine = 13;
+                        return { msg: 'Done!', found: false };
+                    }
+                    const sum = state.arr[state.left] + state.arr[state.right];
+                    state.extra = sum;
+
+                    if (sum === state.target) {
+                        state.result = `[${state.left + 1}, ${state.right + 1}]`;
+                        state.done = true;
+                        state.codeLine = 7;
+                        return { msg: `✓ Found! ${state.arr[state.left]} + ${state.arr[state.right]} = ${sum}`, found: true };
+                    } else if (sum < state.target) {
+                        state.codeLine = 9;
+                        const msg = `Sum ${sum} < ${state.target} → L++`;
+                        state.left++;
+                        return { msg };
+                    } else {
+                        state.codeLine = 11;
+                        const msg = `Sum ${sum} > ${state.target} → R--`;
+                        state.right--;
+                        return { msg };
+                    }
+                }
+            },
+
+            validPalindrome: {
+                name: 'Valid Palindrome',
+                type: 'opposite',
+                arr: ['r', 'a', 'c', 'e', 'c', 'a', 'r'],
+                labels: { left: 'Left (L)', right: 'Right (R)', extra: 'Compare', result: 'Valid?' },
+                mnemonic: {
+                    emoji: '🪞',
+                    person: 'The Terminator',
+                    object: 'A Mirror',
+                    action: 'Checking if reflection matches',
+                    story: '"The Terminator stands before a mirror. He compares his left arm to the reflection of his right. Match? Step inward. Mismatch? Target is not a palindrome — hasta la vista, baby."'
+                },
+                realWorld: {
+                    essence: 'Verify symmetry by comparing from both ends inward — O(n) with O(1) space.',
+                    synthesis: {
+                        category: 'Symmetry Verification & Integrity Checks',
+                        insight: 'The common thread across all these applications is validating that something is "balanced" or "mirrors itself." Whether it\'s DNA sequences, checksums, or structural loads, the question is always: "Does the left side match the right side?" Two pointers from opposite ends is the natural fit because symmetry is inherently a property of endpoints converging to a center. If any mismatch is found before they meet, the symmetry is broken.',
+                        examples: 'Biotech (DNA validation), Security (checksum integrity), Web (URL routing), Music (motif analysis), Engineering (load balance)'
+                    },
+                    cases: [
+                        { icon: '🧬', title: 'DNA Restriction Site Detection', desc: 'In molecular biology, restriction enzymes cut DNA at palindromic sequences (reading same on both strands, like GAATTC). Bioinformatics tools scan genomes (3 billion base pairs in humans) to find these sites. L starts at position 0, R at end of candidate sequence. Skip non-ACGT characters (annotations), compare base pairs moving inward. Finding these sites is critical for CRISPR gene editing — you need to know exactly where enzymes will cut.' },
+                        { icon: '🔐', title: 'Checksum Validation in Protocols', desc: 'Some network protocols embed palindromic checksums for error detection (the check bytes read the same forwards and backwards). When a packet arrives, validate the checksum region using two pointers from ends. If any mismatch is found before pointers meet, the packet is corrupted and must be retransmitted. This runs on every single packet in protocols like certain industrial SCADA systems — O(1) space matters when running on embedded devices with 64KB RAM.' },
+                        { icon: '📝', title: 'URL/Slug Canonicalization', desc: 'Content management systems sometimes use palindromic slugs for special routing (e.g., /radar/ triggers radar-mode, /stats/ is different). When a request comes in, the router checks if the path is a valid palindrome after stripping slashes and normalizing case. L and R start at path ends, skip non-alphanumeric, compare. This determines whether to route to a special handler or the normal content path. Runs on every HTTP request.' },
+                        { icon: '🎵', title: 'Musical Motif Analysis', desc: 'In computational musicology, researchers analyze compositions for palindromic note sequences (like Bach\'s "crab canons" that sound the same forwards and backwards). Given a sequence of MIDI note numbers, check if it\'s palindromic. L at first note, R at last. This pattern detection helps identify compositional techniques and authenticate historical manuscripts — a piece claiming to be Bach should contain his known palindromic signatures.' },
+                        { icon: '🏗️', title: 'Structural Load Symmetry Verification', desc: 'Civil engineering CAD software verifies that load-bearing structures are symmetric for stability. A bridge\'s support points are represented as an array of load values. For safety certification, verify the load pattern is palindromic (balanced). L at left-most support, R at right-most. If loads don\'t match moving inward, the structure needs redesign. This check runs during every simulation iteration before approving construction blueprints.' }
+                    ]
+                },
+                verboseCode: `class PalindromeValidator:
+    """
+    Validates if a string is a palindrome, considering only
+    alphanumeric characters and ignoring case.
+    
+    Mental Model: The Terminator checking his reflection.
+    - Compare left arm to right arm's reflection
+    - Match? Step inward and check next pair
+    - Mismatch? Not a palindrome — hasta la vista
+    """
+    
+    def __init__(self, s: str):
+        self.s = s
+        self.left = 0
+        self.right = len(s) - 1
+    
+    def skip_non_alphanumeric_left(self):
+        """Move left pointer past any non-alphanumeric characters."""
+        while self.left < self.right and not self.s[self.left].isalnum():
+            self.left += 1
+    
+    def skip_non_alphanumeric_right(self):
+        """Move right pointer past any non-alphanumeric characters."""
+        while self.left < self.right and not self.s[self.right].isalnum():
+            self.right -= 1
+    
+    def characters_match(self) -> bool:
+        """
+        Compare characters at current positions (case-insensitive).
+        This is the core "symmetry check" — do left and right mirror?
+        """
+        return self.s[self.left].lower() == self.s[self.right].lower()
+    
+    def solve(self) -> bool:
+        """
+        Main validation loop.
+        Key difference from Two Sum: move BOTH pointers every iteration
+        (after a successful match), not just one.
+        """
+        while self.left < self.right:
+            # Skip characters we don't care about
+            self.skip_non_alphanumeric_left()
+            self.skip_non_alphanumeric_right()
+            
+            # Safety check after skipping
+            if self.left >= self.right:
+                break
+            
+            # Core symmetry check
+            if not self.characters_match():
+                return False  # Mismatch found — not a palindrome
+            
+            # Both matched — move both pointers inward
+            self.left += 1
+            self.right -= 1
+        
+        return True  # All pairs matched — valid palindrome!
+
+# Usage Example:
+# validator = PalindromeValidator("A man, a plan, a canal: Panama")
+# result = validator.solve()  # Returns True`,
+                code: [
+                    { text: 'def isPalindrome(s):', highlight: false },
+                    { text: '    l, r = 0, len(s) - 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    while l < r:', highlight: false },
+                    { text: '        # Skip non-alphanumeric', highlight: false },
+                    { text: '        while l < r and not s[l].isalnum():', highlight: false },
+                    { text: '            l += 1', highlight: false },
+                    { text: '        while l < r and not s[r].isalnum():', highlight: false },
+                    { text: '            r -= 1', highlight: false },
+                    { text: '        ', highlight: false },
+                    { text: '        if s[l].lower() != s[r].lower():', highlight: false },
+                    { text: '            return False', highlight: false },
+                    { text: '        ', highlight: false },
+                    { text: '        l += 1', highlight: false },
+                    { text: '        r -= 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    return True', highlight: false },
+                ],
+                init: function (state) {
+                    state.left = 0;
+                    state.right = this.arr.length - 1;
+                    state.arr = [...this.arr];
+                    state.result = '...';
+                    state.extra = '-';
+                    state.done = false;
+                    state.codeLine = 1;
+                },
+                step: function (state) {
+                    if (state.left >= state.right) {
+                        state.result = 'TRUE ✓';
+                        state.done = true;
+                        state.codeLine = 16;
+                        return { msg: '✓ All matched! It IS a palindrome.', found: true };
+                    }
+
+                    const l = state.arr[state.left];
+                    const r = state.arr[state.right];
+                    state.extra = `'${l}' = '${r}'?`;
+
+                    if (l === r) {
+                        state.codeLine = 13;
+                        const msg = `'${l}' == '${r}' → Match! L++, R--`;
+                        state.left++;
+                        state.right--;
+                        return { msg };
+                    } else {
+                        state.result = 'FALSE ✗';
+                        state.done = true;
+                        state.codeLine = 11;
+                        return { msg: `✗ '${l}' ≠ '${r}' — NOT a palindrome!`, found: false };
+                    }
+                }
+            },
+
+            containerWater: {
+                name: 'Container With Water',
+                type: 'opposite',
+                arr: [1, 8, 6, 2, 5, 4, 8, 3, 7],
+                labels: { left: 'Left (L)', right: 'Right (R)', extra: 'Area', result: 'Max' },
+                mnemonic: {
+                    emoji: '🌊',
+                    person: 'Moses (Prince of Egypt)',
+                    object: 'Parted Sea Walls',
+                    action: 'Moving the shorter wall to find max space',
+                    story: '"Moses parts the Red Sea. The water can only rise as high as the SHORTER wall. To find the biggest container, he moves the shorter wall inward — hoping to find a taller one. Width shrinks, but height might grow."'
+                },
+                realWorld: {
+                    essence: 'Maximize area/capacity constrained by the minimum of two boundaries — move the limiting factor.',
+                    synthesis: {
+                        category: 'Capacity Maximization Under Bottleneck Constraints',
+                        insight: 'Every one of these problems involves finding the maximum "area" or "throughput" when the output is limited by the WEAKER of two components. The formula is always: Result = min(A, B) × Distance. The key insight is that moving the stronger component can never help (you\'re still limited by the weak one, and distance shrinks). You MUST move the bottleneck to have any chance of improvement. This greedy choice is provably optimal.',
+                        examples: 'Networking (CDN pairing), Manufacturing (line sync), Civil (dam placement), Power (grid optimization), Logistics (fleet dispatch)'
+                    },
+                    cases: [
+                        { icon: '📡', title: 'CDN Edge Server Pairing', desc: 'Content Delivery Networks pair edge servers to handle traffic bursts. Each server has a capacity rating. When routing a video stream, you need two servers where <code>throughput = min(server_A_capacity, server_B_capacity) × geographic_proximity</code>. Closer servers (larger "width") are preferred, but capacity (height) matters too. Start with L at westernmost server, R at easternmost. If L has lower capacity, it\'s the bottleneck — try L++ to find a stronger western server. This optimization runs every time Netflix decides which edge nodes serve your stream.' },
+                        { icon: '🏭', title: 'Assembly Line Synchronization', desc: 'In manufacturing, two parallel conveyor lines must synchronize at merge points. Each station has a processing rate (units/hour). The synchronized output rate = min(line_A_rate, line_B_rate) × synchronization_quality. L points to first station pair, R to last. If left station is slower (shorter height), it bottlenecks the whole line — try a different left station (L++). Toyota\'s production system uses this to minimize work-in-progress inventory by finding optimal station pairings.' },
+                        { icon: '💧', title: 'Hydroelectric Dam Placement', desc: 'Engineers planning a reservoir select two locations for dam walls in a valley. Water storage = <code>min(left_dam_height, right_dam_height) × valley_width</code>. Given terrain elevation data, L starts at valley entrance, R at exit. If left bank is lower, water would overflow there — try moving L inward to find higher ground. The goal is maximum gigaliters of storage. This analysis runs during environmental impact assessments for projects costing billions of dollars.' },
+                        { icon: '🔌', title: 'Power Grid Transmission Planning', desc: 'Electrical grids connect power plants to substations via transmission lines. The power that can flow = <code>min(plant_output, substation_intake) × line_efficiency</code>. Given sorted lists of plants and substations by capacity, find the pairing that maximizes delivered power. L at smallest plant, R at largest substation. If plant is the bottleneck (lower capacity), L++ to try a larger plant. This optimization determines where to build new infrastructure — wrong choices waste millions.' },
+                        { icon: '🚚', title: 'Cross-Dock Logistics Optimization', desc: 'In shipping hubs, incoming trucks (varying cargo sizes) must pair with outgoing trucks (varying capacities). Transferable cargo = <code>min(incoming_load, outgoing_capacity) × dock_efficiency</code>. L points to smallest incoming truck, R to largest outgoing. If incoming is smaller (bottleneck), try L++ for a fuller truck. FedEx and UPS run this optimization at every hub to minimize time packages spend in transit — the "width" represents how fast the dock operates.' }
+                    ]
+                },
+                verboseCode: `class ContainerWithMostWater:
+    """
+    Find two lines forming a container that holds the most water.
+    Area = width × min(left_height, right_height)
+    
+    Mental Model: Moses parting the Red Sea.
+    - Water rises only as high as the SHORTER wall
+    - To find more space, move the shorter wall inward
+    - Moving the taller wall can NEVER help (still limited by short)
+    """
+    
+    def __init__(self, height: list):
+        self.height = height
+        self.left = 0
+        self.right = len(height) - 1
+        self.max_area = 0
+    
+    def width(self) -> int:
+        """Current distance between the two walls."""
+        return self.right - self.left
+    
+    def limiting_height(self) -> int:
+        """
+        Water can only rise to the height of the SHORTER wall.
+        This is the key insight — the bottleneck determines capacity.
+        """
+        return min(self.height[self.left], self.height[self.right])
+    
+    def current_area(self) -> int:
+        """Calculate area with current wall positions."""
+        return self.width() * self.limiting_height()
+    
+    def left_is_bottleneck(self) -> bool:
+        """Check if left wall is the limiting factor."""
+        return self.height[self.left] < self.height[self.right]
+    
+    def solve(self) -> int:
+        """
+        Main algorithm loop.
+        
+        Why move the shorter wall?
+        - If we move the TALLER wall: width decreases, height stays
+          the same (still limited by short wall) → area MUST decrease
+        - If we move the SHORTER wall: width decreases, but height
+          MIGHT increase → area MIGHT increase
+        
+        Always give yourself a chance at improvement!
+        """
+        while self.left < self.right:
+            # Track best area seen so far
+            self.max_area = max(self.max_area, self.current_area())
+            
+            # Move the bottleneck (shorter wall)
+            if self.left_is_bottleneck():
+                self.left += 1
+            else:
+                self.right -= 1
+        
+        return self.max_area
+
+# Usage Example:
+# container = ContainerWithMostWater([1,8,6,2,5,4,8,3,7])
+# result = container.solve()  # Returns 49`,
+                code: [
+                    { text: 'def maxArea(height):', highlight: false },
+                    { text: '    l, r = 0, len(height) - 1', highlight: false },
+                    { text: '    max_area = 0', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    while l < r:', highlight: false },
+                    { text: '        w = r - l', highlight: false },
+                    { text: '        h = min(height[l], height[r])', highlight: false },
+                    { text: '        max_area = max(max_area, w * h)', highlight: false },
+                    { text: '        ', highlight: false },
+                    { text: '        if height[l] < height[r]:', highlight: false },
+                    { text: '            l += 1  # move shorter', highlight: false },
+                    { text: '        else:', highlight: false },
+                    { text: '            r -= 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    return max_area', highlight: false },
+                ],
+                init: function (state) {
+                    state.left = 0;
+                    state.right = this.arr.length - 1;
+                    state.arr = [...this.arr];
+                    state.result = 0;
+                    state.extra = '-';
+                    state.done = false;
+                    state.codeLine = 1;
+                },
+                step: function (state) {
+                    if (state.left >= state.right) {
+                        state.done = true;
+                        state.codeLine = 14;
+                        return { msg: `Done! Max area: ${state.result}`, found: true };
+                    }
+
+                    const width = state.right - state.left;
+                    const height = Math.min(state.arr[state.left], state.arr[state.right]);
+                    const area = width * height;
+                    state.extra = area;
+                    state.codeLine = 7;
+
+                    if (area > state.result) {
+                        state.result = area;
+                    }
+
+                    if (state.arr[state.left] < state.arr[state.right]) {
+                        state.codeLine = 10;
+                        const msg = `Area=${area}. h[L]=${state.arr[state.left]} < h[R]=${state.arr[state.right]} → L++`;
+                        state.left++;
+                        return { msg };
+                    } else {
+                        state.codeLine = 12;
+                        const msg = `Area=${area}. h[L]=${state.arr[state.left]} ≥ h[R]=${state.arr[state.right]} → R--`;
+                        state.right--;
+                        return { msg };
+                    }
+                }
+            },
+
+            threeSum: {
+                name: '3Sum',
+                type: 'opposite',
+                arr: [-4, -1, -1, 0, 1, 2],
+                labels: { left: 'Left (L)', right: 'Right (R)', extra: 'Sum', result: 'Triplets' },
+                mnemonic: {
+                    emoji: '⚖️',
+                    person: 'Thanos (Avengers)',
+                    object: 'Three Infinity Stones',
+                    action: 'Balancing the universe to zero',
+                    story: '"Thanos holds one stone (anchor). He reaches for two more with opposite hands. If their power is too negative, he needs more from the right (L++). Too positive? Less from the left (R--). When they balance to zero — snap!"'
+                },
+                realWorld: {
+                    essence: 'Find triplets that satisfy a constraint by anchoring one element and using two pointers on the rest.',
+                    synthesis: {
+                        category: 'Multi-Factor Equilibrium & Balancing',
+                        insight: 'These problems all ask: "Find 3 (or more) elements that balance to a target — often zero." The breakthrough is reducing the problem dimension: instead of O(n³) brute force, fix one element (the "anchor") and use two-pointer search on the remaining sorted array for O(n²). This "anchor + two pointers" pattern generalizes to kSum: 4Sum becomes anchor + 3Sum, 5Sum becomes anchor + 4Sum, etc. The base case is always 2Sum with two pointers.',
+                        examples: 'Finance (portfolio hedging), Chemistry (equation balancing), Graphics (color mixing), DevOps (load distribution), Robotics (force equilibrium)'
+                    },
+                    cases: [
+                        { icon: '💰', title: 'Delta-Neutral Portfolio Construction', desc: 'Hedge funds construct "delta-neutral" portfolios where gains and losses cancel out, leaving only alpha. Given positions sorted by delta (price sensitivity), find 3 positions where <code>delta_A + delta_B + delta_C = 0</code>. Anchor on the first position, then use two pointers on the remaining to find pairs summing to <code>-delta_A</code>. Skip duplicates to avoid redundant hedges. This runs whenever the fund rebalances — often daily. O(n²) instead of O(n³) means faster execution and less slippage.' },
+                        { icon: '⚗️', title: 'Chemical Reaction Stoichiometry', desc: 'In computational chemistry, balance equations like <code>aH₂ + bO₂ → cH₂O</code>. Given possible coefficient values sorted, find triplets (a, b, c) where atoms balance to zero net change. Anchor on coefficient \'a\', two-pointer scan for (b, c) pairs. Each valid triplet represents a balanced equation. Pharmaceutical companies run this to find all valid reaction pathways for synthesizing a drug — exhaustive search would take hours, two-pointer takes seconds.' },
+                        { icon: '🎨', title: 'Color Calibration in Printing', desc: 'Professional printers calibrate CMYK values to hit exact Pantone colors. Given sorted arrays of Cyan, Magenta, and Yellow intensity adjustments, find triplets where <code>C_adjust + M_adjust + Y_adjust = target_offset</code>. Anchor on a cyan value, two-pointer scan magenta and yellow. Each triplet is a valid calibration setting. Print shops run this when matching brand colors — Coca-Cola red must be exact across all materials worldwide.' },
+                        { icon: '⚖️', title: 'Multi-Region Load Balancing', desc: 'Cloud providers distribute traffic across 3 data center regions. Given request rates sorted by region, find triplets where traffic differences sum to zero (balanced load). If US + EU + Asia offsets don\'t sum to zero, one region is overloaded. Anchor on US offset, two-pointer on EU and Asia to find balancing configurations. AWS and GCP run this continuously — unbalanced regions mean latency spikes and angry customers.' },
+                        { icon: '🔧', title: 'Robotic Arm Force Balancing', desc: 'Industrial robots with 3-joint arms must balance torques for stable positioning. Given possible torque values for each joint (sorted by magnitude), find triplets where <code>τ₁ + τ₂ + τ₃ = 0</code> (net zero torque = stable). Anchor on joint 1, two-pointer on joints 2 and 3. Each valid triplet is a stable arm configuration. This runs in real-time control loops at 1000Hz — O(n²) is mandatory, O(n³) would cause the arm to shake.' }
+                    ]
+                },
+                verboseCode: `class ThreeSum:
+    """
+    Find all unique triplets that sum to zero.
+    Uses Anchor + Two Pointers pattern for O(n²) time.
+    
+    Mental Model: Thanos with three Infinity Stones.
+    - Hold one stone (anchor) fixed
+    - Reach for two more with opposite hands (L and R)
+    - If power too negative → need more from right (L++)
+    - If too positive → need less from left (R--)
+    - Balance to zero → snap!
+    """
+    
+    def __init__(self, nums: list):
+        self.nums = sorted(nums)  # MUST SORT for two pointers!
+        self.result = []
+    
+    def two_sum_for_target(self, start: int, target: int):
+        """
+        Standard Two Sum II starting from 'start' index.
+        Finds all pairs that sum to target.
+        """
+        left = start
+        right = len(self.nums) - 1
+        
+        while left < right:
+            current_sum = self.nums[left] + self.nums[right]
+            
+            if current_sum == target:
+                yield (self.nums[left], self.nums[right])
+                
+                # Skip duplicates to avoid redundant pairs
+                while left < right and self.nums[left] == self.nums[left + 1]:
+                    left += 1
+                while left < right and self.nums[right] == self.nums[right - 1]:
+                    right -= 1
+                
+                left += 1
+                right -= 1
+            
+            elif current_sum < target:
+                left += 1   # Need bigger sum
+            else:
+                right -= 1  # Need smaller sum
+    
+    def solve(self) -> list:
+        """
+        Main algorithm: iterate anchors and use two-sum for rest.
+        
+        For each anchor a at index i:
+        - Find pairs (b, c) where b + c = -a
+        - Together: a + b + c = 0
+        
+        Optimizations:
+        - Skip duplicate anchors (avoid duplicate triplets)
+        - Early exit if anchor > 0 (can't sum to zero with larger positives)
+        """
+        for i in range(len(self.nums) - 2):
+            anchor = self.nums[i]
+            
+            # Skip duplicate anchors
+            if i > 0 and anchor == self.nums[i - 1]:
+                continue
+            
+            # Early exit: if anchor is positive, remaining elements
+            # are also positive (sorted), so sum can't be zero
+            if anchor > 0:
+                break
+            
+            # Find pairs that sum to -anchor
+            for (b, c) in self.two_sum_for_target(i + 1, -anchor):
+                self.result.append([anchor, b, c])
+        
+        return self.result
+
+# Usage Example:
+# solver = ThreeSum([-1, 0, 1, 2, -1, -4])
+# result = solver.solve()  # Returns [[-1, -1, 2], [-1, 0, 1]]`,
+                code: [
+                    { text: 'def threeSum(nums):', highlight: false },
+                    { text: '    nums.sort()', highlight: false },
+                    { text: '    result = []', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    for i in range(len(nums) - 2):', highlight: false },
+                    { text: '        if i > 0 and nums[i] == nums[i-1]:', highlight: false },
+                    { text: '            continue  # skip dup anchor', highlight: false },
+                    { text: '        ', highlight: false },
+                    { text: '        l, r = i + 1, len(nums) - 1', highlight: false },
+                    { text: '        while l < r:', highlight: false },
+                    { text: '            s = nums[i] + nums[l] + nums[r]', highlight: false },
+                    { text: '            if s == 0:', highlight: false },
+                    { text: '                result.append([...])', highlight: false },
+                    { text: '                # skip dups, l++, r--', highlight: false },
+                    { text: '            elif s < 0: l += 1', highlight: false },
+                    { text: '            else: r -= 1', highlight: false },
+                    { text: '    return result', highlight: false },
+                ],
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.anchor = 0;
+                    state.left = 1;
+                    state.right = state.arr.length - 1;
+                    state.triplets = [];
+                    state.result = '[]';
+                    state.extra = '-';
+                    state.done = false;
+                    state.codeLine = 1;
+                },
+                step: function (state) {
+                    if (state.anchor >= state.arr.length - 2) {
+                        state.done = true;
+                        state.codeLine = 16;
+                        return { msg: `Done! Found ${state.triplets.length} triplet(s).`, found: state.triplets.length > 0 };
+                    }
+
+                    if (state.left >= state.right) {
+                        state.anchor++;
+                        state.left = state.anchor + 1;
+                        state.right = state.arr.length - 1;
+                        state.codeLine = 4;
+                        return { msg: `Anchor done. Next anchor: ${state.arr[state.anchor]}` };
+                    }
+
+                    const a = state.arr[state.anchor];
+                    const b = state.arr[state.left];
+                    const c = state.arr[state.right];
+                    const sum = a + b + c;
+                    state.extra = sum;
+
+                    if (sum === 0) {
+                        state.triplets.push([a, b, c]);
+                        state.result = `[${a},${b},${c}]`;
+                        state.codeLine = 12;
+                        while (state.left < state.right && state.arr[state.left] === state.arr[state.left + 1]) state.left++;
+                        while (state.left < state.right && state.arr[state.right] === state.arr[state.right - 1]) state.right--;
+                        state.left++;
+                        state.right--;
+                        return { msg: `✓ Found [${a},${b},${c}]!`, found: true };
+                    } else if (sum < 0) {
+                        state.codeLine = 14;
+                        state.left++;
+                        return { msg: `${a}+${b}+${c}=${sum} < 0 → L++` };
+                    } else {
+                        state.codeLine = 15;
+                        state.right--;
+                        return { msg: `${a}+${b}+${c}=${sum} > 0 → R--` };
+                    }
+                }
+            },
+
+            removeDuplicates: {
+                name: 'Remove Duplicates',
+                type: 'same',
+                arr: [0, 0, 1, 1, 1, 2, 2, 3, 3, 4],
+                labels: { left: 'Slow (S)', right: 'Fast (F)', extra: 'Compare', result: 'Length' },
+                mnemonic: {
+                    emoji: '🏃',
+                    person: 'Forrest Gump',
+                    object: 'A Suitcase',
+                    action: 'Running forward, packing only new chocolates',
+                    story: '"Forrest runs across America (Fast pointer). He carries a suitcase (Slow pointer). When he finds a NEW type of chocolate, he packs it. Duplicates? He keeps running but doesn\'t pack. Life is like a box of chocolates — keep only the unique ones."'
+                },
+                realWorld: {
+                    essence: 'Filter/compact a sequence in-place — Fast scans, Slow writes only when condition met.',
+                    synthesis: {
+                        category: 'Stream Filtering & Deduplication',
+                        insight: 'All these scenarios involve processing a stream of data and keeping only elements that meet a criterion (uniqueness, validity, etc.). The "read/write" pointer pattern is perfect because you never need to look backwards — Fast reads ahead while Slow marks where valid output ends. The invariant is always: arr[0..Slow-1] contains the filtered result. This is foundational for any pipeline that can\'t afford O(n) extra space or multiple passes.',
+                        examples: 'Observability (log dedup), Databases (index compaction), Marketing (list hygiene), Media (playlist cleanup), Search (shard merging)'
+                    },
+                    cases: [
+                        { icon: '📊', title: 'Time-Series Log Deduplication', desc: 'Observability platforms like Datadog ingest billions of log lines daily, sorted by timestamp. Duplicate entries (same timestamp + message) waste storage and skew analytics. Fast pointer scans incoming logs, Slow pointer marks the write position. When <code>log[Fast] != log[Slow-1]</code>, write it and advance Slow. This runs in the ingestion pipeline — O(1) extra space is critical because logs arrive faster than disk can write. Saving 20% storage = millions in infrastructure costs annually.' },
+                        { icon: '🗄️', title: 'Database Index Compaction', desc: 'After bulk INSERT operations, B-tree leaf nodes contain duplicate keys (from retry logic or upserts). During background compaction, the database scans sorted key-value pairs. Slow points to the last unique key written, Fast scans ahead. When a new key is found, write it at Slow position. PostgreSQL and MySQL run this during VACUUM/OPTIMIZE operations — in-place compaction avoids doubling memory usage, which could crash the database on large tables.' },
+                        { icon: '📧', title: 'Marketing Email List Hygiene', desc: 'Before sending campaigns, email platforms deduplicate subscriber lists sorted alphabetically. Fast scans the list, Slow tracks unique entries. When <code>email[Fast] != email[Slow-1]</code>, it\'s a new subscriber — write to output. Mailchimp processes lists with millions of entries; O(n) in-place dedup means the difference between a campaign sending in seconds vs. minutes. Duplicate sends also violate CAN-SPAM and cost money.' },
+                        { icon: '🎵', title: 'Streaming Playlist Deduplication', desc: 'Music apps merge playlists from multiple sources (library, liked songs, albums). The merged list is sorted by song ID but contains duplicates. As the UI renders, Fast scans the merged list while Slow tracks unique tracks to display. Only when <code>song[Fast].id != song[Slow-1].id</code> do we add to the view. Spotify runs this on-device with limited memory — duplicates would break shuffle algorithms and annoy users seeing the same song twice.' },
+                        { icon: '🔍', title: 'Distributed Search Result Merging', desc: 'Search engines query multiple index shards in parallel, each returning sorted results by relevance score. The merge phase combines these sorted streams, but the same document may appear in multiple shards. Fast scans the merged stream, Slow writes unique documents. When <code>doc[Fast].id != doc[Slow-1].id</code>, it\'s a new result. Google runs this for every query — showing duplicate results would make search unusable, and O(n) merging keeps latency under 200ms.' }
+                    ]
+                },
+                verboseCode: `class RemoveDuplicates:
+    """
+    Remove duplicates from a SORTED array in-place.
+    Returns the new length of the unique-elements portion.
+    
+    Mental Model: Forrest Gump running with a suitcase.
+    - Fast runs ahead (scanning the array)
+    - Slow carries the suitcase (marks valid output position)
+    - NEW chocolate? Pack it in the suitcase, advance Slow
+    - Duplicate? Keep running, don't pack
+    
+    Invariant: arr[0..Slow-1] always contains unique elements
+    """
+    
+    def __init__(self, nums: list):
+        self.nums = nums
+        self.slow = 0   # Write pointer — "suitcase position"
+        self.fast = 0   # Read pointer — "running position"
+    
+    def is_new_value(self) -> bool:
+        """
+        Check if current Fast element is different from last written.
+        First element is always "new" (nothing written before it).
+        """
+        if self.fast == 0:
+            return True
+        return self.nums[self.fast] != self.nums[self.slow - 1]
+    
+    def write_current(self):
+        """Write Fast's value at Slow position, advance Slow."""
+        self.nums[self.slow] = self.nums[self.fast]
+        self.slow += 1
+    
+    def solve(self) -> int:
+        """
+        Main algorithm loop.
+        
+        Fast visits every element exactly once.
+        Slow only advances when we find something new.
+        Result: first 'Slow' positions contain unique elements.
+        """
+        if not self.nums:
+            return 0
+        
+        while self.fast < len(self.nums):
+            if self.is_new_value():
+                self.write_current()
+            
+            # Fast always advances — it's the "reader"
+            self.fast += 1
+        
+        return self.slow  # New length of unique portion
+
+# Usage Example:
+# deduper = RemoveDuplicates([0, 0, 1, 1, 1, 2, 2, 3, 3, 4])
+# new_length = deduper.solve()  # Returns 5
+# Array is now [0, 1, 2, 3, 4, ...]`,
+                code: [
+                    { text: 'def removeDuplicates(nums):', highlight: false },
+                    { text: '    if not nums: return 0', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    slow = 1  # first elem kept', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    for fast in range(1, len(nums)):', highlight: false },
+                    { text: '        if nums[fast] != nums[slow - 1]:', highlight: false },
+                    { text: '            nums[slow] = nums[fast]', highlight: false },
+                    { text: '            slow += 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    return slow', highlight: false },
+                ],
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.left = 1;
+                    state.right = 1;
+                    state.result = 1;
+                    state.extra = '-';
+                    state.done = false;
+                    state.codeLine = 3;
+                },
+                step: function (state) {
+                    if (state.right >= state.arr.length) {
+                        state.done = true;
+                        state.codeLine = 10;
+                        return { msg: `Done! New length: ${state.left}`, found: true };
+                    }
+
+                    const prev = state.arr[state.left - 1];
+                    const curr = state.arr[state.right];
+                    state.extra = `${curr}≠${prev}?`;
+                    state.codeLine = 6;
+
+                    if (curr !== prev) {
+                        state.arr[state.left] = curr;
+                        state.codeLine = 7;
+                        const msg = `${curr} ≠ ${prev} → Write, S++, F++`;
+                        state.left++;
+                        state.right++;
+                        state.result = state.left;
+                        return { msg };
+                    } else {
+                        state.codeLine = 5;
+                        const msg = `${curr} == ${prev} → Skip, F++`;
+                        state.right++;
+                        return { msg };
+                    }
+                }
+            },
+
+            moveZeroes: {
+                name: 'Move Zeroes',
+                type: 'same',
+                arr: [0, 1, 0, 3, 12],
+                labels: { left: 'Slow (S)', right: 'Fast (F)', extra: 'Value', result: 'Swaps' },
+                mnemonic: {
+                    emoji: '🧹',
+                    person: 'Wall-E',
+                    object: 'Trash Compactor',
+                    action: 'Sweeping good items forward, trash to the back',
+                    story: '"Wall-E rolls forward (Fast), scanning for valuable items. When he finds something good (non-zero), he swaps it to his clean pile (Slow) and advances. Trash (zeroes) naturally accumulates at the end. Directive complete."'
+                },
+                realWorld: {
+                    essence: 'Partition in-place by swapping wanted elements forward — unwanted accumulate at end.',
+                    synthesis: {
+                        category: 'Resource Compaction & Defragmentation',
+                        insight: 'Unlike Remove Duplicates (which discards filtered elements), these problems need to PRESERVE all elements — just reorganize them. The key difference is using SWAP instead of WRITE. When Fast finds a "wanted" element, swap it with Slow (moving the "unwanted" element backward). This naturally accumulates unwanted elements at the end without losing them. It\'s the foundation of memory management: live objects forward, free space backward.',
+                        examples: 'Runtimes (garbage collection), Storage (SSD TRIM), Embedded (RTOS queues), Gaming (entity pools), ML (sparse tensors)'
+                    },
+                    cases: [
+                        { icon: '💾', title: 'Mark-Compact Garbage Collection', desc: 'The JVM and V8 (Chrome/Node.js) use mark-compact GC to reclaim memory. After marking live objects, the compact phase moves them to the front of the heap. Slow points to the next free slot, Fast scans all objects. When Fast finds a live object (non-zero), swap it to Slow position and advance both. Dead objects (zeroes) naturally accumulate at the end, becoming free memory. This runs during every GC pause — O(n) compaction keeps pause times under 10ms, critical for responsive applications.' },
+                        { icon: '📁', title: 'SSD TRIM and Defragmentation', desc: 'Solid-state drives track which blocks contain valid data vs. deleted files (zeroes). During garbage collection, the SSD firmware moves valid data to the front of a flash block. Slow marks the write position, Fast scans all pages. Valid pages swap forward, invalid pages group at the end for erasure. Samsung and Intel SSDs run this continuously — efficient compaction extends drive lifespan and maintains write speeds. O(1) auxiliary space is mandatory with 8KB of firmware RAM.' },
+                        { icon: '📋', title: 'Real-Time Task Queue Management', desc: 'In RTOS (Real-Time Operating Systems) like FreeRTOS, task queues must be compacted without allocation (malloc is banned in interrupt handlers). Active tasks (non-zero priority) move to front, completed tasks (zero priority) move to end. Slow = next active slot, Fast = scanner. Swap active tasks forward. This runs in the kernel scheduler at 1000Hz — dynamic allocation would cause unpredictable latency, violating real-time guarantees for medical devices and autopilots.' },
+                        { icon: '🎮', title: 'Entity Component System (ECS) Pooling', desc: 'Game engines like Unity and Unreal use object pools to avoid allocation during gameplay. When entities die, they\'re marked inactive (zero) but stay in the array. During the update loop, active entities swap to front for cache-friendly iteration. Slow tracks the active boundary, Fast scans all entities. Inactive entities group at the end for reuse. This runs every frame at 60fps — fragmented pools cause cache misses, dropping frames and ruining player experience.' },
+                        { icon: '📊', title: 'Sparse Tensor Compaction (ML)', desc: 'Machine learning frameworks like TensorFlow handle sparse tensors (mostly zeros). Before GPU operations, non-zero values must be compacted into dense arrays. Fast scans the sparse tensor, Slow writes non-zero values. Zeros naturally group at the end (or are simply tracked as "length = Slow"). This happens during model inference — sparse embeddings with 99% zeros would waste GPU memory without compaction. O(n) compaction enables models that wouldn\'t otherwise fit in VRAM.' }
+                    ]
+                },
+                verboseCode: `class MoveZeroes:
+    """
+    Move all zeroes to the end while maintaining order of non-zeroes.
+    Must be done IN-PLACE (no copy of array).
+    
+    Mental Model: Wall-E cleaning up.
+    - Fast rolls forward scanning for valuable items
+    - When he finds something good (non-zero), swap to Slow
+    - Trash (zeroes) naturally piles up at the end
+    - Directive complete!
+    
+    Key Difference from Remove Duplicates:
+    - Remove Dups: WRITE (overwrite, lose original)
+    - Move Zeroes: SWAP (preserve all elements, just rearrange)
+    """
+    
+    def __init__(self, nums: list):
+        self.nums = nums
+        self.slow = 0   # Next position for non-zero
+        self.fast = 0   # Scanner
+    
+    def is_non_zero(self) -> bool:
+        """Check if current Fast element should move forward."""
+        return self.nums[self.fast] != 0
+    
+    def swap_to_slow(self):
+        """
+        Swap Fast's value with Slow's value.
+        This moves the non-zero forward AND moves the zero backward.
+        Both elements are preserved — just rearranged.
+        """
+        self.nums[self.slow], self.nums[self.fast] = \\
+            self.nums[self.fast], self.nums[self.slow]
+        self.slow += 1
+    
+    def solve(self):
+        """
+        Main algorithm loop.
+        
+        Why SWAP instead of WRITE?
+        - WRITE would lose the zero (overwritten)
+        - SWAP preserves the zero (moved to Fast's position)
+        - After loop: zeros accumulate at end naturally
+        """
+        while self.fast < len(self.nums):
+            if self.is_non_zero():
+                self.swap_to_slow()
+            
+            self.fast += 1
+        
+        # Array is now [non-zeros..., zeros...]
+        # e.g., [0,1,0,3,12] → [1,3,12,0,0]
+
+# Usage Example:
+# mover = MoveZeroes([0, 1, 0, 3, 12])
+# mover.solve()
+# Array is now [1, 3, 12, 0, 0]`,
+                code: [
+                    { text: 'def moveZeroes(nums):', highlight: false },
+                    { text: '    slow = 0', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    for fast in range(len(nums)):', highlight: false },
+                    { text: '        if nums[fast] != 0:', highlight: false },
+                    { text: '            nums[slow], nums[fast] = \\', highlight: false },
+                    { text: '                nums[fast], nums[slow]', highlight: false },
+                    { text: '            slow += 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    # zeroes end up at the end!', highlight: false },
+                ],
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.left = 0;
+                    state.right = 0;
+                    state.result = 0;
+                    state.extra = '-';
+                    state.done = false;
+                    state.codeLine = 1;
+                },
+                step: function (state) {
+                    if (state.right >= state.arr.length) {
+                        state.done = true;
+                        state.codeLine = 9;
+                        return { msg: `Done! Array: [${state.arr}]`, found: true };
+                    }
+
+                    const val = state.arr[state.right];
+                    state.extra = val;
+                    state.codeLine = 4;
+
+                    if (val !== 0) {
+                        [state.arr[state.left], state.arr[state.right]] = [state.arr[state.right], state.arr[state.left]];
+                        state.codeLine = 5;
+                        const msg = `${val} ≠ 0 → Swap, S++, F++`;
+                        state.left++;
+                        state.right++;
+                        state.result++;
+                        return { msg };
+                    } else {
+                        state.codeLine = 3;
+                        const msg = `${val} == 0 → Skip, F++`;
+                        state.right++;
+                        return { msg };
+                    }
+                }
+            },
+
+            sortColors: {
+                name: 'Sort Colors',
+                type: 'three',
+                arr: [2, 0, 2, 1, 1, 0],
+                labels: { left: 'Low (L)', right: 'High (H)', extra: 'Mid (M)', result: 'Status' },
+                mnemonic: {
+                    emoji: '🎩',
+                    person: 'Sorting Hat (Harry Potter)',
+                    object: 'Three House Flags',
+                    action: 'Sorting students into Gryffindor, Hufflepuff, or Ravenclaw',
+                    story: '"The Sorting Hat examines each student (Mid). Brave (0)? Swap to the left with Gryffindors, advance both. Clever (2)? Swap to the right with Ravenclaws — but WAIT, check the new student! Loyal (1)? Stay in the middle with Hufflepuff, just advance."'
+                },
+                realWorld: {
+                    essence: 'Partition into exactly 3 regions in one pass — Dutch National Flag algorithm.',
+                    synthesis: {
+                        category: 'Multi-Category Partitioning & Triage',
+                        insight: 'When you must classify elements into exactly 3 buckets in a single pass, the Dutch National Flag pattern is optimal. The trick is maintaining 3 regions with clear boundaries: [0..Low-1] = category A, [Low..Mid-1] = category B, [Mid..High] = unknown, [High+1..end] = category C. The critical rule is: when swapping with High, DON\'T advance Mid — the element you received is unknown and needs checking. This single-pass guarantee is essential for real-time systems.',
+                        examples: 'Support (ticket triage), Healthcare (ER priority), Logistics (package sorting), Vision (pixel segmentation), Algorithms (quicksort)'
+                    },
+                    cases: [
+                        { icon: '📋', title: 'Support Ticket Priority Queue', desc: 'Customer support platforms receive tickets tagged as Critical (system down), Normal (bug report), or Low (feature request). As tickets stream in, partition them for SLA compliance. Low pointer marks the end of Critical zone, High marks the start of Low zone, Mid scans incoming tickets. Critical? Swap to Low region, advance both. Low priority? Swap to High region, but DON\'T advance Mid (the swapped ticket needs checking). This runs continuously — Zendesk and Freshdesk use variants to ensure Critical tickets surface immediately.' },
+                        { icon: '🏥', title: 'Emergency Room Triage System', desc: 'ER patients are categorized using the Emergency Severity Index: Immediate (level 1-2), Delayed (level 3), and Minor (level 4-5). As patients arrive, the triage nurse partitions the queue. Low = boundary of Immediate patients, High = start of Minor patients, Mid = current patient being assessed. Immediate cases swap left, Minor cases swap right (recheck the swapped patient!), Delayed cases stay in middle. This is life-or-death — O(n) single-pass means faster treatment for critical patients.' },
+                        { icon: '📦', title: 'Shipping Hub Zone Sorting', desc: 'At FedEx/UPS sorting facilities, packages are scanned and categorized: Local (same-city), Regional (same-state), National (cross-country). A single conveyor pass must sort packages into three output chutes. Low = local chute boundary, High = national chute boundary, Mid = current package. Local packages divert left, National divert right (but wait for the package that takes its place!), Regional continues straight. This runs at 100,000+ packages/hour — two-pass sorting would halve throughput.' },
+                        { icon: '🎨', title: 'Image Segmentation Preprocessing', desc: 'Computer vision pipelines classify pixels as Background (0), Edge (1), or Foreground (2) for object detection. Before feeding to neural networks, partition the pixel array for efficient per-region processing. Low = foreground boundary, High = background boundary, Mid = current pixel. This single-pass partition enables batch operations on each region — Tesla Autopilot processes 36 camera frames per second, and multi-pass partitioning would miss the latency budget.' },
+                        { icon: '⚙️', title: 'Quicksort Three-Way Partitioning', desc: 'Standard quicksort degrades to O(n²) on arrays with many duplicates (e.g., [1,1,1,2,2,2,3,3,3]). Three-way partitioning (Dutch National Flag) handles this by creating regions for < pivot, = pivot, and > pivot. Elements equal to pivot don\'t need further sorting. Low = less-than boundary, High = greater-than boundary, Mid scans. This is how Java\'s Arrays.sort() and Python\'s Timsort handle duplicates — critical for real-world data that often contains repeated values.' }
+                    ]
+                },
+                verboseCode: `class SortColors:
+    """
+    Sort array of 0s, 1s, and 2s in-place in ONE PASS.
+    Also known as the Dutch National Flag problem.
+    
+    Mental Model: The Sorting Hat (Harry Potter).
+    - Examines each student (Mid pointer)
+    - Brave (0)? → Gryffindor (swap left, advance both)
+    - Clever (2)? → Ravenclaw (swap right, DON'T advance Mid!)
+    - Loyal (1)? → Hufflepuff (stay in middle, advance Mid)
+    
+    CRITICAL: After swapping with High, the new element at Mid
+    is UNKNOWN — we must check it before advancing!
+    """
+    
+    def __init__(self, nums: list):
+        self.nums = nums
+        self.low = 0                    # Boundary: [0..low-1] are all 0s
+        self.mid = 0                    # Current element being examined
+        self.high = len(nums) - 1       # Boundary: [high+1..end] are all 2s
+        # Region [low..mid-1] contains all 1s
+        # Region [mid..high] is UNKNOWN
+    
+    def swap(self, i: int, j: int):
+        """Swap elements at positions i and j."""
+        self.nums[i], self.nums[j] = self.nums[j], self.nums[i]
+    
+    def solve(self):
+        """
+        Main algorithm loop.
+        
+        Process until Mid crosses High (unknown region is empty).
+        Each iteration either:
+        - Expands the 0s region (swap with Low)
+        - Expands the 2s region (swap with High)
+        - Expands the 1s region (just advance Mid)
+        """
+        while self.mid <= self.high:
+            current = self.nums[self.mid]
+            
+            if current == 0:
+                # Belongs in the 0s region (left)
+                self.swap(self.low, self.mid)
+                self.low += 1
+                self.mid += 1
+                # Safe to advance Mid because element from Low
+                # was already processed (it was a 0 or 1)
+            
+            elif current == 1:
+                # Already in the right place (middle region)
+                self.mid += 1
+            
+            else:  # current == 2
+                # Belongs in the 2s region (right)
+                self.swap(self.mid, self.high)
+                self.high -= 1
+                # DON'T advance Mid! The element we got from High
+                # is UNKNOWN — could be 0, 1, or 2. Must check it!
+
+# Usage Example:
+# sorter = SortColors([2, 0, 2, 1, 1, 0])
+# sorter.solve()
+# Array is now [0, 0, 1, 1, 2, 2]`,
+                code: [
+                    { text: 'def sortColors(nums):', highlight: false },
+                    { text: '    lo, mid, hi = 0, 0, len(nums) - 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    while mid <= hi:', highlight: false },
+                    { text: '        if nums[mid] == 0:', highlight: false },
+                    { text: '            swap(lo, mid)', highlight: false },
+                    { text: '            lo += 1; mid += 1', highlight: false },
+                    { text: '        elif nums[mid] == 1:', highlight: false },
+                    { text: '            mid += 1', highlight: false },
+                    { text: '        else:  # nums[mid] == 2', highlight: false },
+                    { text: '            swap(mid, hi)', highlight: false },
+                    { text: '            hi -= 1  # DON\'T inc mid!', highlight: false },
+                ],
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.left = 0;
+                    state.mid = 0;
+                    state.right = state.arr.length - 1;
+                    state.result = '...';
+                    state.extra = 0;
+                    state.done = false;
+                    state.codeLine = 1;
+                },
+                step: function (state) {
+                    if (state.mid > state.right) {
+                        state.result = 'Sorted!';
+                        state.done = true;
+                        state.codeLine = 3;
+                        return { msg: `Done! [${state.arr}]`, found: true };
+                    }
+
+                    const val = state.arr[state.mid];
+                    state.extra = state.mid;
+                    state.codeLine = 4;
+
+                    if (val === 0) {
+                        [state.arr[state.left], state.arr[state.mid]] = [state.arr[state.mid], state.arr[state.left]];
+                        state.codeLine = 5;
+                        const msg = `arr[M]=${val} → Swap L↔M, L++, M++`;
+                        state.left++;
+                        state.mid++;
+                        state.result = `[${state.arr}]`;
+                        return { msg };
+                    } else if (val === 1) {
+                        state.codeLine = 8;
+                        const msg = `arr[M]=${val} → Already middle, M++`;
+                        state.mid++;
+                        state.result = 'M++';
+                        return { msg };
+                    } else {
+                        [state.arr[state.mid], state.arr[state.right]] = [state.arr[state.right], state.arr[state.mid]];
+                        state.codeLine = 10;
+                        const msg = `arr[M]=${val} → Swap M↔H, H-- (don't inc M!)`;
+                        state.right--;
+                        state.result = `[${state.arr}]`;
+                        return { msg };
+                    }
+                }
+            },
+
+            trappingRain: {
+                name: 'Trapping Rain Water',
+                type: 'opposite',
+                arr: [0, 1, 0, 2, 1, 0, 1, 3, 2, 1, 2, 1],
+                labels: { left: 'Left (L)', right: 'Right (R)', extra: '+Water', result: 'Total' },
+                mnemonic: {
+                    emoji: '🏔️',
+                    person: 'Elsa (Frozen)',
+                    object: 'Ice Walls',
+                    action: 'Filling valleys with water up to the shorter wall',
+                    story: '"Elsa raises ice walls on both sides. Water fills up to the SHORTER wall\'s height. She moves the shorter wall inward, tracking the max height seen. Water at each spot = max_height - current_height. Let it flow!"'
+                },
+                realWorld: {
+                    essence: 'Calculate trapped capacity between peaks by processing the smaller-max side first.',
+                    synthesis: {
+                        category: 'Capacity Planning & Gap Analysis',
+                        insight: 'These problems all calculate the cumulative "deficit" or "trapped capacity" between varying supply/demand curves. The key insight is that water level at any point is bounded by the MINIMUM of the two surrounding maximums (left_max and right_max). By tracking running maximums from both ends and always processing the side with the smaller max, we guarantee we know the exact bound at that position. This elegant approach reduces O(n) space (for prefix arrays) to O(1) space.',
+                        examples: 'Streaming (buffer sizing), Trading (volume analysis), HVAC (energy load), Energy (battery sizing), Traffic (queue modeling)'
+                    },
+                    cases: [
+                        { icon: '🖥️', title: 'Streaming Media Buffer Sizing', desc: 'Video streaming services must buffer enough data between the encoder (producer) and player (consumer). The encoder produces frames at varying bitrates (peaks during action scenes), and the player consumes at varying rates (network fluctuations). The "water trapped" between these rate curves = minimum buffer size to prevent stutter. L tracks max production rate seen, R tracks max consumption rate. Process the smaller-max side to calculate buffer needed at each point. Netflix runs this analysis to set initial buffer sizes — too small causes rebuffering, too large wastes memory on mobile devices.' },
+                        { icon: '📊', title: 'Order Book Depth Analysis', desc: 'Traders analyze the "depth" of an order book — how much volume exists between price levels. Given bid/ask price levels as heights, the "trapped water" represents tradeable volume that can be executed without moving the price significantly. L_max = highest bid seen, R_max = lowest ask seen. Process the tighter side (smaller max) to calculate executable volume at each price point. High-frequency trading firms use this to estimate market impact — executing more than the "trapped" volume will cause slippage.' },
+                        { icon: '🌡️', title: 'HVAC Energy Load Forecasting', desc: 'Building management systems calculate heating/cooling loads based on temperature forecasts. Given hourly temperature predictions as "heights," the energy needed to maintain 72°F = the "water" trapped between the temperature curve and the setpoint. L_max = hottest temp seen from morning, R_max = hottest from evening. Process the cooler side first. The total "trapped area" = BTUs of cooling required. Honeywell and Johnson Controls use this to pre-condition buildings, reducing peak energy costs by 30%.' },
+                        { icon: '🔋', title: 'Grid-Scale Battery Sizing', desc: 'Renewable energy planners size batteries to bridge solar/wind intermittency. Solar generation peaks midday, consumption peaks evening. The gap between these curves = energy that must be stored. L_max = peak generation seen, R_max = peak consumption seen. Process the smaller-max side to calculate storage needed at each hour. The total "trapped water" = minimum battery capacity in MWh. Tesla Megapack installations use this analysis — undersizing means blackouts, oversizing wastes millions in unnecessary batteries.' },
+                        { icon: '🚗', title: 'Traffic Queue Simulation', desc: 'Traffic engineers model congestion by treating road segments as "elevations" (throughput capacity). When inflow exceeds outflow, vehicles "pool" like water between bottlenecks. L_max = upstream capacity, R_max = downstream capacity. The "trapped" volume = number of cars queued at each segment. Processing the lower-capacity side first identifies where queues form. Cities use this for signal timing optimization — reducing "trapped" vehicles by 20% can cut commute times by 30 minutes across a metro area.' }
+                    ]
+                },
+                verboseCode: `class TrappingRainWater:
+    """
+    Calculate how much water can be trapped after raining.
+    Uses two pointers with running maximums for O(1) space.
+    
+    Mental Model: Elsa (Frozen) with ice walls.
+    - Water at any point rises to min(left_max, right_max)
+    - Process the side with SMALLER max (that's the bound)
+    - If left_max < right_max: water at L is bounded by left_max
+    - Track running maxes as you go — no need for prefix arrays
+    
+    Key Formula: water[i] = min(left_max, right_max) - height[i]
+    """
+    
+    def __init__(self, height: list):
+        self.height = height
+        self.left = 0
+        self.right = len(height) - 1
+        self.left_max = 0     # Max height seen from left so far
+        self.right_max = 0    # Max height seen from right so far
+        self.total_water = 0
+    
+    def update_left_max(self):
+        """Update running maximum from left side."""
+        self.left_max = max(self.left_max, self.height[self.left])
+    
+    def update_right_max(self):
+        """Update running maximum from right side."""
+        self.right_max = max(self.right_max, self.height[self.right])
+    
+    def water_at_left(self) -> int:
+        """
+        Calculate water trapped at left position.
+        Water level = left_max (we know right has higher max)
+        """
+        return self.left_max - self.height[self.left]
+    
+    def water_at_right(self) -> int:
+        """
+        Calculate water trapped at right position.
+        Water level = right_max (we know left has higher max)
+        """
+        return self.right_max - self.height[self.right]
+    
+    def solve(self) -> int:
+        """
+        Main algorithm loop.
+        
+        Why process the smaller-max side?
+        - If left_max < right_max: water at L is bounded by left_max
+          (doesn't matter what's beyond R — left_max is the limit)
+        - So we can safely calculate water at L and move on
+        - Same logic applies when right_max is smaller
+        """
+        while self.left < self.right:
+            self.update_left_max()
+            self.update_right_max()
+            
+            if self.left_max < self.right_max:
+                # Left side is the limiting factor
+                self.total_water += self.water_at_left()
+                self.left += 1
+            else:
+                # Right side is the limiting factor
+                self.total_water += self.water_at_right()
+                self.right -= 1
+        
+        return self.total_water
+
+# Usage Example:
+# trap = TrappingRainWater([0,1,0,2,1,0,1,3,2,1,2,1])
+# result = trap.solve()  # Returns 6`,
+                code: [
+                    { text: 'def trap(height):', highlight: false },
+                    { text: '    l, r = 0, len(height) - 1', highlight: false },
+                    { text: '    l_max = r_max = 0', highlight: false },
+                    { text: '    water = 0', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    while l < r:', highlight: false },
+                    { text: '        l_max = max(l_max, height[l])', highlight: false },
+                    { text: '        r_max = max(r_max, height[r])', highlight: false },
+                    { text: '        ', highlight: false },
+                    { text: '        if l_max < r_max:', highlight: false },
+                    { text: '            water += l_max - height[l]', highlight: false },
+                    { text: '            l += 1', highlight: false },
+                    { text: '        else:', highlight: false },
+                    { text: '            water += r_max - height[r]', highlight: false },
+                    { text: '            r -= 1', highlight: false },
+                    { text: '    ', highlight: false },
+                    { text: '    return water', highlight: false },
+                ],
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.left = 0;
+                    state.right = state.arr.length - 1;
+                    state.leftMax = 0;
+                    state.rightMax = 0;
+                    state.result = 0;
+                    state.extra = 0;
+                    state.done = false;
+                    state.codeLine = 1;
+                },
+                step: function (state) {
+                    if (state.left >= state.right) {
+                        state.done = true;
+                        state.codeLine = 16;
+                        return { msg: `Done! Total: ${state.result}`, found: true };
+                    }
+
+                    state.leftMax = Math.max(state.leftMax, state.arr[state.left]);
+                    state.rightMax = Math.max(state.rightMax, state.arr[state.right]);
+                    state.codeLine = 6;
+
+                    if (state.leftMax < state.rightMax) {
+                        const water = state.leftMax - state.arr[state.left];
+                        state.extra = water;
+                        state.result += water;
+                        state.codeLine = 10;
+                        const msg = `lMax=${state.leftMax} < rMax=${state.rightMax} → +${water}, L++`;
+                        state.left++;
+                        return { msg };
+                    } else {
+                        const water = state.rightMax - state.arr[state.right];
+                        state.extra = water;
+                        state.result += water;
+                        state.codeLine = 13;
+                        const msg = `lMax=${state.leftMax} ≥ rMax=${state.rightMax} → +${water}, R--`;
+                        state.right--;
+                        return { msg };
+                    }
+                }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // ANIMATION STATE
+        // ═══════════════════════════════════════════════════════════════
+
+        let animState = {
+            arr: [],
+            left: 0,
+            right: 0,
+            mid: 0,
+            anchor: 0,
+            result: '-',
+            extra: '-',
+            done: false,
+            isPlaying: false,
+            playInterval: null,
+            currentProblem: 'twoSumII',
+            codeLine: 0
+        };
+
+        const animCanvas = document.getElementById('animCanvas');
+        const animCtx = animCanvas.getContext('2d');
+
+        // ═══════════════════════════════════════════════════════════════
+        // CORE FUNCTIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        function updateMnemonicPanel(config) {
+            document.getElementById('mnemonic-emoji').textContent = config.mnemonic.emoji;
+            document.getElementById('mnemonic-person').textContent = config.mnemonic.person;
+            document.getElementById('mnemonic-object').textContent = config.mnemonic.object;
+            document.getElementById('mnemonic-action').textContent = config.mnemonic.action;
+            document.getElementById('mnemonic-story').textContent = config.mnemonic.story;
+        }
+
+        function updateRealWorldPanel(config) {
+            const grid = document.getElementById('realworldGrid');
+            grid.innerHTML = config.realWorld.cases.map(c => `
+                <div class="scenario-box">
+                    <div class="scenario-icon">${c.icon}</div>
+                    <div class="scenario-title">${c.title}</div>
+                    <div class="scenario-desc">${c.desc}</div>
+                </div>
+            `).join('');
+            document.getElementById('patternEssence').innerHTML = config.realWorld.essence;
+
+            // Update synthesis section
+            const synthesis = config.realWorld.synthesis;
+            document.getElementById('synthesisCategory').textContent = synthesis.category;
+            document.getElementById('synthesisInsight').textContent = synthesis.insight;
+            document.getElementById('synthesisExamples').textContent = 'Common across: ' + synthesis.examples;
+        }
+
+        function updateCodePanel(config) {
+            document.getElementById('codeTitle').textContent = config.name;
+
+            // Terse code (line-synced)
+            const codeBody = document.getElementById('codeBody');
+            codeBody.innerHTML = '';
+            config.code.forEach((line, idx) => {
+                const div = document.createElement('div');
+                div.className = 'code-line';
+                div.id = `code-line-${idx}`;
+                div.innerHTML = highlightSyntax(line.text);
+                codeBody.appendChild(div);
+            });
+
+            // Verbose code
+            const verboseBody = document.getElementById('codeBodyVerbose');
+            if (config.verboseCode) {
+                verboseBody.innerHTML = '<pre style="font-family: Consolas, monospace; font-size: 0.78rem; line-height: 1.5; color: #e0e0e0;">' +
+                    highlightSyntax(config.verboseCode) + '</pre>';
+            }
+        }
+
+        function highlightSyntax(text) {
+            return text
+                .replace(/(#.*)/g, '<span class="comment">$1</span>')
+                .replace(/\b(def|if|elif|else|while|for|in|return|and|or|not|range|len|max|min|True|False|None|continue|break)\b/g, '<span class="keyword">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span class="number">$1</span>')
+                .replace(/\b(nums|numbers|height|target|result|slow|fast|l|r|lo|mid|hi|s|w|h|l_max|r_max|water|max_area)\b/g, '<span class="variable">$1</span>');
+        }
+
+        function highlightCodeLine(lineNum) {
+            document.querySelectorAll('.code-line').forEach((el, idx) => {
+                el.classList.remove('highlight', 'executed');
+                if (idx === lineNum) {
+                    el.classList.add('highlight');
+                } else if (idx < lineNum) {
+                    el.classList.add('executed');
+                }
+            });
+        }
+
+        function resetAnim() {
+            stopAnim();
+            const config = problemConfigs[animState.currentProblem];
+            config.init(animState);
+
+            document.getElementById('leftLabel').textContent = config.labels.left;
+            document.getElementById('rightLabel').textContent = config.labels.right;
+            document.getElementById('extraLabel').textContent = config.labels.extra;
+            document.getElementById('resultLabel').textContent = config.labels.result;
+
+            updateMnemonicPanel(config);
+            updateRealWorldPanel(config);
+            updateCodePanel(config);
+
+            updateMessageBox('Click Step or Play to start!', false);
+            highlightCodeLine(-1);
+            drawAnim();
+        }
+
+        function updateMessageBox(msg, found) {
+            const box = document.getElementById('messageBox');
+            box.textContent = msg;
+            box.className = found ? 'message-box found' : 'message-box';
+        }
+
+        function drawAnim() {
+            const config = problemConfigs[animState.currentProblem];
+
+            animCtx.fillStyle = '#0d1117';
+            animCtx.fillRect(0, 0, animCanvas.width, animCanvas.height);
+
+            const arr = animState.arr;
+            const n = arr.length;
+            const maxCellW = 38;
+            const minCellW = 26;
+            const cellW = Math.max(minCellW, Math.min(maxCellW, (animCanvas.width - 40) / n - 4));
+            const cellH = 38;
+            const startX = (animCanvas.width - (cellW + 4) * n) / 2;
+            const startY = 50;
+
+            for (let i = 0; i < n; i++) {
+                const x = startX + i * (cellW + 4);
+                let color = '#1a2030';
+                let stroke = '#444';
+                let highlight = false;
+
+                if (config.type === 'opposite') {
+                    if (animState.currentProblem === 'threeSum' && i === animState.anchor) {
+                        color = '#3a2a1a'; stroke = '#fb923c'; highlight = true;
+                    }
+                    if (i === animState.left) { color = '#3a1a3a'; stroke = '#f472b6'; highlight = true; }
+                    if (i === animState.right) { color = '#1a3a3a'; stroke = '#22d3ee'; highlight = true; }
+                    if (i < animState.left && animState.currentProblem !== 'threeSum') { color = '#1a1a1a'; stroke = '#333'; }
+                    if (i > animState.right) { color = '#1a1a1a'; stroke = '#333'; }
+                } else if (config.type === 'same') {
+                    if (i < animState.left) { color = '#1a3a2a'; stroke = '#4ade80'; }
+                    if (i === animState.left) { color = '#3a1a3a'; stroke = '#f472b6'; highlight = true; }
+                    if (i === animState.right) { color = '#1a3a3a'; stroke = '#22d3ee'; highlight = true; }
+                } else if (config.type === 'three') {
+                    if (i < animState.left) { color = '#3a1a1a'; stroke = '#ef4444'; }
+                    else if (i > animState.right) { color = '#1a1a3a'; stroke = '#3b82f6'; }
+                    else if (i < animState.mid) { color = '#3a3a2a'; stroke = '#888'; }
+                    if (i === animState.mid) { color = '#3a3a1a'; stroke = '#fbbf24'; highlight = true; }
+                }
+
+                animCtx.fillStyle = color;
+                animCtx.strokeStyle = stroke;
+                animCtx.lineWidth = highlight ? 2.5 : 1;
+                animCtx.beginPath();
+                animCtx.roundRect(x, startY, cellW, cellH, 5);
+                animCtx.fill();
+                animCtx.stroke();
+
+                animCtx.fillStyle = highlight ? '#fff' : '#888';
+                animCtx.font = `bold ${cellW > 32 ? 13 : 10}px sans-serif`;
+                animCtx.textAlign = 'center';
+                animCtx.textBaseline = 'middle';
+                animCtx.fillText(arr[i], x + cellW / 2, startY + cellH / 2);
+
+                animCtx.fillStyle = '#444';
+                animCtx.font = '9px sans-serif';
+                animCtx.fillText(i, x + cellW / 2, startY + cellH + 12);
+            }
+
+            // Pointers
+            if (config.type === 'opposite') {
+                if (animState.currentProblem === 'threeSum') {
+                    drawPointer(animCtx, startX, cellW, animState.anchor, startY, 'A', '#fb923c');
+                }
+                drawPointer(animCtx, startX, cellW, animState.left, startY, 'L', '#f472b6');
+                drawPointer(animCtx, startX, cellW, animState.right, startY, 'R', '#22d3ee');
+            } else if (config.type === 'same') {
+                drawPointer(animCtx, startX, cellW, animState.left, startY, 'S', '#f472b6');
+                drawPointer(animCtx, startX, cellW, animState.right, startY, 'F', '#22d3ee');
+            } else if (config.type === 'three') {
+                drawPointer(animCtx, startX, cellW, animState.left, startY, 'L', '#f472b6');
+                drawPointer(animCtx, startX, cellW, animState.mid, startY, 'M', '#fbbf24');
+                drawPointerBottom(animCtx, startX, cellW, animState.right, startY + cellH, 'H', '#22d3ee');
+            }
+
+            document.getElementById('leftVal').textContent = animState.left;
+            if (config.type === 'three') {
+                document.getElementById('rightVal').textContent = animState.right;
+                document.getElementById('extraVal').textContent = animState.mid;
+            } else {
+                document.getElementById('rightVal').textContent = animState.right;
+                document.getElementById('extraVal').textContent = animState.extra;
+            }
+            document.getElementById('resultVal').textContent = animState.result;
+        }
+
+        function drawPointer(ctx, startX, cellW, idx, startY, label, color) {
+            if (idx < 0 || idx >= animState.arr.length) return;
+            const x = startX + idx * (cellW + 4) + cellW / 2;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, startY - 15);
+            ctx.beginPath();
+            ctx.moveTo(x, startY - 5);
+            ctx.lineTo(x - 5, startY - 10);
+            ctx.lineTo(x + 5, startY - 10);
+            ctx.fill();
+        }
+
+        function drawPointerBottom(ctx, startX, cellW, idx, bottomY, label, color) {
+            if (idx < 0 || idx >= animState.arr.length) return;
+            const x = startX + idx * (cellW + 4) + cellW / 2;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, bottomY + 22);
+            ctx.beginPath();
+            ctx.moveTo(x, bottomY + 5);
+            ctx.lineTo(x - 5, bottomY + 12);
+            ctx.lineTo(x + 5, bottomY + 12);
+            ctx.fill();
+        }
+
+        function stepAnim() {
+            if (animState.done) { stopAnim(); return; }
+
+            const config = problemConfigs[animState.currentProblem];
+            const result = config.step(animState);
+
+            updateMessageBox(result.msg, result.found);
+            highlightCodeLine(animState.codeLine);
+            drawAnim();
+
+            if (animState.done) stopAnim();
+        }
+
+        function togglePlay() {
+            if (animState.isPlaying) {
+                stopAnim();
+            } else {
+                animState.isPlaying = true;
+                document.getElementById('btnPlay').textContent = '⏸ Pause';
+                document.getElementById('btnPlay').classList.add('active');
+                const speed = 1600 - parseInt(document.getElementById('speedSlider').value);
+                animState.playInterval = setInterval(stepAnim, speed);
+            }
+        }
+
+        function stopAnim() {
+            animState.isPlaying = false;
+            document.getElementById('btnPlay').textContent = '▶ Play';
+            document.getElementById('btnPlay').classList.remove('active');
+            if (animState.playInterval) {
+                clearInterval(animState.playInterval);
+                animState.playInterval = null;
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ═══════════════════════════════════════════════════════════════
+
+        document.getElementById('btnStep').addEventListener('click', stepAnim);
+        document.getElementById('btnPlay').addEventListener('click', togglePlay);
+        document.getElementById('btnReset').addEventListener('click', resetAnim);
+
+        document.getElementById('speedSlider').addEventListener('input', () => {
+            if (animState.isPlaying) { stopAnim(); togglePlay(); }
+        });
+
+        // Problem selector buttons
+        document.querySelectorAll('.problem-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.problem-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                animState.currentProblem = btn.dataset.problem;
+                resetAnim();
+            });
+        });
+
+        // Problem cards in Problems tab
+        document.querySelectorAll('.problem-card').forEach(card => {
+            card.addEventListener('click', () => {
+                animState.currentProblem = card.dataset.problem;
+                document.querySelectorAll('.problem-btn').forEach(b => {
+                    b.classList.toggle('active', b.dataset.problem === card.dataset.problem);
+                });
+                // Switch to Learn tab
+                document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+                document.querySelector('.main-tab[data-tab="learn"]').classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                document.getElementById('tab-learn').classList.add('active');
+                resetAnim();
+            });
+        });
+
+        // Main tabs
+        document.querySelectorAll('.main-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        // Code tabs (terse vs verbose)
+        document.querySelectorAll('.code-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                const terseBody = document.getElementById('codeBody');
+                const verboseBody = document.getElementById('codeBodyVerbose');
+
+                if (tab.dataset.codeTab === 'verbose') {
+                    terseBody.style.display = 'none';
+                    verboseBody.style.display = 'block';
+                } else {
+                    terseBody.style.display = 'block';
+                    verboseBody.style.display = 'none';
+                }
+            });
+        });
+
+        // Initialize
+        resetAnim();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,3017 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimization & Constraint Solving — LP, MIP, CP, and Metaheuristics</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #22d3ee, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* CATEGORY TABS */
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .category-tab {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 2px solid #2a2f45;
+            color: #888;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .category-tab:hover {
+            color: #ccc;
+            border-color: #4a4f65;
+        }
+
+        .category-tab.active {
+            border-color: var(--cat-color, #a78bfa);
+            color: var(--cat-color, #a78bfa);
+            background: linear-gradient(145deg, rgba(167, 139, 250, 0.15), rgba(167, 139, 250, 0.05));
+        }
+
+        .category-tab[data-cat="lp"] {
+            --cat-color: #22d3ee;
+        }
+
+        .category-tab[data-cat="mip"] {
+            --cat-color: #fb923c;
+        }
+
+        .category-tab[data-cat="cp"] {
+            --cat-color: #a78bfa;
+        }
+
+        .category-tab[data-cat="meta"] {
+            --cat-color: #4ade80;
+        }
+
+        .category-content {
+            display: none;
+        }
+
+        .category-content.active {
+            display: block;
+        }
+
+        /* ALGORITHM SELECTOR */
+        .algo-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .algo-btn {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 1px solid #2a2f45;
+            color: #888;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .algo-btn:hover {
+            border-color: #4a4f65;
+            color: #ccc;
+        }
+
+        .algo-btn.active {
+            border-color: var(--algo-color, #22d3ee);
+            color: var(--algo-color, #22d3ee);
+            background: rgba(34, 211, 238, 0.1);
+        }
+
+        /* PANELS */
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel h3 {
+            font-size: 0.95rem;
+            margin-bottom: 12px;
+        }
+
+        /* GRIDS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+        }
+
+        @media (max-width: 1000px) {
+
+            .grid-2,
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* MNEMONIC */
+        .mnemonic-panel {
+            background: linear-gradient(145deg, #1a1025, #150d1f);
+            border: 1px solid #3a2050;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mnemonic-panel h3 {
+            color: #d8b4fe;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .poa-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 700px) {
+            .poa-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .poa-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .poa-card .emoji {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .poa-card .type {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .poa-card .content {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .poa-person .content {
+            color: #f472b6;
+        }
+
+        .poa-object .content {
+            color: #22d3ee;
+        }
+
+        .poa-action .content {
+            color: #4ade80;
+        }
+
+        .memory-story {
+            background: rgba(216, 180, 254, 0.1);
+            border-left: 3px solid #d8b4fe;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #c4b5fd;
+            line-height: 1.6;
+            font-style: italic;
+        }
+
+        /* ANIMATION */
+        .anim-panel {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+        }
+
+        button.playing {
+            border-color: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+        }
+
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .state-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .state-item .label {
+            font-size: 0.65rem;
+            color: #666;
+        }
+
+        .state-item .value {
+            font-size: 0.9rem;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }
+
+        .message-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #aaa;
+            min-height: 45px;
+            text-align: center;
+        }
+
+        .message-box.success {
+            background: rgba(74, 222, 128, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+        }
+
+        /* REAL WORLD */
+        .realworld-panel {
+            background: linear-gradient(145deg, #0d1a1a, #0a1515);
+            border: 1px solid #1a3a3a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .realworld-panel h3 {
+            color: #22d3ee;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .realworld-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .scenario-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 14px;
+            border-left: 3px solid #2a4a4a;
+            transition: all 0.2s;
+        }
+
+        .scenario-box:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-left-color: #4ade80;
+        }
+
+        .scenario-icon {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .scenario-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+
+        .scenario-desc {
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.55;
+        }
+
+        .scenario-desc code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: #fbbf24;
+            font-size: 0.75rem;
+        }
+
+        .pattern-synthesis {
+            background: linear-gradient(145deg, rgba(167, 139, 250, 0.1), rgba(244, 114, 182, 0.1));
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .pattern-synthesis h4 {
+            color: #d8b4fe;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .pattern-synthesis .category {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #f472b6;
+            margin-bottom: 8px;
+        }
+
+        .pattern-synthesis .insight {
+            font-size: 0.85rem;
+            color: #c4b5fd;
+            line-height: 1.6;
+        }
+
+        /* CODE */
+        .code-panel {
+            background: #0d1117;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #161b22;
+            padding: 10px 15px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .code-tab {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            color: #888;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .code-tab.active {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        .code-body {
+            padding: 15px;
+            max-height: 400px;
+            overflow: auto;
+            font-family: 'Consolas', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .comment {
+            color: #6a737d;
+        }
+
+        .keyword {
+            color: #ff7b72;
+        }
+
+        .function {
+            color: #d2a8ff;
+        }
+
+        .string {
+            color: #a5d6ff;
+        }
+
+        .number {
+            color: #79c0ff;
+        }
+
+        /* CONCEPT CARDS */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .concept-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            border-top: 3px solid #888;
+        }
+
+        .concept-card h4 {
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .concept-card p {
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .concept-card .complexity {
+            font-family: 'Consolas', monospace;
+            font-size: 0.75rem;
+            color: #fbbf24;
+        }
+
+        /* COMPARISON TABLE */
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.8rem;
+        }
+
+        .comparison-table th {
+            background: rgba(167, 139, 250, 0.2);
+            color: #d8b4fe;
+            padding: 12px;
+            text-align: left;
+        }
+
+        .comparison-table td {
+            padding: 12px;
+            border-bottom: 1px solid #2a2f45;
+            vertical-align: top;
+        }
+
+        .comparison-table tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* OVERVIEW SECTION */
+        .overview-box {
+            background: rgba(34, 211, 238, 0.1);
+            border: 1px solid rgba(34, 211, 238, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .overview-box h4 {
+            color: #22d3ee;
+            margin-bottom: 10px;
+        }
+
+        .overview-box p {
+            font-size: 0.85rem;
+            color: #67e8f9;
+            line-height: 1.6;
+        }
+
+        /* INVARIANT */
+        .invariant-box {
+            background: rgba(251, 146, 60, 0.1);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .invariant-box h4 {
+            color: #fb923c;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .invariant-box pre {
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: #fbbf24;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* FORMULA */
+        .formula-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 15px;
+            text-align: center;
+            font-family: 'Consolas', monospace;
+            color: #22d3ee;
+            font-size: 1rem;
+            margin: 15px 0;
+        }
+
+        /* SPEED SLIDER */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .speed-control input {
+            width: 80px;
+        }
+
+        /* DECISION TREE */
+        .decision-tree {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .decision-node {
+            background: rgba(167, 139, 250, 0.15);
+            border: 1px solid #a78bfa;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 0.85rem;
+        }
+
+        .decision-node.leaf {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        .decision-arrow {
+            text-align: center;
+            color: #666;
+            font-size: 0.8rem;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🎯 Optimization & Constraint Solving</h1>
+    <p class="subtitle">Linear Programming • Mixed-Integer Programming • Constraint Programming • Metaheuristics</p>
+
+    <!-- CATEGORY TABS -->
+    <div class="category-tabs">
+        <button class="category-tab active" data-cat="overview">📊 Overview</button>
+        <button class="category-tab" data-cat="lp">📐 Linear Programming</button>
+        <button class="category-tab" data-cat="mip">🔢 Mixed-Integer</button>
+        <button class="category-tab" data-cat="cp">🧩 Constraint Programming</button>
+        <button class="category-tab" data-cat="meta">🧬 Metaheuristics</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- OVERVIEW TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content active" id="cat-overview">
+        <div class="panel">
+            <h2 style="color: #a78bfa;">🗺️ The Optimization Landscape</h2>
+            <div class="overview-box">
+                <h4>The Big Picture</h4>
+                <p>
+                    All optimization problems share a common structure: <strong>variables</strong> (what we control),
+                    <strong>constraints</strong> (what we must satisfy), and an <strong>objective</strong> (what we want
+                    to maximize/minimize).
+                    The choice of algorithm depends on the nature of your variables and constraints.
+                </p>
+            </div>
+
+            <div class="formula-box">
+                Minimize/Maximize: f(x₁, x₂, ..., xₙ)<br>
+                Subject to: g₁(x) ≤ b₁, g₂(x) ≤ b₂, ..., gₘ(x) ≤ bₘ
+            </div>
+
+            <!-- DECISION TREE -->
+            <h3 style="color: #fbbf24; margin: 20px 0 15px;">🌳 Which Method Do I Use?</h3>
+            <div class="decision-tree">
+                <div class="decision-node">
+                    <strong>Q1: Are all variables continuous (real numbers)?</strong>
+                </div>
+                <div class="decision-arrow">↓ YES → <span style="color: #22d3ee;">Linear Programming (LP)</span></div>
+                <div class="decision-arrow">↓ NO (some integers/binary)</div>
+
+                <div class="decision-node">
+                    <strong>Q2: Are constraints linear (ax + by ≤ c)?</strong>
+                </div>
+                <div class="decision-arrow">↓ YES → <span style="color: #fb923c;">Mixed-Integer Programming (MIP)</span>
+                </div>
+                <div class="decision-arrow">↓ NO (complex/logical constraints)</div>
+
+                <div class="decision-node">
+                    <strong>Q3: Is finding ANY feasible solution acceptable?</strong>
+                </div>
+                <div class="decision-arrow">↓ YES → <span style="color: #a78bfa;">Constraint Programming (CP)</span>
+                </div>
+                <div class="decision-arrow">↓ Need optimization + complex constraints</div>
+
+                <div class="decision-node">
+                    <strong>Q4: Is the problem NP-hard / too large for exact methods?</strong>
+                </div>
+                <div class="decision-arrow">↓ YES → <span style="color: #4ade80;">Metaheuristics (GA, SA, PSO)</span>
+                </div>
+                <div class="decision-node leaf">
+                    Consider hybrid approaches: CP-SAT, MIP with heuristics, etc.
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #22d3ee;">⚖️ Method Comparison</h2>
+            <div style="overflow-x: auto;">
+                <table class="comparison-table">
+                    <tr>
+                        <th>Method</th>
+                        <th>Variables</th>
+                        <th>Constraints</th>
+                        <th>Guarantee</th>
+                        <th>Speed</th>
+                        <th>Best For</th>
+                    </tr>
+                    <tr>
+                        <td style="color: #22d3ee; font-weight: bold;">LP</td>
+                        <td>Continuous only</td>
+                        <td>Linear only</td>
+                        <td>✅ Global optimum</td>
+                        <td>⚡ Very fast</td>
+                        <td>Resource allocation, blending</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #fb923c; font-weight: bold;">MIP</td>
+                        <td>Mixed (continuous + integer)</td>
+                        <td>Linear only</td>
+                        <td>✅ Global optimum</td>
+                        <td>🐢 Can be slow</td>
+                        <td>Scheduling, facility location</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #a78bfa; font-weight: bold;">CP</td>
+                        <td>Discrete/finite domains</td>
+                        <td>Any (logical, global)</td>
+                        <td>✅ Feasibility guaranteed</td>
+                        <td>⚡ Fast for feasibility</td>
+                        <td>Puzzles, sequencing, timetabling</td>
+                    </tr>
+                    <tr>
+                        <td style="color: #4ade80; font-weight: bold;">Metaheuristics</td>
+                        <td>Any</td>
+                        <td>Any (via penalties)</td>
+                        <td>❌ No guarantee</td>
+                        <td>⚡ Anytime solutions</td>
+                        <td>Very large problems, NP-hard</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #f472b6;">🧠 Memory Hooks Summary</h2>
+            <div class="concept-grid">
+                <div class="concept-card" style="border-color: #22d3ee;">
+                    <h4 style="color: #22d3ee;">📐 LP: Simplex</h4>
+                    <p><strong>Indiana Jones</strong> navigating temple corners, always checking adjacent rooms for more
+                        treasure until nowhere is better.</p>
+                </div>
+                <div class="concept-card" style="border-color: #fb923c;">
+                    <h4 style="color: #fb923c;">🔢 MIP: Branch & Bound</h4>
+                    <p><strong>Sherlock Holmes</strong> with a case board, crossing off impossible suspects (branches)
+                        using deduction (bounds).</p>
+                </div>
+                <div class="concept-card" style="border-color: #a78bfa;">
+                    <h4 style="color: #a78bfa;">🧩 CP: Backtracking</h4>
+                    <p><strong>Hermione</strong> solving a logic puzzle, trying values and instantly erasing when rules
+                        are violated.</p>
+                </div>
+                <div class="concept-card" style="border-color: #4ade80;">
+                    <h4 style="color: #4ade80;">🧬 Metaheuristics</h4>
+                    <p><strong>Evolution/Nature</strong>: GA = breeding champions, SA = cooling metal, PSO = bird flocks
+                        finding food.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- LINEAR PROGRAMMING TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content" id="cat-lp">
+        <div class="algo-selector" id="lp-algos">
+            <button class="algo-btn active" data-algo="simplex" style="--algo-color: #22d3ee;">Simplex
+                Algorithm</button>
+            <button class="algo-btn" data-algo="interior" style="--algo-color: #22d3ee;">Interior Point Method</button>
+        </div>
+
+        <!-- Dynamic content container -->
+        <div id="lp-content"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- MIXED INTEGER PROGRAMMING TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content" id="cat-mip">
+        <div class="algo-selector" id="mip-algos">
+            <button class="algo-btn active" data-algo="branch-bound" style="--algo-color: #fb923c;">Branch &
+                Bound</button>
+            <button class="algo-btn" data-algo="cutting-plane" style="--algo-color: #fb923c;">Cutting Planes</button>
+            <button class="algo-btn" data-algo="branch-cut" style="--algo-color: #fb923c;">Branch & Cut</button>
+        </div>
+
+        <div id="mip-content"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- CONSTRAINT PROGRAMMING TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content" id="cat-cp">
+        <div class="algo-selector" id="cp-algos">
+            <button class="algo-btn active" data-algo="backtrack" style="--algo-color: #a78bfa;">Backtracking
+                Search</button>
+            <button class="algo-btn" data-algo="propagation" style="--algo-color: #a78bfa;">Constraint
+                Propagation</button>
+        </div>
+
+        <div id="cp-content"></div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- METAHEURISTICS TAB -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="category-content" id="cat-meta">
+        <div class="algo-selector" id="meta-algos">
+            <button class="algo-btn active" data-algo="genetic" style="--algo-color: #4ade80;">Genetic
+                Algorithm</button>
+            <button class="algo-btn" data-algo="annealing" style="--algo-color: #4ade80;">Simulated Annealing</button>
+            <button class="algo-btn" data-algo="pso" style="--algo-color: #4ade80;">Particle Swarm</button>
+        </div>
+
+        <div id="meta-content"></div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // ALGORITHM CONFIGURATIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        const algoData = {
+            // ─────────────────────────────────────────────────────────────
+            // LINEAR PROGRAMMING
+            // ─────────────────────────────────────────────────────────────
+            simplex: {
+                name: 'Simplex Algorithm',
+                category: 'lp',
+                mnemonic: {
+                    emoji: '🏺',
+                    person: 'Indiana Jones',
+                    object: 'Temple Corners (Vertices)',
+                    action: 'Walking edges, always checking adjacent rooms for more treasure',
+                    story: '"Indiana Jones enters a geometric temple where treasure is hidden at one corner. He starts at any corner (basic feasible solution) and checks all adjacent rooms connected by edges. If a neighbor has more treasure (better objective), he moves there. He keeps doing this until no adjacent room is better — that\'s the optimum. The temple is convex, so local best = global best."'
+                },
+                concept: {
+                    title: 'What is the Simplex Algorithm?',
+                    desc: 'The Simplex algorithm exploits a key property of linear programs: the optimal solution (if it exists) is always at a VERTEX (corner) of the feasible region. Instead of searching infinitely many points, we only check finitely many vertices. The algorithm walks from vertex to vertex along edges, always improving the objective, until no improvement is possible.',
+                    complexity: 'O(2ⁿ) worst case, but typically polynomial in practice. Highly efficient for most real problems.'
+                },
+                invariant: `At each iteration:
+┌─────────────────────────────────────────────────────────────┐
+│  Current vertex is a BASIC FEASIBLE SOLUTION                │
+│  • Exactly n variables are non-zero (basic variables)       │
+│  • All constraints satisfied (feasible)                     │
+│  • Objective value ≥ all previously visited vertices        │
+│                                                             │
+│  Termination: No adjacent vertex has better objective       │
+│  → Current vertex is GLOBALLY OPTIMAL (convexity guarantee) │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Continuous Resource Optimization',
+                        insight: 'All LP problems share a common structure: you\'re allocating continuous resources (money, time, materials, flow) subject to capacity constraints, and the optimal allocation is always "extreme" — at the boundary of what\'s feasible. The Simplex algorithm finds this boundary point by walking along edges of the constraint polytope. Key insight: in a linear world, moderation is never optimal.'
+                    },
+                    cases: [
+                        { icon: '🍎', title: 'Diet Optimization (Stigler Diet)', desc: 'George Stigler\'s 1945 problem: find the cheapest combination of foods meeting all nutritional requirements. Variables: quantities of each food (continuous). Constraints: minimum vitamins, minerals, calories. Objective: minimize cost. Modern applications include hospital meal planning, military rations, and livestock feed optimization. Simplex finds the exact minimum-cost diet — often surprisingly monotonous!' },
+                        { icon: '🏭', title: 'Production Planning (Blending)', desc: 'Oil refineries blend crude oils into products (gasoline, diesel, jet fuel). Each crude has different properties (sulfur, octane). Constraints: product specifications, tank capacities, demand. Variables: flow rates between units (continuous). Shell, ExxonMobil run LP models with 100,000+ variables daily. Simplex finds the blend that maximizes profit while meeting all specs.' },
+                        { icon: '📦', title: 'Transportation/Logistics', desc: 'Ship goods from warehouses to customers minimizing total shipping cost. Variables: amount shipped on each route (continuous). Constraints: supply at each warehouse, demand at each customer. FedEx, Amazon solve massive transportation LPs daily. The special structure (network flow) allows even faster specialized simplex variants that exploit sparsity.' },
+                        { icon: '💰', title: 'Portfolio Optimization (Markowitz)', desc: 'Allocate capital across assets to maximize return for a given risk level. Variables: fraction invested in each asset (continuous, sum to 1). Constraints: risk budget, sector limits, liquidity. Quadratic objective (variance) uses extensions of Simplex. BlackRock, Vanguard optimize $10T+ using these models. Simplex-based algorithms run in milliseconds for rebalancing.' },
+                        { icon: '⚡', title: 'Power Grid Economic Dispatch', desc: 'Determine which power plants to run and at what level to meet demand at minimum cost. Variables: output of each generator (continuous). Constraints: generation limits, transmission capacity, demand balance. ISO-NE, ERCOT solve these LPs every 5 minutes to set electricity prices. The marginal cost at optimum becomes the market price.' }
+                    ]
+                },
+                code: {
+                    terse: `# Simplex via scipy (production use)
+from scipy.optimize import linprog
+
+# min c·x s.t. A_ub·x ≤ b_ub, A_eq·x = b_eq
+c = [-3, -5]  # Maximize 3x + 5y → minimize -3x - 5y
+A_ub = [[1, 0], [0, 2], [3, 2]]
+b_ub = [4, 12, 18]
+
+res = linprog(c, A_ub=A_ub, b_ub=b_ub, method='highs')
+print(f"Optimal: x={res.x}, value={-res.fun}")`,
+                    verbose: `class SimplexTableau:
+    """
+    Educational Simplex implementation using tableau method.
+    
+    Mental Model: Indiana Jones in a Temple
+    - Temple corners (vertices) are basic feasible solutions
+    - Walk along edges to adjacent vertices
+    - Always move toward more treasure (better objective)
+    - Stop when no neighbor is better (optimality)
+    
+    Key Insight: For LP, local optimum = global optimum (convexity)
+    
+    Tableau Structure:
+    ┌─────────────────────────────────────────┐
+    │  [A | I | b]   ← Constraint coefficients │
+    │  [c | 0 | 0]   ← Objective row           │
+    └─────────────────────────────────────────┘
+    """
+    
+    def __init__(self, c, A, b):
+        """
+        Initialize tableau for: min c·x s.t. Ax ≤ b, x ≥ 0
+        Adds slack variables to convert to equality form.
+        """
+        import numpy as np
+        self.c = np.array(c, dtype=float)
+        self.A = np.array(A, dtype=float)
+        self.b = np.array(b, dtype=float)
+        self.m, self.n = self.A.shape
+        
+        # Add slack variables: Ax + s = b, s ≥ 0
+        self.tableau = np.zeros((self.m + 1, self.n + self.m + 1))
+        self.tableau[:self.m, :self.n] = self.A
+        self.tableau[:self.m, self.n:self.n+self.m] = np.eye(self.m)
+        self.tableau[:self.m, -1] = self.b
+        self.tableau[-1, :self.n] = self.c  # Objective row
+        
+        self.basic = list(range(self.n, self.n + self.m))  # Slack vars are basic
+        self.iteration = 0
+    
+    def find_pivot_column(self):
+        """
+        Indy checks which adjacent room might have more treasure.
+        Choose most negative coefficient in objective row.
+        """
+        obj_row = self.tableau[-1, :-1]
+        min_idx = np.argmin(obj_row)
+        if obj_row[min_idx] >= -1e-10:  # No improvement possible
+            return -1  # Optimal!
+        return min_idx
+    
+    def find_pivot_row(self, col):
+        """
+        Minimum ratio test: how far can we move along this edge?
+        Prevents going outside the temple (infeasibility).
+        """
+        column = self.tableau[:-1, col]
+        rhs = self.tableau[:-1, -1]
+        
+        ratios = []
+        for i in range(self.m):
+            if column[i] > 1e-10:
+                ratios.append((rhs[i] / column[i], i))
+        
+        if not ratios:
+            return -1  # Unbounded!
+        
+        return min(ratios)[1]
+    
+    def pivot(self, row, col):
+        """
+        Move to adjacent vertex: one variable enters basis, one leaves.
+        This is Indy stepping into the next room.
+        """
+        # Normalize pivot row
+        self.tableau[row] /= self.tableau[row, col]
+        
+        # Eliminate column in other rows
+        for i in range(self.m + 1):
+            if i != row:
+                self.tableau[i] -= self.tableau[i, col] * self.tableau[row]
+        
+        self.basic[row] = col
+        self.iteration += 1
+    
+    def solve(self):
+        """
+        Main loop: keep pivoting until optimal or unbounded.
+        """
+        while True:
+            col = self.find_pivot_column()
+            if col == -1:
+                break  # Optimal found!
+            
+            row = self.find_pivot_row(col)
+            if row == -1:
+                return None, float('-inf')  # Unbounded
+            
+            self.pivot(row, col)
+        
+        # Extract solution
+        solution = np.zeros(self.n)
+        for i, var in enumerate(self.basic):
+            if var < self.n:
+                solution[var] = self.tableau[i, -1]
+        
+        return solution, -self.tableau[-1, -1]
+
+# Usage:
+# simplex = SimplexTableau(c=[-3, -5], A=[[1, 0], [0, 2], [3, 2]], b=[4, 12, 18])
+# x, value = simplex.solve()
+# print(f"Optimal: {x}, Value: {value}")`
+                }
+            },
+
+            interior: {
+                name: 'Interior Point Method',
+                category: 'lp',
+                mnemonic: {
+                    emoji: '🎈',
+                    person: 'A Hot Air Balloon Pilot',
+                    object: 'A Valley Between Mountains',
+                    action: 'Descending through the center, using barriers to avoid crashing into walls',
+                    story: '"A hot air balloon pilot needs to land at the lowest point of a valley (optimal). Instead of walking along the ridgeline like Indiana Jones (Simplex), the pilot descends through the INTERIOR of the valley. Barrier functions act like invisible force fields that push back harder as the balloon approaches the mountain walls (constraint boundaries). The pilot keeps descending until the lowest point is reached."'
+                },
+                concept: {
+                    title: 'What are Interior Point Methods?',
+                    desc: 'Unlike Simplex which walks along the boundary, Interior Point methods travel through the INSIDE of the feasible region. They use "barrier functions" that add a penalty for getting too close to constraints. As the algorithm progresses, the barrier weakens, allowing the solution to approach the optimal boundary point. Often faster than Simplex for very large problems.',
+                    complexity: 'O(n³·L) where L is input size in bits. Polynomial worst-case, unlike Simplex.'
+                },
+                invariant: `At each iteration with barrier parameter μ:
+┌─────────────────────────────────────────────────────────────┐
+│  Current point x is STRICTLY FEASIBLE (interior)            │
+│  • All inequality constraints satisfied with slack          │
+│  • Barrier term: -μ·Σlog(slack_i) penalizes boundary       │
+│                                                             │
+│  As μ → 0, solution approaches true optimum                 │
+│  Path followed is the "central path" of the polytope        │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Large-Scale Continuous Optimization',
+                        insight: 'Interior Point methods shine when the problem is HUGE (millions of variables) but SPARSE (each constraint involves few variables). The key insight is that barrier functions convert constrained optimization to unconstrained, which can be solved with Newton\'s method. Each iteration is expensive (matrix factorization) but convergence is fast (typically 20-50 iterations regardless of problem size).'
+                    },
+                    cases: [
+                        { icon: '🌐', title: 'Network Flow at Scale', desc: 'Internet traffic routing optimizes millions of paths simultaneously. Variables: flow on each link. Constraints: capacity limits, conservation at nodes. Google, Cloudflare solve these problems with Interior Point because the network structure creates massive sparse matrices. Interior Point handles 10M variables in minutes where Simplex might take hours.' },
+                        { icon: '📡', title: 'Telecommunications Bandwidth', desc: 'Allocate bandwidth across network links to maximize total throughput. AT&T\'s network has millions of potential paths. The constraint matrix is highly sparse (each path only uses ~20 links out of 100,000). Interior Point exploits this sparsity with sparse Cholesky factorization, solving in O(n^1.5) instead of O(n³).' },
+                        { icon: '🔋', title: 'Energy Grid Optimization', desc: 'Optimal power flow (OPF) determines generator outputs and voltage settings. Modern grids have 50,000+ buses. The physics (Kirchhoff\'s laws) create sparse constraint matrices. MATPOWER, PowerWorld use Interior Point. The 2003 Northeast blackout led to better real-time OPF solvers using these methods.' },
+                        { icon: '✈️', title: 'Airline Revenue Management', desc: 'Set prices for millions of seat-flight-class combinations. Variables: booking limits. Constraints: aircraft capacity, demand forecasts. American Airlines pioneered this in the 1980s. Modern systems solve Interior Point problems every few seconds to dynamically adjust prices. Worth billions annually in incremental revenue.' },
+                        { icon: '🏗️', title: 'Structural Engineering (FEM)', desc: 'Finite element analysis optimizes structural designs with millions of elements. Minimize weight subject to stress constraints at each element. The stiffness matrix is extremely sparse (each element connects to few neighbors). Interior Point with sparse linear algebra solves building designs overnight that would take Simplex weeks.' }
+                    ]
+                },
+                code: {
+                    terse: `# Interior Point via scipy (uses HiGHS)
+from scipy.optimize import linprog
+
+res = linprog(c, A_ub=A, b_ub=b, method='highs-ipm')
+# highs-ipm uses interior point method internally`,
+                    verbose: `class BarrierMethod:
+    """
+    Simplified Interior Point / Barrier Method for LP.
+    
+    Mental Model: Hot Air Balloon Descent
+    - Descend through the INTERIOR of the valley
+    - Barrier functions repel from walls (constraints)
+    - As barrier weakens (μ → 0), approach true optimum
+    
+    Key Differences from Simplex:
+    - Travels through interior, not along edges
+    - Uses Newton's method for each subproblem
+    - Polynomial worst-case (Simplex is exponential worst-case)
+    - Better for very large, sparse problems
+    
+    Barrier Function:
+    Instead of: min c·x s.t. Ax ≤ b
+    Solve:      min c·x - μ·Σlog(b - Ax)  [unconstrained!]
+    
+    The log barrier → ∞ as we approach constraint boundary.
+    """
+    
+    def __init__(self, c, A, b, mu_init=10.0, mu_factor=0.2, tol=1e-8):
+        import numpy as np
+        self.c = np.array(c, dtype=float)
+        self.A = np.array(A, dtype=float)
+        self.b = np.array(b, dtype=float)
+        self.mu = mu_init        # Initial barrier strength
+        self.mu_factor = mu_factor  # How much to reduce μ each outer iteration
+        self.tol = tol
+        self.m, self.n = self.A.shape
+    
+    def barrier_objective(self, x, mu):
+        """
+        Compute barrier objective: c·x - μ·Σlog(slack)
+        The log term pushes us away from constraint boundaries.
+        """
+        import numpy as np
+        slack = self.b - self.A @ x
+        if np.any(slack <= 0):
+            return float('inf')  # Outside feasible region
+        return self.c @ x - mu * np.sum(np.log(slack))
+    
+    def barrier_gradient(self, x, mu):
+        """
+        Gradient of barrier objective.
+        As slack → 0, gradient component → ∞ (strong repulsion).
+        """
+        import numpy as np
+        slack = self.b - self.A @ x
+        barrier_grad = self.A.T @ (mu / slack)
+        return self.c + barrier_grad
+    
+    def barrier_hessian(self, x, mu):
+        """
+        Hessian for Newton step.
+        """
+        import numpy as np
+        slack = self.b - self.A @ x
+        D = np.diag(mu / (slack ** 2))
+        return self.A.T @ D @ self.A
+    
+    def newton_step(self, x, mu):
+        """
+        One Newton step for the barrier subproblem.
+        This is the balloon adjusting its descent direction.
+        """
+        import numpy as np
+        grad = self.barrier_gradient(x, mu)
+        hess = self.barrier_hessian(x, mu)
+        
+        try:
+            step = np.linalg.solve(hess, -grad)
+        except np.linalg.LinAlgError:
+            step = -grad  # Fall back to gradient descent
+        
+        return step
+    
+    def line_search(self, x, direction, mu):
+        """
+        Find step size that stays feasible and improves objective.
+        """
+        alpha = 1.0
+        while alpha > 1e-10:
+            x_new = x + alpha * direction
+            slack = self.b - self.A @ x_new
+            if np.all(slack > 0):  # Stays in interior
+                if self.barrier_objective(x_new, mu) < self.barrier_objective(x, mu):
+                    return alpha
+            alpha *= 0.5
+        return alpha
+    
+    def solve(self, x_init=None):
+        """
+        Main barrier method loop.
+        
+        Outer loop: Reduce μ to tighten approximation
+        Inner loop: Newton's method for barrier subproblem
+        """
+        import numpy as np
+        
+        # Start from a strictly feasible point
+        if x_init is None:
+            x = np.zeros(self.n)  # Assumes 0 is feasible
+        else:
+            x = np.array(x_init, dtype=float)
+        
+        mu = self.mu
+        
+        while mu > self.tol:
+            # Inner loop: solve barrier subproblem with Newton
+            for _ in range(100):  # Max inner iterations
+                step = self.newton_step(x, mu)
+                if np.linalg.norm(step) < self.tol:
+                    break
+                alpha = self.line_search(x, step, mu)
+                x = x + alpha * step
+            
+            # Reduce barrier (balloon descends further)
+            mu *= self.mu_factor
+        
+        return x, self.c @ x
+
+# Usage:
+# barrier = BarrierMethod(c=[−3, −5], A=[[1, 0], [0, 2], [3, 2]], b=[4, 12, 18])
+# x, value = barrier.solve()
+# Note: Production code uses CVXPY, Gurobi, or HiGHS`
+                }
+            },
+
+            // ─────────────────────────────────────────────────────────────
+            // MIXED INTEGER PROGRAMMING
+            // ─────────────────────────────────────────────────────────────
+            'branch-bound': {
+                name: 'Branch and Bound',
+                category: 'mip',
+                mnemonic: {
+                    emoji: '🔍',
+                    person: 'Sherlock Holmes',
+                    object: 'A Case Board with Suspect Photos',
+                    action: 'Crossing off impossible suspects using deductive bounds',
+                    story: '"Sherlock has a case board with every possible suspect (solution). He uses DEDUCTION (bounds) to eliminate whole groups at once. \'The thief was 6 feet tall — all suspects under 5\'8 are cleared.\' He BRANCHES into groups (tall vs short) and BOUNDS each group\'s potential. If a branch\'s best possible case is worse than the current prime suspect, he crosses it off entirely (prune). Eventually, one suspect remains."'
+                },
+                concept: {
+                    title: 'What is Branch and Bound?',
+                    desc: 'Branch and Bound systematically explores a tree of possible solutions. At each node, we solve an LP "relaxation" (ignore integer requirements) to get a BOUND on the best possible solution in that branch. If this bound is worse than the best integer solution found so far, we PRUNE the entire branch. Key insight: good bounds + good branching order = massive search space reduction.',
+                    complexity: 'Exponential worst case, but often tractable with good bounds. Modern solvers handle millions of variables.'
+                },
+                invariant: `At each node in the search tree:
+┌─────────────────────────────────────────────────────────────┐
+│  LP Relaxation bound ≤ Best possible integer solution here  │
+│                                                             │
+│  Global incumbent = best integer solution found so far      │
+│                                                             │
+│  If LP bound ≥ incumbent → PRUNE (can't improve)            │
+│  If LP solution is integer → update incumbent if better     │
+│  Otherwise → BRANCH (split on fractional variable)          │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Discrete Decision Optimization',
+                        insight: 'Branch and Bound transforms "impossible" discrete problems into manageable ones by using continuous relaxations as guides. The genius is recognizing that LP provides a BOUND — if you can\'t even achieve X by cheating (allowing fractions), you definitely can\'t achieve X honestly (with integers). This pruning eliminates 99%+ of the search space in practice.'
+                    },
+                    cases: [
+                        { icon: '🏭', title: 'Facility Location', desc: 'Decide which warehouses to build (binary: yes/no) to minimize total distribution cost. Amazon solves this to plan fulfillment center locations. Variables: build[i] ∈ {0,1}, flow[i,j] continuous. Branch on build variables. LP relaxation allows "half-built" warehouses, giving a bound. Real problems have 1000+ potential sites and millions of customer locations.' },
+                        { icon: '👷', title: 'Employee Scheduling', desc: 'Assign nurses to shifts ensuring coverage and labor law compliance. Variables: assign[nurse, shift] ∈ {0,1}. Constraints: max hours/week, minimum rest between shifts, skill requirements. Hospital systems like Epic use MIP. Branching on shift assignments, LP relaxation provides bounds on minimum staff cost.' },
+                        { icon: '✈️', title: 'Airline Crew Scheduling', desc: 'Assign flight crews to sequences of flights (pairings). Each pairing is binary: use it or not. United, Delta solve MIPs with millions of possible pairings. The LP relaxation gives a lower bound on crew cost. Branch and Bound combined with column generation (add pairings dynamically) solves these massive problems.' },
+                        { icon: '📦', title: 'Bin Packing / Container Loading', desc: 'Pack items into minimum number of containers. Variables: item_in_bin[i,j] ∈ {0,1}. Constraints: bin capacity. UPS, FedEx optimize truck loading. LP relaxation allows items to split across bins, providing a bound. Branch on which items go in which bin. Good bounds come from first-fit-decreasing heuristics.' },
+                        { icon: '🔌', title: 'Unit Commitment (Power Grids)', desc: 'Decide which generators to turn on (binary) and at what level (continuous). Startup costs, minimum run times, ramp rates create complex constraints. ISO-NE, PJM solve daily MIPs with 100,000+ variables. LP relaxation allows "partial" generator commits, bounding the true cost of committing discrete units.' }
+                    ]
+                },
+                code: {
+                    terse: `# MIP with PuLP (open source)
+from pulp import LpProblem, LpVariable, LpMinimize, LpBinary
+
+prob = LpProblem("Facility", LpMinimize)
+x = [LpVariable(f"build_{i}", cat=LpBinary) for i in range(3)]
+
+prob += sum(costs[i] * x[i] for i in range(3))  # Objective
+prob += sum(x) >= 1  # At least one facility
+
+prob.solve()  # Uses CBC branch-and-bound internally`,
+                    verbose: `class BranchAndBound:
+    """
+    Educational Branch and Bound for Integer Programming.
+    
+    Mental Model: Sherlock Holmes with Case Board
+    - Each node is a "suspect" (partial solution)
+    - LP relaxation = "best case deduction" (bound)
+    - If best case is worse than current suspect → PRUNE
+    - Otherwise → BRANCH (create sub-cases)
+    
+    Key Concepts:
+    - RELAXATION: Remove integer constraints → LP (solvable quickly)
+    - BOUND: LP optimal is a bound on best integer in subtree
+    - PRUNE: If bound ≥ incumbent, skip entire subtree
+    - BRANCH: Split on a fractional variable (e.g., x=0 vs x=1)
+    
+    Why It Works:
+    LP relaxation is OPTIMISTIC (allows fractions).
+    If even the optimistic bound can't beat incumbent,
+    the honest (integer) solution certainly can't.
+    """
+    
+    def __init__(self, c, A, b, integer_vars):
+        """
+        Initialize MIP: min c·x s.t. Ax ≤ b, x[i] ∈ Z for i in integer_vars
+        """
+        import numpy as np
+        self.c = np.array(c, dtype=float)
+        self.A = np.array(A, dtype=float)
+        self.b = np.array(b, dtype=float)
+        self.integer_vars = set(integer_vars)
+        self.n = len(c)
+        
+        self.incumbent = None      # Best integer solution found
+        self.incumbent_value = float('inf')
+        self.nodes_explored = 0
+        self.nodes_pruned = 0
+    
+    def solve_lp_relaxation(self, bounds):
+        """
+        Solve LP relaxation with given variable bounds.
+        Returns (solution, objective) or (None, inf) if infeasible.
+        """
+        from scipy.optimize import linprog
+        
+        result = linprog(
+            self.c, 
+            A_ub=self.A, 
+            b_ub=self.b, 
+            bounds=bounds,
+            method='highs'
+        )
+        
+        if result.success:
+            return result.x, result.fun
+        return None, float('inf')
+    
+    def find_fractional_var(self, solution):
+        """
+        Find an integer variable with fractional value to branch on.
+        Returns variable index or -1 if solution is integer-feasible.
+        """
+        import numpy as np
+        for i in self.integer_vars:
+            val = solution[i]
+            if abs(val - round(val)) > 1e-6:
+                return i
+        return -1  # All integer vars are integral!
+    
+    def is_integer_feasible(self, solution):
+        """Check if solution satisfies all integrality constraints."""
+        return self.find_fractional_var(solution) == -1
+    
+    def branch(self, var_idx, solution, bounds):
+        """
+        Create two child nodes by branching on fractional variable.
+        Left child: x[i] ≤ floor(current_value)
+        Right child: x[i] ≥ ceil(current_value)
+        """
+        import numpy as np
+        val = solution[var_idx]
+        floor_val = np.floor(val)
+        ceil_val = np.ceil(val)
+        
+        # Left branch: tighten upper bound
+        left_bounds = [list(b) for b in bounds]
+        left_bounds[var_idx][1] = min(left_bounds[var_idx][1], floor_val)
+        
+        # Right branch: tighten lower bound
+        right_bounds = [list(b) for b in bounds]
+        right_bounds[var_idx][0] = max(right_bounds[var_idx][0], ceil_val)
+        
+        return left_bounds, right_bounds
+    
+    def solve(self):
+        """
+        Main Branch and Bound loop using best-first search.
+        
+        Process:
+        1. Solve LP relaxation at each node
+        2. If infeasible → prune
+        3. If bound ≥ incumbent → prune
+        4. If integer feasible → update incumbent
+        5. Otherwise → branch on fractional variable
+        """
+        import heapq
+        
+        # Initial bounds: [0, inf) for each variable
+        initial_bounds = [(0, None) for _ in range(self.n)]
+        
+        # Priority queue: (bound, bounds_tuple)
+        # Use bound for best-first search
+        queue = []
+        
+        # Root node
+        sol, bound = self.solve_lp_relaxation(initial_bounds)
+        if sol is not None:
+            heapq.heappush(queue, (bound, initial_bounds))
+        
+        while queue:
+            bound, bounds = heapq.heappop(queue)
+            self.nodes_explored += 1
+            
+            # Prune if bound can't improve incumbent
+            if bound >= self.incumbent_value:
+                self.nodes_pruned += 1
+                continue
+            
+            # Solve LP relaxation
+            solution, obj = self.solve_lp_relaxation(bounds)
+            
+            if solution is None:
+                continue  # Infeasible, prune
+            
+            if obj >= self.incumbent_value:
+                self.nodes_pruned += 1
+                continue  # Can't improve, prune
+            
+            if self.is_integer_feasible(solution):
+                # Found new incumbent!
+                self.incumbent = solution.copy()
+                self.incumbent_value = obj
+                continue
+            
+            # Branch on fractional variable
+            var_idx = self.find_fractional_var(solution)
+            left_bounds, right_bounds = self.branch(var_idx, solution, bounds)
+            
+            # Add children to queue
+            for child_bounds in [left_bounds, right_bounds]:
+                child_sol, child_bound = self.solve_lp_relaxation(child_bounds)
+                if child_sol is not None and child_bound < self.incumbent_value:
+                    heapq.heappush(queue, (child_bound, child_bounds))
+        
+        return self.incumbent, self.incumbent_value
+
+# Usage:
+# bb = BranchAndBound(c=[−5, −4], A=[[6, 4], [1, 2]], b=[24, 6], integer_vars=[0, 1])
+# solution, value = bb.solve()
+# print(f"Optimal: {solution}, Value: {value}")`
+                }
+            },
+
+            'cutting-plane': {
+                name: 'Cutting Planes',
+                category: 'mip',
+                mnemonic: {
+                    emoji: '✂️',
+                    person: 'Michelangelo',
+                    object: 'A Marble Block',
+                    action: 'Carefully carving away marble to reveal the sculpture inside',
+                    story: '"Michelangelo sees David inside the marble block — he just needs to carve away what doesn\'t belong. The LP relaxation is the rough block. Each CUT removes marble (non-integer solutions) without touching the statue (integer solutions). Gomory cuts, lift-and-project, and others slice away the fractional corners until the true integer optimum is revealed."'
+                },
+                concept: {
+                    title: 'What are Cutting Plane Methods?',
+                    desc: 'Cutting planes add new constraints (cuts) to the LP relaxation that eliminate fractional solutions WITHOUT eliminating any integer solutions. By iteratively adding cuts, the LP optimum gets pushed toward the integer hull. Famous cuts include Gomory cuts (derived from tableau), lift-and-project, and problem-specific cuts (e.g., subtour elimination for TSP).',
+                    complexity: 'Polynomial in theory, but pure cutting plane methods are often slow. Best combined with Branch and Bound.'
+                },
+                invariant: `After adding cut:
+┌─────────────────────────────────────────────────────────────┐
+│  All integer feasible solutions remain feasible             │
+│  The current fractional LP optimum becomes infeasible       │
+│  LP feasible region shrinks toward integer hull             │
+│                                                             │
+│  Valid cut: ax ≤ b where all integer points satisfy it      │
+│            but current LP optimum violates it               │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Polyhedral Tightening & LP Strengthening',
+                        insight: 'Cutting planes recognize that the LP relaxation is too "loose" — it includes fractional solutions that the integer problem doesn\'t allow. By systematically adding valid inequalities, we tighten the LP polytope toward the "integer hull." The art is finding cuts that are both VALID (don\'t cut off integer solutions) and USEFUL (cut off the current fractional optimum).'
+                    },
+                    cases: [
+                        { icon: '🗺️', title: 'Traveling Salesman Problem (TSP)', desc: 'Find shortest route visiting all cities. Subtour elimination cuts are essential: if LP solution has a small cycle (subtour), add constraint requiring edges to leave that subset. Concorde TSP solver uses these cuts to solve instances with 85,900 cities optimally. Without cuts, LP relaxation would allow disconnected fractional tours.' },
+                        { icon: '📊', title: 'Set Covering / Crew Scheduling', desc: 'Select minimum-cost subsets that cover all elements. LP relaxation allows fractional coverage. Clique cuts, knapsack covers cuts tighten the formulation. Airline crew scheduling problems have millions of variables; cuts reduce the gap between LP and IP by 50%+ before branching even starts.' },
+                        { icon: '🏭', title: 'Lot Sizing in Manufacturing', desc: 'Decide when and how much to produce over time. Variables: produce[t] binary, quantity[t] continuous. LP relaxation allows fractional "production decisions." (l,S) inequalities and other lot-sizing cuts dramatically tighten the formulation. SAP, Oracle ERP systems use these internally.' },
+                        { icon: '📦', title: 'Vehicle Routing Problems', desc: 'Design routes for fleet of vehicles serving customers. Capacity cuts, comb inequalities, multistar inequalities eliminate infeasible fractional routes. CVRPLIB benchmark problems are solved using cutting plane generators. Google OR-Tools includes these cuts for routing problems.' },
+                        { icon: '🔌', title: 'Network Design', desc: 'Decide which links to install (binary) and how much flow to route (continuous). Cutset inequalities ensure enough capacity exists. AT&T, Verizon optimize network expansion using these models. Cuts based on network structure reduce solve times by orders of magnitude.' }
+                    ]
+                },
+                code: {
+                    terse: `# Cutting planes are automatic in modern solvers
+from gurobipy import Model, GRB
+
+m = Model()
+x = m.addVars(n, vtype=GRB.INTEGER)
+# Gurobi automatically generates Gomory cuts, MIR cuts, etc.
+m.optimize()`,
+                    verbose: `class GomoryCut:
+    """
+    Gomory Cutting Plane generator from Simplex tableau.
+    
+    Mental Model: Michelangelo Carving Marble
+    - LP relaxation is the rough block
+    - Each cut removes non-integer "marble"
+    - Integer solutions (the sculpture) remain untouched
+    
+    Gomory Cut Derivation:
+    From tableau row: x_i + Σ(a_ij * x_j) = b_i
+    
+    If b_i is fractional, we can derive:
+    Σ(frac(a_ij) * x_j) ≥ frac(b_i)
+    
+    where frac(x) = x - floor(x)
+    
+    This cut is violated by current LP solution but
+    satisfied by ALL integer solutions (magic of modular arithmetic).
+    """
+    
+    def __init__(self, tableau, basic_vars, n_original):
+        """
+        Initialize with simplex tableau after LP optimum found.
+        """
+        import numpy as np
+        self.tableau = np.array(tableau, dtype=float)
+        self.basic_vars = basic_vars
+        self.n_original = n_original
+        self.cuts = []
+    
+    def frac(self, x):
+        """Fractional part: x - floor(x)"""
+        import numpy as np
+        return x - np.floor(x)
+    
+    def find_cut_row(self):
+        """
+        Find a basic variable with fractional value.
+        This row will generate a Gomory cut.
+        """
+        for i, var in enumerate(self.basic_vars):
+            rhs = self.tableau[i, -1]
+            if abs(rhs - round(rhs)) > 1e-6:
+                return i
+        return -1  # All integers!
+    
+    def generate_gomory_cut(self, row_idx):
+        """
+        Generate Gomory fractional cut from tableau row.
+        
+        From: x_basic + Σ(a_j * x_j) = b
+        Derive: Σ(frac(a_j) * x_j) ≥ frac(b)
+        
+        Rewrite as: Σ(-frac(a_j) * x_j) ≤ -frac(b)
+        This is a valid inequality for adding to LP.
+        """
+        import numpy as np
+        
+        row = self.tableau[row_idx, :-1]
+        rhs = self.tableau[row_idx, -1]
+        
+        f0 = self.frac(rhs)  # frac(b)
+        
+        # Cut coefficients
+        cut_coeffs = np.zeros(len(row))
+        for j in range(len(row)):
+            fj = self.frac(row[j])
+            cut_coeffs[j] = -fj
+        
+        cut_rhs = -f0
+        
+        self.cuts.append((cut_coeffs, cut_rhs))
+        return cut_coeffs, cut_rhs
+    
+    def iterate(self, solve_lp_func):
+        """
+        Main cutting plane loop.
+        
+        1. Solve LP
+        2. If integer optimal → done
+        3. Generate Gomory cut from fractional row
+        4. Add cut to LP
+        5. Repeat
+        
+        Note: Pure cutting planes can be slow.
+        Better to combine with Branch and Bound (Branch & Cut).
+        """
+        max_cuts = 100
+        
+        for _ in range(max_cuts):
+            # Solve current LP
+            solution, obj = solve_lp_func()
+            
+            # Check if integer
+            if self.is_integer_solution(solution):
+                return solution, obj
+            
+            # Generate cut
+            cut_row = self.find_cut_row()
+            if cut_row == -1:
+                break  # No more cuts
+            
+            coeffs, rhs = self.generate_gomory_cut(cut_row)
+            
+            # Add cut to LP (implementation detail)
+            # In practice: add to constraint matrix
+        
+        return None, float('inf')  # Failed to find integer solution
+
+# Note: Real implementations use sophisticated cut selection,
+# cut pool management, and combine with Branch and Bound.
+# Libraries: Gurobi, CPLEX, SCIP, CBC all do this automatically.`
+                }
+            },
+
+            'branch-cut': {
+                name: 'Branch and Cut',
+                category: 'mip',
+                mnemonic: {
+                    emoji: '⚔️',
+                    person: 'Sherlock Holmes + Michelangelo',
+                    object: 'Case Board + Chisel',
+                    action: 'Deducing suspects while carving away impossibilities',
+                    story: '"Sherlock and Michelangelo team up. At each node of the case board, Michelangelo carves cuts to eliminate fractional suspects. This makes Sherlock\'s bounds tighter, allowing more branches to be pruned. The combination is more powerful than either alone — cuts strengthen bounds, bounds enable more pruning."'
+                },
+                concept: {
+                    title: 'What is Branch and Cut?',
+                    desc: 'Branch and Cut combines Branch and Bound with Cutting Planes. At each node of the search tree, we generate cuts to tighten the LP relaxation before branching. This gives better bounds (more pruning) and sometimes finds integer solutions at nodes that would have been fractional. Modern MIP solvers (Gurobi, CPLEX) are essentially sophisticated Branch and Cut implementations.',
+                    complexity: 'State-of-the-art for MIP. Solves problems with millions of variables and constraints.'
+                },
+                invariant: `At each B&C node:
+┌─────────────────────────────────────────────────────────────┐
+│  1. Solve LP relaxation                                     │
+│  2. If LP infeasible → prune (infeasibility)                │
+│  3. If LP bound ≥ incumbent → prune (bound)                 │
+│  4. If LP integer feasible → update incumbent               │
+│  5. Generate cuts to tighten LP (Gomory, MIR, etc.)         │
+│  6. Re-solve LP with cuts                                   │
+│  7. Repeat 3-6 until no useful cuts found                   │
+│  8. Branch on fractional variable                           │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Industrial-Strength Mixed-Integer Optimization',
+                        insight: 'Branch and Cut is the engine behind every commercial MIP solver. The synergy is powerful: cuts at the root node often close 50%+ of the gap before any branching. Cuts at child nodes prevent branches that would otherwise explore. The algorithm adaptively decides when cutting is worthwhile vs when to branch. Modern solvers add 100,000+ cuts per problem.'
+                    },
+                    cases: [
+                        { icon: '🚚', title: 'Amazon Fulfillment Optimization', desc: 'Decide which fulfillment center serves each order, when to ship, which carrier to use. Millions of binary decisions daily. Amazon\'s optimization team uses Gurobi/CPLEX with custom cuts for their network structure. Branch and Cut with problem-specific cuts reduces solve time from hours to minutes.' },
+                        { icon: '⚡', title: 'Electricity Market Clearing', desc: 'Determine which generators run (binary) and at what level (continuous) to meet demand at minimum cost. PJM, ERCOT run Branch and Cut every 5 minutes. Custom cuts for ramping constraints, startup/shutdown sequences. Billion-dollar markets depend on these algorithms running in seconds.' },
+                        { icon: '🏈', title: 'Sports Scheduling (NFL, MLB)', desc: 'Create season schedules satisfying TV contracts, travel minimization, rivalry game timing. Binary: team_i_plays_team_j_on_date_k. MLB schedule has millions of binary variables. Branch and Cut with break minimization cuts, no-repeat cuts. The 2020 pandemic "bubble" schedules were optimized this way.' },
+                        { icon: '💊', title: 'Pharmaceutical Clinical Trial Design', desc: 'Assign patients to treatment arms, select sites, schedule visits. Maximize statistical power subject to budget. Binary decisions with complex eligibility constraints. Genentech, Pfizer use Branch and Cut for adaptive trial designs. Cuts based on dosing constraints, patient availability.' },
+                        { icon: '🛒', title: 'Retail Assortment Planning', desc: 'Select which products to stock at each store (binary) and how much space to allocate (continuous). Walmart, Target optimize across 100,000+ products × 5,000+ stores. Branch and Cut with display constraint cuts, substitution effect cuts. Annual savings in billions from inventory optimization.' }
+                    ]
+                },
+                code: {
+                    terse: `# Branch & Cut is automatic in modern solvers
+import gurobipy as gp
+
+model = gp.Model()
+model.Params.Cuts = 2  # Aggressive cutting
+model.optimize()  # Branch & Cut automatically`,
+                    verbose: `class BranchAndCut:
+    """
+    Branch and Cut = Branch & Bound + Cutting Planes at each node.
+    
+    Mental Model: Holmes & Michelangelo Partnership
+    - Holmes: Branches the case tree, bounds to prune
+    - Michelangelo: Carves cuts to tighten bounds at each node
+    - Synergy: Better cuts → better bounds → more pruning
+    
+    Modern MIP Solver Architecture:
+    1. PRESOLVE: Tighten bounds, fix variables, remove redundancy
+    2. ROOT NODE: Generate many cuts (Gomory, MIR, flow covers...)
+    3. BRANCH: Choose variable and direction (strong branching)
+    4. CUT AT NODES: Generate local cuts as needed
+    5. HEURISTICS: Find good incumbent solutions quickly
+    6. DIVE: Explore promising branches deeply
+    
+    The magic is in the ORCHESTRATION of these components.
+    """
+    
+    def __init__(self, c, A, b, integer_vars, use_cuts=True):
+        import numpy as np
+        self.c = np.array(c, dtype=float)
+        self.A = np.array(A, dtype=float)
+        self.b = np.array(b, dtype=float)
+        self.integer_vars = set(integer_vars)
+        self.use_cuts = use_cuts
+        self.n = len(c)
+        
+        # Global state
+        self.incumbent = None
+        self.incumbent_value = float('inf')
+        self.total_nodes = 0
+        self.total_cuts = 0
+        
+        # Cut pool
+        self.global_cuts_A = []
+        self.global_cuts_b = []
+    
+    def solve_node_lp(self, bounds, local_cuts_A=[], local_cuts_b=[]):
+        """
+        Solve LP relaxation at a node with current cuts.
+        """
+        from scipy.optimize import linprog
+        import numpy as np
+        
+        # Combine original constraints with cuts
+        A_full = np.vstack([self.A] + self.global_cuts_A + local_cuts_A) if self.global_cuts_A or local_cuts_A else self.A
+        b_full = np.hstack([self.b] + self.global_cuts_b + local_cuts_b) if self.global_cuts_b or local_cuts_b else self.b
+        
+        result = linprog(self.c, A_ub=A_full, b_ub=b_full, bounds=bounds, method='highs')
+        
+        if result.success:
+            return result.x, result.fun
+        return None, float('inf')
+    
+    def generate_cuts_at_node(self, solution, bounds):
+        """
+        Generate cuts to tighten LP at current node.
+        
+        Real solvers use multiple cut families:
+        - Gomory fractional cuts
+        - Mixed-Integer Rounding (MIR)
+        - Flow cover cuts
+        - Clique cuts
+        - Zero-half cuts
+        
+        This simplified version uses basic rounding.
+        """
+        cuts_A = []
+        cuts_b = []
+        
+        for i in self.integer_vars:
+            val = solution[i]
+            frac = val - int(val)
+            
+            if 0.01 < frac < 0.99:  # Fractional
+                # Simple rounding cut (not Gomory, but illustrative)
+                # In practice, derive from tableau
+                floor_val = int(val)
+                
+                # Cut: x[i] ≤ floor_val OR x[i] ≥ floor_val + 1
+                # (These become the branch children)
+        
+        return cuts_A, cuts_b
+    
+    def process_node(self, bounds):
+        """
+        Process a single node: solve LP, generate cuts, check integrality.
+        
+        Returns: (status, solution, bound)
+        status: 'pruned_infeasible', 'pruned_bound', 'integer', 'fractional'
+        """
+        self.total_nodes += 1
+        
+        # Cut generation loop at this node
+        for cut_round in range(5):  # Max cut rounds per node
+            solution, bound = self.solve_node_lp(bounds)
+            
+            if solution is None:
+                return 'pruned_infeasible', None, float('inf')
+            
+            if bound >= self.incumbent_value - 1e-6:
+                return 'pruned_bound', None, bound
+            
+            if self.is_integer_feasible(solution):
+                return 'integer', solution, bound
+            
+            if not self.use_cuts:
+                break
+            
+            # Generate cuts
+            cuts_A, cuts_b = self.generate_cuts_at_node(solution, bounds)
+            
+            if not cuts_A:  # No new cuts found
+                break
+            
+            # Add cuts
+            self.global_cuts_A.extend(cuts_A)
+            self.global_cuts_b.extend(cuts_b)
+            self.total_cuts += len(cuts_A)
+        
+        return 'fractional', solution, bound
+    
+    def is_integer_feasible(self, solution):
+        """Check integrality of solution."""
+        for i in self.integer_vars:
+            if abs(solution[i] - round(solution[i])) > 1e-6:
+                return False
+        return True
+    
+    def solve(self):
+        """
+        Main Branch and Cut algorithm.
+        """
+        import heapq
+        
+        initial_bounds = [(0, None) for _ in range(self.n)]
+        
+        # Process root node
+        status, solution, bound = self.process_node(initial_bounds)
+        
+        if status == 'integer':
+            return solution, bound
+        if status in ['pruned_infeasible', 'pruned_bound']:
+            return None, float('inf')
+        
+        # Branch and continue
+        queue = [(bound, initial_bounds)]
+        
+        while queue:
+            _, bounds = heapq.heappop(queue)
+            
+            status, solution, obj = self.process_node(bounds)
+            
+            if status == 'integer':
+                if obj < self.incumbent_value:
+                    self.incumbent = solution.copy()
+                    self.incumbent_value = obj
+                continue
+            
+            if status in ['pruned_infeasible', 'pruned_bound']:
+                continue
+            
+            # Branch
+            for child_bounds in self.branch(solution, bounds):
+                _, child_bound = self.solve_node_lp(child_bounds)
+                if child_bound < self.incumbent_value:
+                    heapq.heappush(queue, (child_bound, child_bounds))
+        
+        return self.incumbent, self.incumbent_value
+
+# Usage: Same as BranchAndBound but with cuts enabled
+# In practice: Use Gurobi, CPLEX, HiGHS, or SCIP`
+                }
+            },
+
+            // ─────────────────────────────────────────────────────────────
+            // CONSTRAINT PROGRAMMING
+            // ─────────────────────────────────────────────────────────────
+            backtrack: {
+                name: 'Backtracking Search',
+                category: 'cp',
+                mnemonic: {
+                    emoji: '📓',
+                    person: 'Hermione Granger',
+                    object: 'A Sudoku / Logic Puzzle',
+                    action: 'Trying values in pencil, erasing immediately when rules are violated',
+                    story: '"Hermione works through a Sudoku puzzle. She writes a \'1\' in a cell (variable assignment). Immediately, she checks if any row, column, or box is violated (constraint check). If violated, she erases (backtrack) and tries \'2\'. If a cell has no valid options left, she backtracks further to change an earlier choice. She never gives up until the puzzle is solved or proven impossible."'
+                },
+                concept: {
+                    title: 'What is Backtracking Search?',
+                    desc: 'Backtracking is depth-first search through the space of variable assignments. At each step, we assign a value to a variable and check constraints. If constraints are violated (or will be violated — detected via propagation), we undo the assignment and try the next value. The key to efficiency is detecting failures EARLY via constraint propagation.',
+                    complexity: 'Exponential worst case (d^n where d=domain size, n=variables), but propagation often reduces this dramatically.'
+                },
+                invariant: `At each node in search:
+┌─────────────────────────────────────────────────────────────┐
+│  Assigned variables satisfy ALL constraints among them      │
+│  Unassigned variables have PRUNED domains (via propagation) │
+│                                                             │
+│  If any domain becomes empty → BACKTRACK (no solution here) │
+│  If all assigned and consistent → SOLUTION FOUND            │
+│  Otherwise → pick unassigned variable, try values           │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Feasibility Search in Discrete Combinatorial Spaces',
+                        insight: 'Backtracking is the workhorse for constraint satisfaction problems (CSP) where finding ANY feasible solution is the goal. The key insight is that early failure detection (via propagation) prunes exponentially many branches. Smart variable and value ordering can turn exponential problems into near-linear ones. CP excels where MIP struggles: complex logical constraints, sequencing, and "all-different" requirements.'
+                    },
+                    cases: [
+                        { icon: '👸', title: 'N-Queens Problem', desc: 'Place N queens on an N×N board so no two attack each other. Variables: row position of queen in each column. Constraints: no same row, no same diagonal. Backtracking with forward checking solves N=1000 in seconds. The classic example of how propagation transforms exponential into polynomial (in practice).' },
+                        { icon: '🗓️', title: 'University Timetabling', desc: 'Assign courses to rooms and times. Variables: (course, timeslot) pairs. Constraints: no room double-booking, instructor conflicts, student conflicts, room capacity. Universities like MIT, Stanford use CP solvers for this. Backtracking with global constraints (all-different, cardinality) handles thousands of courses.' },
+                        { icon: '🏭', title: 'Job Shop Scheduling', desc: 'Sequence jobs on machines where each job has operations that must run in order. Variables: start time of each operation. Constraints: precedence, no overlap on same machine. CP outperforms MIP for scheduling due to disjunctive constraint handling. IBM\'s CP Optimizer is state-of-the-art for these problems.' },
+                        { icon: '🎵', title: 'Music Composition (Constraint-Based)', desc: 'Generate musical pieces following harmonic rules. Variables: notes at each time step. Constraints: voice leading rules, chord progressions, no parallel fifths. Research systems like PWConstraints use backtracking to compose in Bach\'s style. Propagation prunes notes that would violate musical rules.' },
+                        { icon: '🧬', title: 'Protein Folding (Lattice Models)', desc: 'Determine 3D structure of protein from amino acid sequence. Variables: direction of each bond. Constraints: self-avoiding walk, hydrophobic contacts. Simplified lattice models use backtracking with propagation. While not production-quality, CP approaches help understand the search space structure.' }
+                    ]
+                },
+                code: {
+                    terse: `def backtrack(assignment, domains, constraints):
+    if len(assignment) == len(domains):
+        return assignment  # Solution!
+    
+    var = select_unassigned(assignment, domains)
+    for value in domains[var]:
+        if is_consistent(var, value, assignment, constraints):
+            assignment[var] = value
+            result = backtrack(assignment, domains, constraints)
+            if result: return result
+            del assignment[var]
+    return None  # Failure`,
+                    verbose: `class BacktrackingCSP:
+    """
+    Backtracking Search for Constraint Satisfaction Problems.
+    
+    Mental Model: Hermione with a Logic Puzzle
+    - Write value in cell (assign variable)
+    - Check if rules violated (constraint check)
+    - If violated → erase and try next value (backtrack)
+    - If no values work → backtrack to earlier choice
+    
+    Key Optimizations:
+    - VARIABLE ORDERING: Choose most constrained variable first (MRV)
+    - VALUE ORDERING: Try least constraining value first (LCV)
+    - FORWARD CHECKING: Propagate to prune domains after assignment
+    - ARC CONSISTENCY: Maintain AC-3 for stronger propagation
+    
+    CSP Definition:
+    - Variables: X = {x1, x2, ..., xn}
+    - Domains: D = {D1, D2, ..., Dn} (possible values)
+    - Constraints: C = {c1, c2, ..., cm} (relationships)
+    """
+    
+    def __init__(self, variables, domains, constraints):
+        """
+        Initialize CSP.
+        
+        Args:
+            variables: List of variable names
+            domains: Dict mapping variable → list of possible values
+            constraints: List of (vars, check_func) tuples
+        """
+        self.variables = variables
+        self.domains = {v: list(d) for v, d in domains.items()}  # Copy
+        self.constraints = constraints
+        self.nodes_explored = 0
+        self.backtracks = 0
+    
+    def is_consistent(self, var, value, assignment):
+        """
+        Check if assigning value to var violates any constraint.
+        Only checks constraints involving already-assigned variables.
+        """
+        test_assignment = {**assignment, var: value}
+        
+        for constraint_vars, check_func in self.constraints:
+            if var not in constraint_vars:
+                continue
+            
+            # Check if all vars in constraint are assigned
+            if all(v in test_assignment for v in constraint_vars):
+                values = [test_assignment[v] for v in constraint_vars]
+                if not check_func(*values):
+                    return False
+        
+        return True
+    
+    def select_unassigned_variable(self, assignment):
+        """
+        MRV (Minimum Remaining Values) heuristic.
+        Choose variable with smallest domain — most likely to fail.
+        Failing early is GOOD — less wasted search.
+        """
+        unassigned = [v for v in self.variables if v not in assignment]
+        
+        # MRV: smallest remaining domain
+        return min(unassigned, key=lambda v: len(self.domains[v]))
+    
+    def order_domain_values(self, var, assignment):
+        """
+        LCV (Least Constraining Value) heuristic.
+        Try values that rule out fewest options for neighbors.
+        """
+        # Simple version: just return domain
+        # Full LCV counts constraints eliminated by each value
+        return self.domains[var]
+    
+    def forward_check(self, var, value, assignment):
+        """
+        After assigning var=value, prune inconsistent values from neighbors.
+        Returns pruned values (for restoration on backtrack) or None if failure.
+        """
+        pruned = {}  # {variable: [removed_values]}
+        
+        for constraint_vars, check_func in self.constraints:
+            if var not in constraint_vars:
+                continue
+            
+            for other_var in constraint_vars:
+                if other_var == var or other_var in assignment:
+                    continue
+                
+                pruned[other_var] = []
+                for other_value in self.domains[other_var][:]:  # Copy for iteration
+                    # Check if (var=value, other_var=other_value) violates constraint
+                    test = {**assignment, var: value, other_var: other_value}
+                    if all(v in test for v in constraint_vars):
+                        values = [test[v] for v in constraint_vars]
+                        if not check_func(*values):
+                            self.domains[other_var].remove(other_value)
+                            pruned[other_var].append(other_value)
+                
+                if not self.domains[other_var]:
+                    # Domain wipeout! Restore and fail
+                    self.restore_domains(pruned)
+                    return None
+        
+        return pruned
+    
+    def restore_domains(self, pruned):
+        """Restore pruned values after backtracking."""
+        for var, values in pruned.items():
+            self.domains[var].extend(values)
+    
+    def backtrack(self, assignment):
+        """
+        Main backtracking search with forward checking.
+        
+        This is Hermione solving the puzzle:
+        1. If puzzle complete → success!
+        2. Pick an empty cell (select variable)
+        3. Try each possible number (iterate domain)
+        4. Write it in pencil (assign)
+        5. Cross out impossible values in other cells (forward check)
+        6. If any cell has no options → erase and try next (backtrack)
+        7. Recursively solve rest of puzzle
+        """
+        self.nodes_explored += 1
+        
+        # Check if complete
+        if len(assignment) == len(self.variables):
+            return assignment  # Solution found!
+        
+        # Select next variable (MRV heuristic)
+        var = self.select_unassigned_variable(assignment)
+        
+        # Try each value in domain
+        for value in self.order_domain_values(var, assignment):
+            if self.is_consistent(var, value, assignment):
+                # Assign
+                assignment[var] = value
+                
+                # Forward check (propagate)
+                pruned = self.forward_check(var, value, assignment)
+                
+                if pruned is not None:  # No domain wipeout
+                    result = self.backtrack(assignment)
+                    if result is not None:
+                        return result  # Solution found in subtree
+                    
+                    # Restore pruned values before trying next
+                    self.restore_domains(pruned)
+                
+                # Backtrack
+                del assignment[var]
+                self.backtracks += 1
+        
+        return None  # No solution in this subtree
+    
+    def solve(self):
+        """Entry point for solving the CSP."""
+        return self.backtrack({})
+
+# Example: N-Queens
+# variables = ['Q0', 'Q1', ..., 'Q7']  # Row position of queen in each column
+# domains = {f'Q{i}': list(range(8)) for i in range(8)}
+# constraints = [(('Qi', 'Qj'), lambda ri, rj: ri != rj and |ri-rj| != |i-j|)]`
+                }
+            },
+
+            propagation: {
+                name: 'Constraint Propagation',
+                category: 'cp',
+                mnemonic: {
+                    emoji: '🌊',
+                    person: 'Ripple Effects in Water',
+                    object: 'A Pond with Floating Leaves',
+                    action: 'Dropping a stone creates ripples that push leaves to new positions',
+                    story: '"Drop a stone (make a decision) in a pond. Ripples spread outward (propagation). Leaves (domain values) get pushed to new positions or off the edge (pruned). Each leaf that moves creates its own ripples, affecting more leaves. Eventually, the pond settles — either all leaves are in valid positions, or some have nowhere to go (failure)."'
+                },
+                concept: {
+                    title: 'What is Constraint Propagation?',
+                    desc: 'Constraint propagation is the process of using constraints to reduce variable domains. When we assign or restrict a variable, we check what values become impossible for OTHER variables. The key algorithms are AC-3 (arc consistency) and its variants. Propagation is what makes backtracking efficient — it prunes the search space proactively.',
+                    complexity: 'AC-3: O(ed³) where e=constraints, d=domain size. Often much faster in practice.'
+                },
+                invariant: `After propagation (arc consistency):
+┌─────────────────────────────────────────────────────────────┐
+│  For every constraint C(x, y) and value a in domain(x):     │
+│      There EXISTS some value b in domain(y) such that       │
+│      C(a, b) is satisfied                                   │
+│                                                             │
+│  If this fails for any value → remove it from domain        │
+│  If domain becomes empty → constraint is UNSATISFIABLE      │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Domain Reduction & Early Failure Detection',
+                        insight: 'Propagation is the "secret sauce" of CP. Without it, backtracking would explore exponentially many dead ends. With propagation, decisions have immediate consequences — impossible values are pruned before we waste time exploring them. Global constraints like all-different can prune multiple values at once. The art is balancing propagation strength vs computation cost.'
+                    },
+                    cases: [
+                        { icon: '🧩', title: 'Sudoku Solvers', desc: 'When you place a number, propagation immediately removes it from the row, column, and box. "Naked pairs" and "hidden singles" are propagation techniques. A well-implemented Sudoku solver uses only propagation for most puzzles — backtracking is rarely needed. AC-3 + subset detection solves 99% of Sudokus without search.' },
+                        { icon: '📅', title: 'Conference Scheduling', desc: 'Assign talks to sessions. Global constraint: no speaker in two sessions at once. When a talk is assigned, propagation removes that speaker from all parallel sessions. ICAPS, AAAI use CP with propagation for conference scheduling. The all-different constraint\'s propagation algorithm is key.' },
+                        { icon: '🗺️', title: 'Map Coloring', desc: 'Color regions so adjacent regions differ. Classic 4-color theorem example. When region A is colored red, propagation removes red from all neighbors. If any neighbor has only one color left, propagation continues (forced choice). AC-3 detects infeasibility early when regions have no valid colors remaining.' },
+                        { icon: '🔧', title: 'Configuration / Product Customization', desc: 'Configure products with interdependent options (cars, computers). If user selects "sunroof," propagation removes incompatible roof options. SAP, Dell configurators use CP with propagation. Real-time response requires aggressive propagation to show valid options instantly.' },
+                        { icon: '🎯', title: 'Constraint-Based Graphics Layout', desc: 'Position UI elements satisfying alignment, spacing, containment constraints. Apple\'s Auto Layout uses constraint propagation. When one element moves, propagation updates dependent elements. The Cassowary algorithm (used in iOS) is a specialized propagation system for linear constraints.' }
+                    ]
+                },
+                code: {
+                    terse: `def ac3(domains, constraints):
+    """Arc Consistency Algorithm 3"""
+    queue = [(xi, xj) for (xi, xj), _ in constraints]
+    while queue:
+        xi, xj = queue.pop(0)
+        if revise(domains, xi, xj):
+            if not domains[xi]: return False  # Failure
+            for xk in neighbors(xi) - {xj}:
+                queue.append((xk, xi))
+    return True`,
+                    verbose: `class ArcConsistency:
+    """
+    AC-3 Algorithm for Constraint Propagation.
+    
+    Mental Model: Ripples in a Pond
+    - Decision drops a stone (triggers propagation)
+    - Ripples spread (constraints propagate)
+    - Leaves (values) get pushed or removed
+    - Eventually settles (arc consistent state)
+    
+    Arc Consistency Definition:
+    An arc (Xi, Xj) is consistent if:
+        For every value a in domain(Xi), there exists
+        some value b in domain(Xj) that satisfies the constraint.
+    
+    If no such b exists, value a is UNSUPPORTED and can be removed.
+    
+    AC-3 Process:
+    1. Start with all arcs in queue
+    2. Pop arc (Xi, Xj), check if Xi needs pruning
+    3. If Xi's domain changes, add all arcs (Xk, Xi) back to queue
+    4. Repeat until queue empty or domain wipeout
+    """
+    
+    def __init__(self, variables, domains, constraints):
+        """
+        Initialize AC-3.
+        
+        Args:
+            variables: List of variable names
+            domains: Dict {var: [values]}
+            constraints: Dict {(var1, var2): check_func}
+        """
+        self.variables = variables
+        self.domains = {v: set(d) for v, d in domains.items()}
+        self.constraints = constraints  # {(xi, xj): func(a, b) -> bool}
+        
+        # Build neighbor graph
+        self.neighbors = {v: set() for v in variables}
+        for (xi, xj) in constraints:
+            self.neighbors[xi].add(xj)
+            self.neighbors[xj].add(xi)
+    
+    def revise(self, xi, xj):
+        """
+        Remove values from domain(xi) that have no support in domain(xj).
+        
+        Returns True if domain(xi) was reduced.
+        
+        This is checking: for each value a in xi's domain,
+        does there exist ANY value b in xj's domain such that
+        constraint(xi, xj) is satisfied when xi=a and xj=b?
+        
+        If not, a is unsupported and must be removed.
+        """
+        revised = False
+        constraint = self.constraints.get((xi, xj)) or self.constraints.get((xj, xi))
+        
+        if constraint is None:
+            return False
+        
+        to_remove = []
+        for a in self.domains[xi]:
+            # Check if any value in xj supports a
+            has_support = False
+            for b in self.domains[xj]:
+                if (xi, xj) in self.constraints:
+                    if constraint(a, b):
+                        has_support = True
+                        break
+                else:  # (xj, xi) in constraints
+                    if constraint(b, a):
+                        has_support = True
+                        break
+            
+            if not has_support:
+                to_remove.append(a)
+                revised = True
+        
+        for a in to_remove:
+            self.domains[xi].remove(a)
+        
+        return revised
+    
+    def ac3(self):
+        """
+        Main AC-3 algorithm.
+        
+        Process:
+        1. Initialize queue with all arcs
+        2. Pop arc, revise it
+        3. If revised, add neighbor arcs back to queue
+        4. Continue until queue empty (consistent) or domain empty (failure)
+        
+        Returns True if arc consistent state reached, False if failure.
+        """
+        from collections import deque
+        
+        # Initialize queue with all arcs
+        queue = deque()
+        for (xi, xj) in self.constraints:
+            queue.append((xi, xj))
+            queue.append((xj, xi))  # Both directions
+        
+        while queue:
+            xi, xj = queue.popleft()
+            
+            if self.revise(xi, xj):
+                # Domain of xi was reduced
+                if not self.domains[xi]:
+                    return False  # Domain wipeout = failure
+                
+                # Add all arcs (xk, xi) for neighbors xk ≠ xj
+                for xk in self.neighbors[xi]:
+                    if xk != xj:
+                        queue.append((xk, xi))
+        
+        return True  # Arc consistent!
+    
+    def propagate_assignment(self, var, value):
+        """
+        When var is assigned value, propagate consequences.
+        
+        1. Set domain(var) = {value}
+        2. Run AC-3 to propagate
+        
+        This is the "ripple" from dropping a stone.
+        """
+        self.domains[var] = {value}
+        return self.ac3()
+    
+    def get_solution_if_singleton(self):
+        """
+        If all domains have size 1, we have a solution.
+        """
+        if all(len(d) == 1 for d in self.domains.values()):
+            return {v: list(d)[0] for v, d in self.domains.items()}
+        return None
+
+# Example usage:
+# ac = ArcConsistency(
+#     variables=['A', 'B', 'C'],
+#     domains={'A': [1,2,3], 'B': [1,2,3], 'C': [1,2,3]},
+#     constraints={('A','B'): lambda a,b: a != b, ('B','C'): lambda b,c: b != c}
+# )
+# ac.ac3()
+# print(ac.domains)  # Reduced domains`
+                }
+            },
+
+            // ─────────────────────────────────────────────────────────────
+            // METAHEURISTICS
+            // ─────────────────────────────────────────────────────────────
+            genetic: {
+                name: 'Genetic Algorithm',
+                category: 'meta',
+                mnemonic: {
+                    emoji: '🧬',
+                    person: 'Darwin / X-Men Professor X',
+                    object: 'A Breeding Lab of Mutants',
+                    action: 'Selecting the fittest, breeding champions, allowing mutations',
+                    story: '"Professor X runs a school for mutants (solutions). Each generation, the fittest survive (selection). Top mutants breed, mixing their powers (crossover). Occasionally, random mutations occur (mutation operator). Over generations, the population evolves toward optimal — Wolverine\'s healing + Cyclops\'s precision laser = unstoppable mutant (near-optimal solution)."'
+                },
+                concept: {
+                    title: 'What are Genetic Algorithms?',
+                    desc: 'GAs evolve a population of solutions through selection, crossover, and mutation. Solutions are encoded as "chromosomes" (bit strings, permutations, etc.). Fitness function evaluates solution quality. Each generation, fit solutions are selected to "reproduce," creating offspring via crossover. Random mutations maintain diversity. No optimality guarantee, but often finds good solutions quickly.',
+                    complexity: 'No formal guarantees. Typical: O(generations × population × fitness_eval). Highly parallelizable.'
+                },
+                invariant: `Each generation:
+┌─────────────────────────────────────────────────────────────┐
+│  Population contains diverse candidate solutions            │
+│  Best fitness is monotonically non-decreasing (with elitism)│
+│                                                             │
+│  SELECTION: Fitter individuals more likely to reproduce     │
+│  CROSSOVER: Offspring inherit traits from two parents       │
+│  MUTATION: Random changes maintain diversity                │
+│                                                             │
+│  Converges when: population homogeneous OR generations done │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Population-Based Evolutionary Search',
+                        insight: 'GAs excel when the fitness landscape is complex, multi-modal, or poorly understood. The key insight is that good solutions often share "building blocks" that crossover can combine. Selection pressure drives improvement, mutation prevents premature convergence. GAs are embarrassingly parallel — evaluate all individuals simultaneously. They\'re "general purpose" but require careful tuning of operators for best results.'
+                    },
+                    cases: [
+                        { icon: '✈️', title: 'NASA Antenna Design', desc: 'NASA used GAs to evolve antenna shapes for ST5 mission. Chromosome: 3D shape parameters. Fitness: signal coverage, weight, durability. The evolved antenna looks bizarre (organic, asymmetric) but outperformed human designs. This is "evolutionary design" — letting evolution discover what engineers couldn\'t imagine.' },
+                        { icon: '🤖', title: 'Neural Network Architecture Search (NAS)', desc: 'Google\'s AutoML uses GAs to evolve neural network architectures. Chromosome: layer types, connections, hyperparameters. Fitness: validation accuracy. AmoebaNet, evolved via GA, matched human-designed architectures on ImageNet. Training each individual is expensive, so parallelization is key.' },
+                        { icon: '🎮', title: 'Game AI and Agent Behavior', desc: 'Evolve strategies for game-playing agents. Karl Sims\'s "Evolved Virtual Creatures" used GAs to create walking robots. Modern games use GAs for NPC behavior, difficulty tuning. OpenAI\'s Evolution Strategies (related to GAs) trained game-playing agents without gradient information.' },
+                        { icon: '📦', title: 'Supply Chain Network Design', desc: 'Optimize factory locations, distribution routes, inventory levels. Chromosome: network configuration. Fitness: total cost + service level. Procter & Gamble used GAs for global supply chain redesign. The combinatorial explosion of options makes exhaustive search impossible — GAs explore efficiently.' },
+                        { icon: '💊', title: 'Drug Discovery / Molecular Design', desc: 'Evolve molecular structures with desired properties. Chromosome: SMILES string or molecular graph. Fitness: binding affinity, toxicity, synthesizability. Insilico Medicine uses evolutionary approaches for drug candidates. GAs explore chemical space that chemists might not consider.' }
+                    ]
+                },
+                code: {
+                    terse: `import random
+
+def genetic_algorithm(pop_size, generations, fitness, crossover, mutate):
+    pop = [random_solution() for _ in range(pop_size)]
+    for _ in range(generations):
+        pop = sorted(pop, key=fitness, reverse=True)
+        next_gen = pop[:2]  # Elitism
+        while len(next_gen) < pop_size:
+            p1, p2 = random.choices(pop[:20], k=2)  # Selection
+            child = crossover(p1, p2)
+            child = mutate(child)
+            next_gen.append(child)
+        pop = next_gen
+    return max(pop, key=fitness)`,
+                    verbose: `class GeneticAlgorithm:
+    """
+    Genetic Algorithm for optimization.
+    
+    Mental Model: Professor X's Mutant School
+    - Population of mutants (candidate solutions)
+    - Fittest survive to next generation (selection)
+    - Top mutants breed (crossover)
+    - Random mutations maintain diversity
+    - Over time, population evolves toward optimal
+    
+    Key Components:
+    - ENCODING: How solutions are represented (bits, permutations, etc.)
+    - FITNESS: How good is a solution? (objective function)
+    - SELECTION: How to choose parents? (tournament, roulette)
+    - CROSSOVER: How to combine parents? (1-point, 2-point, uniform)
+    - MUTATION: How to add randomness? (bit flip, swap)
+    
+    Tuning Parameters:
+    - Population size: 50-500 typical
+    - Mutation rate: 1-5% typical
+    - Crossover rate: 60-90% typical
+    - Selection pressure: affects convergence speed
+    """
+    
+    def __init__(self, fitness_func, gene_length, pop_size=100, 
+                 mutation_rate=0.01, crossover_rate=0.8, elitism=2):
+        """
+        Initialize GA for binary-encoded problems.
+        
+        Args:
+            fitness_func: Function that evaluates a chromosome
+            gene_length: Length of binary chromosome
+            pop_size: Number of individuals in population
+            mutation_rate: Probability of flipping each bit
+            crossover_rate: Probability of crossover vs cloning
+            elitism: Number of best individuals to preserve
+        """
+        import random
+        self.fitness = fitness_func
+        self.gene_length = gene_length
+        self.pop_size = pop_size
+        self.mutation_rate = mutation_rate
+        self.crossover_rate = crossover_rate
+        self.elitism = elitism
+        
+        # Initialize random population
+        self.population = [
+            [random.randint(0, 1) for _ in range(gene_length)]
+            for _ in range(pop_size)
+        ]
+        
+        self.generation = 0
+        self.best_fitness_history = []
+    
+    def evaluate_population(self):
+        """
+        Calculate fitness for all individuals.
+        Returns list of (individual, fitness) sorted by fitness descending.
+        """
+        scored = [(ind, self.fitness(ind)) for ind in self.population]
+        return sorted(scored, key=lambda x: x[1], reverse=True)
+    
+    def tournament_selection(self, scored_pop, tournament_size=3):
+        """
+        Select parent via tournament.
+        
+        Pick random subset, return the fittest.
+        Higher tournament_size = more selection pressure.
+        """
+        import random
+        tournament = random.sample(scored_pop, tournament_size)
+        return max(tournament, key=lambda x: x[1])[0]
+    
+    def crossover(self, parent1, parent2):
+        """
+        Single-point crossover.
+        
+        Pick random point, combine left of p1 with right of p2.
+        This is the "breeding" step — combining traits.
+        """
+        import random
+        if random.random() > self.crossover_rate:
+            return parent1[:]  # No crossover, clone parent
+        
+        point = random.randint(1, self.gene_length - 1)
+        child = parent1[:point] + parent2[point:]
+        return child
+    
+    def mutate(self, individual):
+        """
+        Bit-flip mutation.
+        
+        Each bit has small chance of flipping.
+        This maintains diversity, prevents premature convergence.
+        """
+        import random
+        return [
+            1 - gene if random.random() < self.mutation_rate else gene
+            for gene in individual
+        ]
+    
+    def evolve_generation(self):
+        """
+        Create next generation through selection, crossover, mutation.
+        
+        Process:
+        1. Evaluate current population
+        2. Keep best individuals (elitism)
+        3. Fill rest through selection + crossover + mutation
+        """
+        import random
+        
+        scored_pop = self.evaluate_population()
+        
+        # Track best fitness
+        best_fitness = scored_pop[0][1]
+        self.best_fitness_history.append(best_fitness)
+        
+        # Elitism: keep top individuals unchanged
+        next_generation = [ind for ind, _ in scored_pop[:self.elitism]]
+        
+        # Fill rest of population
+        while len(next_generation) < self.pop_size:
+            # Selection
+            parent1 = self.tournament_selection(scored_pop)
+            parent2 = self.tournament_selection(scored_pop)
+            
+            # Crossover
+            child = self.crossover(parent1, parent2)
+            
+            # Mutation
+            child = self.mutate(child)
+            
+            next_generation.append(child)
+        
+        self.population = next_generation
+        self.generation += 1
+        
+        return best_fitness
+    
+    def run(self, generations):
+        """
+        Run GA for specified number of generations.
+        Returns best individual found.
+        """
+        for _ in range(generations):
+            self.evolve_generation()
+        
+        scored = self.evaluate_population()
+        return scored[0]  # Best (individual, fitness)
+
+# Example: OneMax problem (maximize sum of bits)
+# ga = GeneticAlgorithm(fitness_func=sum, gene_length=100)
+# best, fitness = ga.run(generations=100)
+# print(f"Best: {fitness} ones out of 100")`
+                }
+            },
+
+            annealing: {
+                name: 'Simulated Annealing',
+                category: 'meta',
+                mnemonic: {
+                    emoji: '🔥',
+                    person: 'A Blacksmith',
+                    object: 'Red-Hot Metal Cooling',
+                    action: 'Heating to escape defects, slowly cooling to perfect crystal',
+                    story: '"A blacksmith heats metal red-hot (high temperature = accept bad moves). In this chaotic state, atoms can jump around and escape local defects. As the metal slowly cools, atoms settle into a lower-energy crystal structure. Too fast = trapped defects (local minimum). Too slow = wasted time. The annealing SCHEDULE is the blacksmith\'s art."'
+                },
+                concept: {
+                    title: 'What is Simulated Annealing?',
+                    desc: 'SA is a probabilistic local search that can escape local optima by occasionally accepting worse solutions. The probability of accepting a worse solution decreases over time (as "temperature" drops). At high temperature, almost any move is accepted (exploration). At low temperature, only improvements are accepted (exploitation). The cooling schedule controls this transition.',
+                    complexity: 'No guarantees, but provably converges to global optimum with infinitely slow cooling. Practical schedules find good solutions quickly.'
+                },
+                invariant: `At each iteration with temperature T:
+┌─────────────────────────────────────────────────────────────┐
+│  Current solution: S with cost f(S)                         │
+│  Neighbor solution: S' with cost f(S')                      │
+│                                                             │
+│  If f(S') < f(S): Accept S' (improvement!)                  │
+│  Else: Accept S' with probability exp(-(f(S')-f(S))/T)      │
+│                                                             │
+│  High T → accept almost anything (exploration)              │
+│  Low T → accept only improvements (exploitation)            │
+│  T decreases over time according to cooling schedule        │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Probabilistic Local Search with Escape Mechanism',
+                        insight: 'SA\'s genius is using randomness to escape local optima while still converging. The Metropolis criterion (accept worse moves with probability exp(-ΔE/T)) comes from physics — it\'s how molecules actually behave. SA is simple to implement, requires only a neighbor function and objective, and often works surprisingly well. The cooling schedule is critical: too fast traps in local optima, too slow wastes time.'
+                    },
+                    cases: [
+                        { icon: '🔌', title: 'VLSI Circuit Placement', desc: 'Place millions of transistors on a chip to minimize wire length. TimberWolf, a landmark placement tool, used SA. Each "move" is swapping two cells. At high temperature, wild swaps explore globally. As it cools, only local improvements accepted. Intel, AMD used SA-based tools for decades before modern analytical methods.' },
+                        { icon: '🗺️', title: 'Traveling Salesman Problem', desc: 'Find shortest tour visiting all cities. SA neighbor: swap two cities in tour. High temperature allows long detours to escape local optima. Famous Lin-Kernighan heuristic combined with SA solves instances with millions of cities. SA doesn\'t guarantee optimal but finds near-optimal in reasonable time.' },
+                        { icon: '📡', title: 'Wireless Sensor Network Deployment', desc: 'Position sensors to maximize coverage while minimizing energy. SA explores sensor configurations. High temperature allows moving sensors far; low temperature fine-tunes positions. Bell Labs used SA for cellular tower placement. The energy metaphor fits naturally — coverage = energy, placement = atomic positions.' },
+                        { icon: '🎨', title: 'Image Reconstruction / Denoising', desc: 'Reconstruct images from noisy observations. SA explores pixel configurations. The Ising model from physics maps directly to image pixels. High temperature allows drastic changes; cooling preserves structure while removing noise. Medical imaging (MRI, CT) uses SA-inspired algorithms.' },
+                        { icon: '📅', title: 'Exam Timetabling', desc: 'Schedule exams to minimize student conflicts and room usage. SA neighbor: move one exam to different slot. At high temperature, accepts schedules with many conflicts. Cooling gradually reduces conflicts. Universities worldwide use SA for exam scheduling — it handles soft constraints naturally.' }
+                    ]
+                },
+                code: {
+                    terse: `import random, math
+
+def simulated_annealing(init, neighbor, cost, T=1000, alpha=0.995):
+    current = init
+    while T > 1:
+        candidate = neighbor(current)
+        delta = cost(candidate) - cost(current)
+        if delta < 0 or random.random() < math.exp(-delta/T):
+            current = candidate
+        T *= alpha
+    return current`,
+                    verbose: `class SimulatedAnnealing:
+    """
+    Simulated Annealing for optimization.
+    
+    Mental Model: Blacksmith Annealing Metal
+    - Heat metal red-hot (high temperature)
+    - Atoms jump around, escape defects (accept bad moves)
+    - Slowly cool (reduce temperature)
+    - Atoms settle into low-energy crystal (converge to optimum)
+    
+    Key Insight: The Metropolis Criterion
+    Accept worse solution with probability exp(-ΔE/T)
+    - High T → probability ≈ 1, accept almost anything
+    - Low T → probability ≈ 0, only accept improvements
+    - ΔE large → less likely to accept (bad move)
+    - ΔE small → more likely to accept (minor setback)
+    
+    Cooling Schedules:
+    - Geometric: T = T * α (α = 0.95-0.99)
+    - Linear: T = T - δ
+    - Logarithmic: T = T0 / log(1 + k)
+    - Adaptive: Adjust based on acceptance rate
+    """
+    
+    def __init__(self, initial_solution, neighbor_func, cost_func,
+                 initial_temp=1000, final_temp=1, alpha=0.995):
+        """
+        Initialize SA.
+        
+        Args:
+            initial_solution: Starting point
+            neighbor_func: Function that generates neighbor of current solution
+            cost_func: Function that returns cost (lower is better)
+            initial_temp: Starting temperature (high = more exploration)
+            final_temp: Stopping temperature
+            alpha: Cooling rate (geometric schedule)
+        """
+        import random
+        self.neighbor = neighbor_func
+        self.cost = cost_func
+        self.T0 = initial_temp
+        self.T_final = final_temp
+        self.alpha = alpha
+        
+        self.current = initial_solution
+        self.current_cost = cost_func(initial_solution)
+        
+        self.best = initial_solution
+        self.best_cost = self.current_cost
+        
+        self.T = initial_temp
+        self.iterations = 0
+        self.accepts = 0
+        self.rejects = 0
+    
+    def acceptance_probability(self, delta):
+        """
+        Metropolis criterion: probability of accepting worse solution.
+        
+        P(accept) = exp(-ΔE / T)
+        
+        When T is high, even large ΔE gives P ≈ 1
+        When T is low, only small ΔE gives meaningful P
+        """
+        import math
+        if delta < 0:
+            return 1.0  # Always accept improvements
+        return math.exp(-delta / self.T)
+    
+    def step(self):
+        """
+        One SA iteration:
+        1. Generate neighbor
+        2. Calculate cost difference
+        3. Accept or reject based on Metropolis criterion
+        4. Update best if improved
+        """
+        import random
+        
+        # Generate neighbor
+        candidate = self.neighbor(self.current)
+        candidate_cost = self.cost(candidate)
+        
+        # Cost difference (positive = worse)
+        delta = candidate_cost - self.current_cost
+        
+        # Metropolis acceptance
+        if random.random() < self.acceptance_probability(delta):
+            self.current = candidate
+            self.current_cost = candidate_cost
+            self.accepts += 1
+            
+            # Update best
+            if candidate_cost < self.best_cost:
+                self.best = candidate
+                self.best_cost = candidate_cost
+        else:
+            self.rejects += 1
+        
+        self.iterations += 1
+    
+    def cool(self):
+        """Apply cooling schedule (geometric)."""
+        self.T *= self.alpha
+    
+    def acceptance_rate(self):
+        """Current acceptance rate (for monitoring/adaptive cooling)."""
+        total = self.accepts + self.rejects
+        return self.accepts / total if total > 0 else 1.0
+    
+    def run(self, steps_per_temp=100):
+        """
+        Run SA until temperature reaches final value.
+        
+        Process:
+        1. At each temperature, run multiple steps
+        2. Cool down
+        3. Repeat until frozen
+        
+        Returns best solution found.
+        """
+        while self.T > self.T_final:
+            # Multiple steps at each temperature
+            for _ in range(steps_per_temp):
+                self.step()
+            
+            # Cool down
+            self.cool()
+        
+        return self.best, self.best_cost
+    
+    def adaptive_run(self, target_accept_rate=0.4):
+        """
+        Adaptive cooling: adjust alpha based on acceptance rate.
+        
+        If accepting too many → cool faster (more exploitation)
+        If accepting too few → cool slower (more exploration)
+        """
+        while self.T > self.T_final:
+            for _ in range(100):
+                self.step()
+            
+            # Adjust cooling rate
+            rate = self.acceptance_rate()
+            if rate > target_accept_rate + 0.1:
+                self.alpha = max(0.9, self.alpha - 0.01)  # Cool faster
+            elif rate < target_accept_rate - 0.1:
+                self.alpha = min(0.999, self.alpha + 0.01)  # Cool slower
+            
+            self.cool()
+            self.accepts = self.rejects = 0  # Reset for next measurement
+        
+        return self.best, self.best_cost
+
+# Example: TSP
+# neighbor = lambda tour: swap_two_cities(tour)
+# cost = lambda tour: total_distance(tour)
+# sa = SimulatedAnnealing(random_tour, neighbor, cost)
+# best_tour, best_distance = sa.run()`
+                }
+            },
+
+            pso: {
+                name: 'Particle Swarm Optimization',
+                category: 'meta',
+                mnemonic: {
+                    emoji: '🐦',
+                    person: 'A Flock of Birds',
+                    object: 'A Field with Hidden Food',
+                    action: 'Each bird remembers its best spot, follows the flock\'s best finder',
+                    story: '"A flock of birds searches a field for food. Each bird remembers the best spot IT has found (personal best). The flock communicates — everyone knows where the BEST bird found food (global best). Each bird flies influenced by: its current direction (inertia), its personal best (cognitive), and the flock\'s best (social). The swarm converges on the richest food source."'
+                },
+                concept: {
+                    title: 'What is Particle Swarm Optimization?',
+                    desc: 'PSO simulates a swarm of particles moving through the search space. Each particle has position (solution) and velocity. Velocity is updated based on: inertia (keep moving), cognitive component (toward personal best), and social component (toward global best). Particles converge on good solutions through this collective behavior. Simple, few parameters, good for continuous optimization.',
+                    complexity: 'O(iterations × particles × dimensions). Easy to parallelize. No gradient needed.'
+                },
+                invariant: `Each iteration for particle i:
+┌─────────────────────────────────────────────────────────────┐
+│  v_i = w*v_i + c1*r1*(pbest_i - x_i) + c2*r2*(gbest - x_i) │
+│  x_i = x_i + v_i                                            │
+│                                                             │
+│  w = inertia weight (keep current direction)                │
+│  c1 = cognitive coefficient (trust personal experience)     │
+│  c2 = social coefficient (follow the crowd)                 │
+│  r1, r2 = random factors [0,1] (stochasticity)              │
+│                                                             │
+│  pbest_i updated if f(x_i) improves                         │
+│  gbest updated if any particle finds better solution        │
+└─────────────────────────────────────────────────────────────┘`,
+                realWorld: {
+                    synthesis: {
+                        category: 'Swarm Intelligence for Continuous Optimization',
+                        insight: 'PSO\'s power comes from balancing exploration and exploitation through the swarm. Early iterations have high inertia (exploration) — particles scatter. Later, social component dominates (exploitation) — particles converge on good regions. PSO requires no gradient, handles non-convex landscapes, and is trivially parallel. It struggles with discrete problems but excels at continuous parameter tuning.'
+                    },
+                    cases: [
+                        { icon: '🤖', title: 'Neural Network Training', desc: 'Optimize network weights without backpropagation. Each particle is a weight vector. Useful when loss function isn\'t differentiable or has many local optima. PSO-trained networks appeared before modern deep learning. Still used for small networks, reinforcement learning reward shaping, hyperparameter optimization.' },
+                        { icon: '📡', title: 'Antenna Array Optimization', desc: 'Optimize phase and amplitude of antenna elements for desired beam pattern. Each particle is a configuration. No gradient available — beam patterns are complex functions. Telecom companies use PSO for 5G MIMO antenna design. The continuous parameter space suits PSO perfectly.' },
+                        { icon: '⚡', title: 'Power System Economic Dispatch', desc: 'Determine generator outputs to minimize cost while meeting demand. Non-convex cost functions (startup costs, valve points) make LP/QP hard. PSO handles non-convexity naturally. Utilities use PSO for real-time economic dispatch. Swarm represents possible generation schedules.' },
+                        { icon: '🎯', title: 'PID Controller Tuning', desc: 'Find optimal P, I, D gains for industrial controllers. Each particle is a (Kp, Ki, Kd) triple. Fitness is control performance (overshoot, settling time). PSO tunes controllers faster than manual trial-and-error. Process industries (chemical, automotive) use PSO for auto-tuning.' },
+                        { icon: '🔬', title: 'Molecular Cluster Optimization', desc: 'Find lowest-energy configuration of atomic clusters. Each particle is atom positions. Energy landscape has many local minima. PSO explores configurations globally. Computational chemistry uses PSO for cluster structure prediction. The swarm naturally balances global search with local refinement.' }
+                    ]
+                },
+                code: {
+                    terse: `import numpy as np
+
+def pso(fitness, dim, n_particles=30, iterations=100):
+    X = np.random.rand(n_particles, dim)
+    V = np.random.rand(n_particles, dim) * 0.1
+    pbest, gbest = X.copy(), X[np.argmin([fitness(x) for x in X])]
+    
+    for _ in range(iterations):
+        r1, r2 = np.random.rand(2, n_particles, dim)
+        V = 0.7*V + 1.5*r1*(pbest-X) + 1.5*r2*(gbest-X)
+        X += V
+        for i, x in enumerate(X):
+            if fitness(x) < fitness(pbest[i]): pbest[i] = x
+            if fitness(x) < fitness(gbest): gbest = x
+    return gbest`,
+                    verbose: `class ParticleSwarmOptimization:
+    """
+    Particle Swarm Optimization for continuous optimization.
+    
+    Mental Model: Flock of Birds Searching for Food
+    - Each bird (particle) has position (solution) and velocity
+    - Remembers best spot it found (personal best)
+    - Knows best spot any bird found (global best)
+    - Velocity influenced by: inertia, personal best, global best
+    - Flock converges on best food source (optimal solution)
+    
+    Velocity Update Equation:
+    v = w*v + c1*r1*(pbest - x) + c2*r2*(gbest - x)
+    
+    Components:
+    - w*v: Inertia (keep flying in current direction)
+    - c1*r1*(pbest - x): Cognitive (return to personal best)
+    - c2*r2*(gbest - x): Social (follow the crowd to global best)
+    
+    Parameter Guidelines:
+    - w: 0.4-0.9 (higher = more exploration)
+    - c1, c2: 1.5-2.0 (balance personal vs social)
+    - particles: 20-50 typical
+    """
+    
+    def __init__(self, fitness_func, dimensions, bounds,
+                 n_particles=30, w=0.7, c1=1.5, c2=1.5):
+        """
+        Initialize PSO.
+        
+        Args:
+            fitness_func: Function to MINIMIZE
+            dimensions: Number of dimensions (variables)
+            bounds: List of (min, max) for each dimension
+            n_particles: Swarm size
+            w: Inertia weight
+            c1: Cognitive coefficient
+            c2: Social coefficient
+        """
+        import numpy as np
+        
+        self.fitness = fitness_func
+        self.dim = dimensions
+        self.bounds = np.array(bounds)
+        self.n_particles = n_particles
+        self.w = w
+        self.c1 = c1
+        self.c2 = c2
+        
+        # Initialize particles randomly within bounds
+        self.X = np.random.uniform(
+            self.bounds[:, 0],
+            self.bounds[:, 1],
+            (n_particles, dimensions)
+        )
+        
+        # Initialize velocities (small random)
+        range_size = self.bounds[:, 1] - self.bounds[:, 0]
+        self.V = np.random.uniform(-1, 1, (n_particles, dimensions)) * range_size * 0.1
+        
+        # Personal best positions and values
+        self.pbest = self.X.copy()
+        self.pbest_val = np.array([fitness_func(x) for x in self.X])
+        
+        # Global best
+        best_idx = np.argmin(self.pbest_val)
+        self.gbest = self.pbest[best_idx].copy()
+        self.gbest_val = self.pbest_val[best_idx]
+        
+        self.iteration = 0
+        self.history = [self.gbest_val]
+    
+    def update_velocity(self):
+        """
+        Update velocities using PSO equation.
+        
+        v_new = w*v + c1*r1*(pbest - x) + c2*r2*(gbest - x)
+        
+        - Inertia: Keep flying in current direction
+        - Cognitive: Pull toward personal best
+        - Social: Pull toward global best
+        """
+        import numpy as np
+        
+        r1 = np.random.rand(self.n_particles, self.dim)
+        r2 = np.random.rand(self.n_particles, self.dim)
+        
+        cognitive = self.c1 * r1 * (self.pbest - self.X)
+        social = self.c2 * r2 * (self.gbest - self.X)
+        
+        self.V = self.w * self.V + cognitive + social
+    
+    def update_position(self):
+        """
+        Update positions: x = x + v
+        Clamp to bounds.
+        """
+        import numpy as np
+        
+        self.X = self.X + self.V
+        
+        # Clamp to bounds
+        self.X = np.clip(self.X, self.bounds[:, 0], self.bounds[:, 1])
+    
+    def update_bests(self):
+        """
+        Update personal and global bests.
+        """
+        for i in range(self.n_particles):
+            fitness_val = self.fitness(self.X[i])
+            
+            # Update personal best
+            if fitness_val < self.pbest_val[i]:
+                self.pbest[i] = self.X[i].copy()
+                self.pbest_val[i] = fitness_val
+                
+                # Update global best
+                if fitness_val < self.gbest_val:
+                    self.gbest = self.X[i].copy()
+                    self.gbest_val = fitness_val
+    
+    def step(self):
+        """One PSO iteration."""
+        self.update_velocity()
+        self.update_position()
+        self.update_bests()
+        
+        self.iteration += 1
+        self.history.append(self.gbest_val)
+    
+    def run(self, iterations):
+        """
+        Run PSO for specified iterations.
+        
+        The swarm:
+        1. Updates velocities (balance inertia, cognitive, social)
+        2. Moves to new positions
+        3. Updates personal/global bests
+        4. Repeat
+        
+        Returns best solution and value found.
+        """
+        for _ in range(iterations):
+            self.step()
+        
+        return self.gbest, self.gbest_val
+    
+    def run_with_inertia_decay(self, iterations, w_start=0.9, w_end=0.4):
+        """
+        Run with linearly decreasing inertia.
+        
+        High inertia early → exploration
+        Low inertia late → exploitation
+        
+        Common improvement over constant inertia.
+        """
+        for i in range(iterations):
+            # Linear decay
+            self.w = w_start - (w_start - w_end) * i / iterations
+            self.step()
+        
+        return self.gbest, self.gbest_val
+
+# Example: Minimize Rastrigin function
+# def rastrigin(x):
+#     return 10*len(x) + sum(xi**2 - 10*np.cos(2*np.pi*xi) for xi in x)
+# pso = ParticleSwarmOptimization(rastrigin, dimensions=10, bounds=[(-5.12, 5.12)]*10)
+# best, val = pso.run_with_inertia_decay(100)`
+                }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // UI RENDERING
+        // ═══════════════════════════════════════════════════════════════
+
+        function renderAlgoContent(algoKey) {
+            const algo = algoData[algoKey];
+            if (!algo) return '';
+
+            return `
+                <!-- MNEMONIC -->
+                <div class="mnemonic-panel">
+                    <h3>🧠 Memory Hook (Person → Object → Action)</h3>
+                    <div class="poa-grid">
+                        <div class="poa-card poa-person">
+                            <div class="emoji">${algo.mnemonic.emoji}</div>
+                            <div class="type">Person</div>
+                            <div class="content">${algo.mnemonic.person}</div>
+                        </div>
+                        <div class="poa-card poa-object">
+                            <div class="emoji">🎯</div>
+                            <div class="type">Object</div>
+                            <div class="content">${algo.mnemonic.object}</div>
+                        </div>
+                        <div class="poa-card poa-action">
+                            <div class="emoji">⚡</div>
+                            <div class="type">Action</div>
+                            <div class="content">${algo.mnemonic.action}</div>
+                        </div>
+                    </div>
+                    <div class="memory-story">${algo.mnemonic.story}</div>
+                </div>
+                
+                <!-- CONCEPT -->
+                <div class="panel">
+                    <h2 style="color: #22d3ee;">📖 ${algo.concept.title}</h2>
+                    <p style="font-size: 0.9rem; color: #aaa; line-height: 1.7; margin-bottom: 15px;">
+                        ${algo.concept.desc}
+                    </p>
+                    <div class="complexity" style="color: #fbbf24; font-family: Consolas, monospace; font-size: 0.85rem;">
+                        ${algo.concept.complexity}
+                    </div>
+                </div>
+                
+                <!-- INVARIANT -->
+                <div class="invariant-box">
+                    <h4>🔒 The Invariant (What's Always True)</h4>
+                    <pre>${algo.invariant}</pre>
+                </div>
+                
+                <!-- REAL WORLD -->
+                <div class="realworld-panel">
+                    <h3>🏗️ Real-World Engineering Use Cases</h3>
+                    <div class="realworld-grid">
+                        ${algo.realWorld.cases.map(c => `
+                            <div class="scenario-box">
+                                <div class="scenario-icon">${c.icon}</div>
+                                <div class="scenario-title">${c.title}</div>
+                                <div class="scenario-desc">${c.desc}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="pattern-synthesis">
+                        <h4>🎯 Synthesized Pattern Category</h4>
+                        <div class="category">${algo.realWorld.synthesis.category}</div>
+                        <div class="insight">${algo.realWorld.synthesis.insight}</div>
+                    </div>
+                </div>
+                
+                <!-- CODE -->
+                <div class="panel">
+                    <h2 style="color: #4ade80;">💻 Implementation</h2>
+                    <div class="code-panel">
+                        <div class="code-header">
+                            <span>${algo.name}</span>
+                            <div class="code-tabs">
+                                <button class="code-tab active" onclick="showCode('${algoKey}', 'terse', this)">Terse</button>
+                                <button class="code-tab" onclick="showCode('${algoKey}', 'verbose', this)">Verbose</button>
+                            </div>
+                        </div>
+                        <div class="code-body" id="code-${algoKey}">
+                            <pre>${highlightSyntax(algo.code.terse)}</pre>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function highlightSyntax(code) {
+            return code
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/(#.*)/g, '<span class="comment">$1</span>')
+                .replace(/"""[\s\S]*?"""/g, m => '<span class="string">' + m + '</span>')
+                .replace(/('.*?')/g, '<span class="string">$1</span>')
+                .replace(/\b(def|class|if|elif|else|while|for|in|return|and|or|not|range|len|max|min|True|False|None|import|from|as|with|try|except|finally|raise|yield|lambda|global|nonlocal|assert|pass|break|continue)\b/g, '<span class="keyword">$1</span>')
+                .replace(/\b(\d+\.?\d*)\b/g, '<span class="number">$1</span>');
+        }
+
+        function showCode(algoKey, type, btn) {
+            const algo = algoData[algoKey];
+            const codeBody = document.getElementById(`code-${algoKey}`);
+            codeBody.innerHTML = `<pre>${highlightSyntax(type === 'terse' ? algo.code.terse : algo.code.verbose)}</pre>`;
+
+            // Update tab buttons
+            btn.parentElement.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // EVENT HANDLERS
+        // ═══════════════════════════════════════════════════════════════
+
+        // Category tabs
+        document.querySelectorAll('.category-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.category-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.category-content').forEach(c => c.classList.remove('active'));
+
+                tab.classList.add('active');
+                document.getElementById(`cat-${tab.dataset.cat}`).classList.add('active');
+            });
+        });
+
+        // Algorithm buttons within categories
+        function setupAlgoButtons(category, contentId) {
+            const container = document.getElementById(`${category}-algos`);
+            if (!container) return;
+
+            container.querySelectorAll('.algo-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    container.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const content = document.getElementById(contentId);
+                    content.innerHTML = renderAlgoContent(btn.dataset.algo);
+                });
+            });
+
+            // Initialize with first algorithm
+            const firstBtn = container.querySelector('.algo-btn.active');
+            if (firstBtn) {
+                document.getElementById(contentId).innerHTML = renderAlgoContent(firstBtn.dataset.algo);
+            }
+        }
+
+        // Initialize all categories
+        setupAlgoButtons('lp', 'lp-content');
+        setupAlgoButtons('mip', 'mip-content');
+        setupAlgoButtons('cp', 'cp-content');
+        setupAlgoButtons('meta', 'meta-content');
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gang of Four Design Patterns</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #00d4ff, #7b2cbf);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+        }
+        .diagram-container {
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            overflow-x: auto;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .legend-line {
+            width: 40px;
+            height: 3px;
+        }
+        .solid-line {
+            background: #888;
+        }
+        .dashed-line {
+            background: repeating-linear-gradient(90deg, #888 0px, #888 6px, transparent 6px, transparent 12px);
+        }
+        .category-legend {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .cat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+        }
+        .cat-box {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+        .creational { background: #2d5a27; }
+        .structural { background: #1a4a6e; }
+        .behavioral { background: #6b2d5b; }
+    </style>
+</head>
+<body>
+    <h1>🏛️ Gang of Four Design Patterns</h1>
+    <p class="subtitle">Relationship Map — 23 Patterns from the Classic 1994 Book</p>
+    
+    <div class="diagram-container">
+        <div class="mermaid">
+flowchart TB
+    subgraph CREATIONAL["🏗️ CREATIONAL"]
+        direction TB
+        AF[Abstract Factory]
+        BU[Builder]
+        FM[Factory Method]
+        PR[Prototype]
+        SI[Singleton]
+    end
+
+    subgraph STRUCTURAL["🧱 STRUCTURAL"]
+        direction TB
+        AD[Adapter]
+        BR[Bridge]
+        CO[Composite]
+        DE[Decorator]
+        FA[Facade]
+        FL[Flyweight]
+        PX[Proxy]
+    end
+
+    subgraph BEHAVIORAL["⚙️ BEHAVIORAL"]
+        direction TB
+        CH[Chain of Resp.]
+        CM[Command]
+        IN[Interpreter]
+        IT[Iterator]
+        ME[Mediator]
+        MO[Memento]
+        OB[Observer]
+        ST[State]
+        SG[Strategy]
+        TM[Template Method]
+        VI[Visitor]
+    end
+
+    AF -->|uses| FM
+    AF -->|uses| PR
+    AF -.->|alt| PR
+    BU -->|builds| CO
+    FM -.->|alt| AF
+    
+    FA -->|uses| SI
+    FL -->|managed by| AF
+
+    TM -->|calls| FM
+
+    AD -.->|similar| BR
+    CO -->|with| DE
+    DE -.->|similar| PX
+    FL -->|shares| CO
+
+    CO -->|traversed by| IT
+    CO -->|traversed by| VI
+    CH -->|uses| CO
+    IN -->|uses| CO
+
+    CM -->|undo via| MO
+    ME -.->|centralizes| OB
+    ST -.->|similar| SG
+    SG -.->|alt| TM
+    IT -->|with| VI
+
+    classDef creational fill:#2d5a27,stroke:#4ade80,stroke-width:2px,color:white
+    classDef structural fill:#1a4a6e,stroke:#60a5fa,stroke-width:2px,color:white
+    classDef behavioral fill:#6b2d5b,stroke:#e879f9,stroke-width:2px,color:white
+    classDef subgraphStyle fill:#111827,stroke:#374151,color:white
+    
+    class AF,BU,FM,PR,SI creational
+    class AD,BR,CO,DE,FA,FL,PX structural
+    class CH,CM,IN,IT,ME,MO,OB,ST,SG,TM,VI behavioral
+        </div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-line solid-line"></div>
+            <span>Uses / Works with</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-line dashed-line"></div>
+            <span>Alternative / Similar structure</span>
+        </div>
+    </div>
+
+    <div class="category-legend">
+        <div class="cat-item">
+            <div class="cat-box creational"></div>
+            <span>Creational (5) — How objects are created</span>
+        </div>
+        <div class="cat-item">
+            <div class="cat-box structural"></div>
+            <span>Structural (7) — How objects compose</span>
+        </div>
+        <div class="cat-item">
+            <div class="cat-box behavioral"></div>
+            <span>Behavioral (11) — How objects communicate</span>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                nodeSpacing: 50,
+                rankSpacing: 60
+            },
+            themeVariables: {
+                primaryColor: '#1a1a2e',
+                primaryTextColor: '#ffffff',
+                primaryBorderColor: '#444',
+                lineColor: '#666',
+                secondaryColor: '#16213e',
+                tertiaryColor: '#0d1117'
+            }
+        });
+    </script>
+</body>
+</html>

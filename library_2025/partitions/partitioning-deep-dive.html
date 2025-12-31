@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partitioning & Merge — The Foundation of Divide and Conquer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #fb923c, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        /* TABS */
+        .main-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .main-tab {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 1px solid #2a2f45;
+            color: #888;
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .main-tab:hover {
+            color: #ccc;
+        }
+
+        .main-tab.active {
+            background: linear-gradient(145deg, #2a1a3a, #1a1025);
+            border-color: #a78bfa;
+            color: #a78bfa;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* PANELS */
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+            margin-bottom: 20px;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* ALGORITHM SELECTOR */
+        .algo-selector {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .algo-btn {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border: 1px solid #2a2f45;
+            color: #888;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .algo-btn:hover {
+            border-color: #4a4f65;
+            color: #ccc;
+        }
+
+        .algo-btn.active {
+            border-color: #fb923c;
+            color: #fb923c;
+            background: rgba(251, 146, 60, 0.1);
+        }
+
+        /* GRIDS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 1000px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* ANIMATION */
+        .anim-panel {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        canvas {
+            display: block;
+            margin: 0 auto;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+        }
+
+        button.playing {
+            border-color: #4ade80;
+            box-shadow: 0 0 10px rgba(74, 222, 128, 0.3);
+        }
+
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            margin-top: 15px;
+        }
+
+        .state-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .state-item .label {
+            font-size: 0.65rem;
+            color: #666;
+        }
+
+        .state-item .value {
+            font-size: 0.95rem;
+            font-weight: bold;
+            font-family: 'Consolas', monospace;
+        }
+
+        .message-box {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 12px;
+            font-size: 0.85rem;
+            color: #aaa;
+            min-height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .message-box.success {
+            background: rgba(74, 222, 128, 0.15);
+            border: 1px solid rgba(74, 222, 128, 0.3);
+            color: #4ade80;
+        }
+
+        /* CODE PANEL */
+        .code-panel {
+            background: #0d1117;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .code-header {
+            background: #161b22;
+            padding: 10px 15px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .code-header span {
+            font-size: 0.85rem;
+            color: #888;
+        }
+
+        .code-tabs {
+            display: flex;
+            gap: 5px;
+        }
+
+        .code-tab {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #333;
+            color: #888;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
+        .code-tab:hover {
+            color: #ccc;
+        }
+
+        .code-tab.active {
+            background: rgba(74, 222, 128, 0.15);
+            border-color: #4ade80;
+            color: #4ade80;
+        }
+
+        .code-body {
+            padding: 15px;
+            overflow-x: auto;
+            flex: 1;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .code-line {
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.75rem;
+            line-height: 1.6;
+            padding: 2px 8px;
+            border-radius: 3px;
+            white-space: pre;
+            transition: all 0.3s;
+        }
+
+        .code-line.highlight {
+            background: rgba(251, 191, 36, 0.2);
+            border-left: 3px solid #fbbf24;
+            margin-left: -3px;
+        }
+
+        .comment {
+            color: #6a737d;
+        }
+
+        .keyword {
+            color: #ff7b72;
+        }
+
+        .function {
+            color: #d2a8ff;
+        }
+
+        .string {
+            color: #a5d6ff;
+        }
+
+        .number {
+            color: #79c0ff;
+        }
+
+        .variable {
+            color: #ffa657;
+        }
+
+        /* MNEMONIC */
+        .mnemonic-panel {
+            background: linear-gradient(145deg, #1a1025, #150d1f);
+            border: 1px solid #3a2050;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .mnemonic-panel h3 {
+            color: #d8b4fe;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .poa-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        @media (max-width: 700px) {
+            .poa-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .poa-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .poa-card .emoji {
+            font-size: 2.5rem;
+            margin-bottom: 8px;
+        }
+
+        .poa-card .type {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+        }
+
+        .poa-card .content {
+            font-size: 0.95rem;
+            font-weight: 600;
+        }
+
+        .poa-person .content {
+            color: #f472b6;
+        }
+
+        .poa-object .content {
+            color: #22d3ee;
+        }
+
+        .poa-action .content {
+            color: #4ade80;
+        }
+
+        .memory-story {
+            background: rgba(216, 180, 254, 0.1);
+            border-left: 3px solid #d8b4fe;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.9rem;
+            color: #c4b5fd;
+            line-height: 1.5;
+            font-style: italic;
+        }
+
+        /* REAL WORLD */
+        .realworld-panel {
+            background: linear-gradient(145deg, #0d1a1a, #0a1515);
+            border: 1px solid #1a3a3a;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .realworld-panel h3 {
+            color: #22d3ee;
+            font-size: 1rem;
+            margin-bottom: 15px;
+        }
+
+        .realworld-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+            max-height: 350px;
+            overflow-y: auto;
+        }
+
+        .scenario-box {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 14px;
+            border-left: 3px solid #2a4a4a;
+            transition: all 0.2s;
+        }
+
+        .scenario-box:hover {
+            background: rgba(0, 0, 0, 0.5);
+            border-left-color: #4ade80;
+        }
+
+        .scenario-icon {
+            font-size: 1.4rem;
+            margin-bottom: 8px;
+        }
+
+        .scenario-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #4ade80;
+            margin-bottom: 8px;
+        }
+
+        .scenario-desc {
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.55;
+        }
+
+        .scenario-desc code {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-family: 'Consolas', monospace;
+            color: #fbbf24;
+            font-size: 0.75rem;
+        }
+
+        .pattern-summary {
+            background: rgba(34, 211, 238, 0.1);
+            border-left: 3px solid #22d3ee;
+            padding: 12px 15px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #67e8f9;
+        }
+
+        .pattern-synthesis {
+            background: linear-gradient(145deg, rgba(167, 139, 250, 0.1), rgba(244, 114, 182, 0.1));
+            border: 1px solid rgba(167, 139, 250, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .pattern-synthesis h4 {
+            color: #d8b4fe;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .pattern-synthesis .category {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #f472b6;
+            margin-bottom: 8px;
+        }
+
+        .pattern-synthesis .insight {
+            font-size: 0.85rem;
+            color: #c4b5fd;
+            line-height: 1.6;
+        }
+
+        /* CONCEPT BREAKDOWN */
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .concept-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            border-top: 3px solid;
+        }
+
+        .concept-card.lomuto {
+            border-color: #f472b6;
+        }
+
+        .concept-card.hoare {
+            border-color: #22d3ee;
+        }
+
+        .concept-card.dnf {
+            border-color: #fb923c;
+        }
+
+        .concept-card.merge {
+            border-color: #4ade80;
+        }
+
+        .concept-card h4 {
+            font-size: 0.95rem;
+            margin-bottom: 10px;
+        }
+
+        .concept-card p {
+            font-size: 0.8rem;
+            color: #aaa;
+            line-height: 1.5;
+            margin-bottom: 10px;
+        }
+
+        .concept-card .complexity {
+            font-family: 'Consolas', monospace;
+            font-size: 0.75rem;
+            color: #fbbf24;
+        }
+
+        /* INVARIANTS */
+        .invariant-box {
+            background: rgba(251, 146, 60, 0.1);
+            border: 1px solid rgba(251, 146, 60, 0.3);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+        }
+
+        .invariant-box h4 {
+            color: #fb923c;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .invariant-box pre {
+            font-family: 'Consolas', monospace;
+            font-size: 0.8rem;
+            color: #fbbf24;
+            line-height: 1.6;
+        }
+
+        /* SPEED CONTROL */
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .speed-control input {
+            width: 80px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🔀 Partitioning & Merge Patterns</h1>
+    <p class="subtitle">The Foundation of Divide-and-Conquer | Quicksort, Quickselect, Merge Sort</p>
+
+    <!-- TAB NAVIGATION -->
+    <div class="main-tabs">
+        <button class="main-tab active" data-tab="learn">🎓 Learn & Visualize</button>
+        <button class="main-tab" data-tab="concepts">📚 Core Concepts</button>
+        <button class="main-tab" data-tab="cheatsheet">📝 Cheat Sheet</button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB 1: LEARN & VISUALIZE -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content active" id="tab-learn">
+
+        <!-- ALGORITHM SELECTOR -->
+        <div class="algo-selector">
+            <button class="algo-btn active" data-algo="lomuto">Lomuto Partition</button>
+            <button class="algo-btn" data-algo="hoare">Hoare Partition</button>
+            <button class="algo-btn" data-algo="dnf">Dutch Flag (3-Way)</button>
+            <button class="algo-btn" data-algo="merge">Merge Sort</button>
+        </div>
+
+        <!-- MNEMONIC PANEL -->
+        <div class="mnemonic-panel">
+            <h3>🧠 Memory Hook (Person → Object → Action)</h3>
+            <div class="poa-grid">
+                <div class="poa-card poa-person">
+                    <div class="emoji" id="mnemonic-emoji">🧙‍♂️</div>
+                    <div class="type">Person</div>
+                    <div class="content" id="mnemonic-person">Gandalf (LOTR)</div>
+                </div>
+                <div class="poa-card poa-object">
+                    <div class="emoji">🎯</div>
+                    <div class="type">Object</div>
+                    <div class="content" id="mnemonic-object">His Staff</div>
+                </div>
+                <div class="poa-card poa-action">
+                    <div class="emoji">⚡</div>
+                    <div class="type">Action</div>
+                    <div class="content" id="mnemonic-action">Drawing a line: "You shall not pass!"</div>
+                </div>
+            </div>
+            <div class="memory-story" id="mnemonic-story">
+                "Gandalf stands at the bridge of Khazad-dûm. His staff marks the PIVOT point. As each orc approaches
+                (Fast pointer), if it's weak enough to go left, he sweeps it past the barrier (Slow pointer). The Balrog
+                (pivot) stays at the boundary. Everything unworthy is left of Gandalf, everything stronger is right."
+            </div>
+        </div>
+
+        <!-- REAL WORLD PANEL -->
+        <div class="realworld-panel">
+            <h3>🏗️ Real-World Engineering Use Cases</h3>
+            <div class="realworld-grid" id="realworldGrid">
+                <!-- Dynamically populated -->
+            </div>
+            <div class="pattern-summary">
+                <strong>Pattern Essence:</strong> <span id="patternEssence">Loading...</span>
+            </div>
+            <div class="pattern-synthesis">
+                <h4>🎯 Synthesized Pattern Category</h4>
+                <div class="category" id="synthesisCategory">Loading...</div>
+                <div class="insight" id="synthesisInsight">Loading...</div>
+            </div>
+        </div>
+
+        <!-- INVARIANT BOX -->
+        <div class="invariant-box">
+            <h4>🔒 The Invariant (What's ALWAYS True)</h4>
+            <pre id="invariantText">Loading...</pre>
+        </div>
+
+        <!-- MAIN LEARNING GRID -->
+        <div class="grid-2">
+            <!-- LEFT: ANIMATION -->
+            <div class="panel">
+                <h2 style="color: #fb923c;">⚡ Behavior Animation</h2>
+                <div class="anim-panel">
+                    <canvas id="animCanvas" width="450" height="160"></canvas>
+
+                    <div class="controls">
+                        <button id="btnStep">Step →</button>
+                        <button id="btnPlay">▶ Play</button>
+                        <button id="btnReset">↺ Reset</button>
+                        <div class="speed-control">
+                            <label>Speed:</label>
+                            <input type="range" id="speedSlider" min="100" max="800" value="400">
+                        </div>
+                    </div>
+
+                    <div class="state-grid" id="stateGrid">
+                        <div class="state-item">
+                            <div class="label" id="label1">Slow (i)</div>
+                            <div class="value" style="color: #f472b6;" id="val1">0</div>
+                        </div>
+                        <div class="state-item">
+                            <div class="label" id="label2">Fast (j)</div>
+                            <div class="value" style="color: #22d3ee;" id="val2">0</div>
+                        </div>
+                        <div class="state-item">
+                            <div class="label" id="label3">Pivot</div>
+                            <div class="value" style="color: #fbbf24;" id="val3">-</div>
+                        </div>
+                        <div class="state-item">
+                            <div class="label" id="label4">Swaps</div>
+                            <div class="value" style="color: #4ade80;" id="val4">0</div>
+                        </div>
+                    </div>
+
+                    <div class="message-box" id="messageBox">
+                        Click Step or Play to see the algorithm in action!
+                    </div>
+                </div>
+            </div>
+
+            <!-- RIGHT: CODE -->
+            <div class="panel">
+                <h2 style="color: #4ade80;">💻 Code (Line Synced)</h2>
+                <div class="code-panel">
+                    <div class="code-header">
+                        <span id="codeTitle">Lomuto Partition</span>
+                        <div class="code-tabs">
+                            <button class="code-tab active" data-code-tab="terse">Terse</button>
+                            <button class="code-tab" data-code-tab="verbose">Verbose</button>
+                        </div>
+                    </div>
+                    <div class="code-body" id="codeBody"></div>
+                    <div class="code-body" id="codeBodyVerbose" style="display: none;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB 2: CORE CONCEPTS -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-concepts">
+        <div class="panel">
+            <h2 style="color: #fb923c;">🎯 The Big Picture: What Is Partitioning?</h2>
+            <div style="font-size: 0.9rem; color: #aaa; line-height: 1.7; margin-bottom: 20px;">
+                <p><strong>Partitioning</strong> reorganizes an array around a <strong>pivot</strong> element so that:
+                </p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li>All elements <strong>less than</strong> pivot are to its <strong>LEFT</strong></li>
+                    <li>All elements <strong>greater than</strong> pivot are to its <strong>RIGHT</strong></li>
+                    <li>The pivot is now in its <strong>final sorted position</strong></li>
+                </ul>
+                <p>This is the foundation of <strong>Quicksort</strong> (partition recursively) and
+                    <strong>Quickselect</strong> (find kth element in O(n) average).</p>
+            </div>
+
+            <div class="concept-grid">
+                <div class="concept-card lomuto">
+                    <h4 style="color: #f472b6;">Lomuto Partition</h4>
+                    <p>
+                        <strong>Same-direction pointers.</strong> Slow (i) marks boundary of "less than pivot" region.
+                        Fast (j) scans left-to-right. When Fast finds element < pivot, swap it to Slow position. Simple
+                            but does more swaps than necessary. </p>
+                            <div class="complexity">Swaps: O(n) worst case | Used in: Intro textbooks, simple
+                                implementations</div>
+                </div>
+
+                <div class="concept-card hoare">
+                    <h4 style="color: #22d3ee;">Hoare Partition</h4>
+                    <p>
+                        <strong>Opposite-direction pointers.</strong> Left scans right for element ≥ pivot.
+                        Right scans left for element ≤ pivot. When both stop, swap.
+                        Fewer swaps, but trickier edge cases. Pivot may not end at final position!
+                    </p>
+                    <div class="complexity">Swaps: ~n/4 average | Used in: Production quicksorts, C++ std::sort</div>
+                </div>
+
+                <div class="concept-card dnf">
+                    <h4 style="color: #fb923c;">Dutch National Flag (3-Way)</h4>
+                    <p>
+                        <strong>Three regions:</strong>
+                        < pivot,=pivot,> pivot.
+                            Essential when array has many duplicates (standard 2-way degrades to O(n²)).
+                            Uses three pointers: Low, Mid, High.
+                    </p>
+                    <div class="complexity">Swaps: O(n) | Used in: Introsort, production quicksorts with duplicates
+                    </div>
+                </div>
+
+                <div class="concept-card merge">
+                    <h4 style="color: #4ade80;">Merge Sort</h4>
+                    <p>
+                        <strong>Not partitioning by value</strong> — divides by position (split in half).
+                        The magic is in the <strong>MERGE</strong> step: combining two sorted halves.
+                        Stable, guaranteed O(n log n), but requires O(n) extra space.
+                    </p>
+                    <div class="complexity">Space: O(n) | Used in: External sorting, linked lists, stable sort needs
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #22d3ee;">⚖️ Lomuto vs Hoare — The Trade-offs</h2>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                    <tr style="background: rgba(167, 139, 250, 0.2);">
+                        <th style="padding: 12px; text-align: left; color: #d8b4fe;">Property</th>
+                        <th style="padding: 12px; text-align: left; color: #f472b6;">Lomuto</th>
+                        <th style="padding: 12px; text-align: left; color: #22d3ee;">Hoare</th>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #2a2f45;">
+                        <td style="padding: 12px;">Pointer Direction</td>
+                        <td style="padding: 12px;">Same direction (both left→right)</td>
+                        <td style="padding: 12px;">Opposite directions (meet in middle)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #2a2f45;">
+                        <td style="padding: 12px;">Average Swaps</td>
+                        <td style="padding: 12px;">~n/2</td>
+                        <td style="padding: 12px;">~n/6 (3x fewer!)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #2a2f45;">
+                        <td style="padding: 12px;">Pivot Final Position</td>
+                        <td style="padding: 12px;">Exactly at boundary</td>
+                        <td style="padding: 12px;">NOT guaranteed (somewhere in left partition)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #2a2f45;">
+                        <td style="padding: 12px;">Edge Cases</td>
+                        <td style="padding: 12px;">Simple — no off-by-one issues</td>
+                        <td style="padding: 12px;">Tricky — easy to get wrong</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid #2a2f45;">
+                        <td style="padding: 12px;">All Equal Elements</td>
+                        <td style="padding: 12px;">O(n²) — degrades badly</td>
+                        <td style="padding: 12px;">O(n²) — also degrades</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;">With Duplicates</td>
+                        <td style="padding: 12px;">Use 3-way instead</td>
+                        <td style="padding: 12px;">Use 3-way instead</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #4ade80;">🔄 Merge Sort — The Stable Alternative</h2>
+            <div style="font-size: 0.9rem; color: #aaa; line-height: 1.7;">
+                <p><strong>Why Merge Sort matters:</strong></p>
+                <ul style="margin: 15px 0 15px 20px;">
+                    <li><strong>Stable:</strong> Equal elements maintain original order (critical for multi-key sorting)
+                    </li>
+                    <li><strong>Guaranteed O(n log n):</strong> No worst-case degradation like quicksort</li>
+                    <li><strong>External sorting:</strong> Only option when data doesn't fit in memory</li>
+                    <li><strong>Linked lists:</strong> O(1) space for linked lists (no random access needed)</li>
+                    <li><strong>Parallelizable:</strong> Divide step is embarrassingly parallel</li>
+                </ul>
+                <p><strong>The Merge Operation</strong> is the key insight: given two sorted arrays, combine them in
+                    O(n) by always picking the smaller front element.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <!-- TAB 3: CHEAT SHEET -->
+    <!-- ═══════════════════════════════════════════════════════════════ -->
+    <div class="tab-content" id="tab-cheatsheet">
+        <div class="panel">
+            <h2 style="color: #fbbf24;">🎯 When to Use Which</h2>
+            <div style="display: grid; gap: 12px;">
+                <div
+                    style="background: rgba(244,114,182,0.1); border-left: 3px solid #f472b6; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #f472b6;">Lomuto Partition</strong><br>
+                    <span style="color: #aaa;">Use when: Teaching, simple implementations, clarity > performance</span>
+                </div>
+                <div
+                    style="background: rgba(34,211,238,0.1); border-left: 3px solid #22d3ee; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #22d3ee;">Hoare Partition</strong><br>
+                    <span style="color: #aaa;">Use when: Performance matters, fewer swaps critical
+                        (cache-friendly)</span>
+                </div>
+                <div
+                    style="background: rgba(251,146,60,0.1); border-left: 3px solid #fb923c; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #fb923c;">3-Way Partition</strong><br>
+                    <span style="color: #aaa;">Use when: Many duplicates expected, avoiding O(n²) on equal
+                        elements</span>
+                </div>
+                <div
+                    style="background: rgba(74,222,128,0.1); border-left: 3px solid #4ade80; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #4ade80;">Merge Sort</strong><br>
+                    <span style="color: #aaa;">Use when: Stability required, external sorting, linked lists, guaranteed
+                        O(n log n)</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #a78bfa;">📝 Template Code</h2>
+            <div class="code-panel" style="margin-top: 15px;">
+                <div class="code-body" style="max-height: 600px;">
+                    <pre style="font-family: Consolas, monospace; font-size: 0.8rem; line-height: 1.6;">
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="comment"># LOMUTO PARTITION</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="keyword">def</span> <span class="function">lomuto</span>(arr, lo, hi):
+    pivot = arr[hi]                  <span class="comment"># Pivot is last element</span>
+    i = lo - <span class="number">1</span>                       <span class="comment"># Boundary of "< pivot" region</span>
+    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="keyword">range</span>(lo, hi):
+        <span class="keyword">if</span> arr[j] < pivot:
+            i += <span class="number">1</span>
+            arr[i], arr[j] = arr[j], arr[i]
+    arr[i + <span class="number">1</span>], arr[hi] = arr[hi], arr[i + <span class="number">1</span>]
+    <span class="keyword">return</span> i + <span class="number">1</span>                    <span class="comment"># Pivot's final position</span>
+
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="comment"># HOARE PARTITION</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="keyword">def</span> <span class="function">hoare</span>(arr, lo, hi):
+    pivot = arr[lo]                  <span class="comment"># Pivot is first element</span>
+    i, j = lo - <span class="number">1</span>, hi + <span class="number">1</span>
+    <span class="keyword">while</span> <span class="keyword">True</span>:
+        i += <span class="number">1</span>
+        <span class="keyword">while</span> arr[i] < pivot: i += <span class="number">1</span>
+        j -= <span class="number">1</span>
+        <span class="keyword">while</span> arr[j] > pivot: j -= <span class="number">1</span>
+        <span class="keyword">if</span> i >= j: <span class="keyword">return</span> j          <span class="comment"># Return partition point</span>
+        arr[i], arr[j] = arr[j], arr[i]
+
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="comment"># 3-WAY PARTITION (Dutch National Flag)</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="keyword">def</span> <span class="function">three_way</span>(arr, lo, hi):
+    pivot = arr[lo]
+    lt, i, gt = lo, lo, hi           <span class="comment"># lt = less-than, gt = greater-than</span>
+    <span class="keyword">while</span> i <= gt:
+        <span class="keyword">if</span> arr[i] < pivot:
+            arr[lt], arr[i] = arr[i], arr[lt]
+            lt += <span class="number">1</span>; i += <span class="number">1</span>
+        <span class="keyword">elif</span> arr[i] > pivot:
+            arr[i], arr[gt] = arr[gt], arr[i]
+            gt -= <span class="number">1</span>                   <span class="comment"># DON'T increment i!</span>
+        <span class="keyword">else</span>:
+            i += <span class="number">1</span>
+    <span class="keyword">return</span> lt, gt                   <span class="comment"># Range of equal elements</span>
+
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="comment"># MERGE SORT</span>
+<span class="comment"># ═══════════════════════════════════════════════════════════</span>
+<span class="keyword">def</span> <span class="function">merge_sort</span>(arr):
+    <span class="keyword">if</span> <span class="keyword">len</span>(arr) <= <span class="number">1</span>: <span class="keyword">return</span> arr
+    mid = <span class="keyword">len</span>(arr) // <span class="number">2</span>
+    left = merge_sort(arr[:mid])
+    right = merge_sort(arr[mid:])
+    <span class="keyword">return</span> merge(left, right)
+
+<span class="keyword">def</span> <span class="function">merge</span>(left, right):
+    result = []
+    i = j = <span class="number">0</span>
+    <span class="keyword">while</span> i < <span class="keyword">len</span>(left) <span class="keyword">and</span> j < <span class="keyword">len</span>(right):
+        <span class="keyword">if</span> left[i] <= right[j]:      <span class="comment"># <= for stability</span>
+            result.append(left[i]); i += <span class="number">1</span>
+        <span class="keyword">else</span>:
+            result.append(right[j]); j += <span class="number">1</span>
+    result.extend(left[i:])
+    result.extend(right[j:])
+    <span class="keyword">return</span> result
+</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2 style="color: #22d3ee;">🧠 All Memory Hooks</h2>
+            <div style="display: grid; gap: 15px;">
+                <div
+                    style="background: rgba(244,114,182,0.1); border-left: 3px solid #f472b6; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #f472b6;">Lomuto:</strong> <span style="color: #f472b6;">Gandalf</span> with
+                    <span style="color: #22d3ee;">his staff</span> — <span style="color: #4ade80;">"You shall not pass!"
+                        sweeping orcs left of the line</span>
+                </div>
+                <div
+                    style="background: rgba(34,211,238,0.1); border-left: 3px solid #22d3ee; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #22d3ee;">Hoare:</strong> <span style="color: #f472b6;">Neo & Agent
+                        Smith</span> in <span style="color: #22d3ee;">a hallway of agents</span> — <span
+                        style="color: #4ade80;">pushing toward each other, swapping when they stop</span>
+                </div>
+                <div
+                    style="background: rgba(251,146,60,0.1); border-left: 3px solid #fb923c; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #fb923c;">3-Way:</strong> <span style="color: #f472b6;">Sorting Hat</span>
+                    with <span style="color: #22d3ee;">three house flags</span> — <span style="color: #4ade80;">sorting
+                        students into Gryffindor/Hufflepuff/Ravenclaw</span>
+                </div>
+                <div
+                    style="background: rgba(74,222,128,0.1); border-left: 3px solid #4ade80; padding: 15px; border-radius: 0 8px 8px 0;">
+                    <strong style="color: #4ade80;">Merge:</strong> <span style="color: #f472b6;">Dumbledore's
+                        Army</span> with <span style="color: #22d3ee;">the Marauder's Map</span> — <span
+                        style="color: #4ade80;">split into pairs for training, merge back in formation</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // ALGORITHM CONFIGURATIONS
+        // ═══════════════════════════════════════════════════════════════
+
+        const algoConfigs = {
+            lomuto: {
+                name: 'Lomuto Partition',
+                arr: [3, 7, 2, 9, 1, 5, 4, 8, 6],
+                labels: ['Slow (i)', 'Fast (j)', 'Pivot', 'Swaps'],
+                mnemonic: {
+                    emoji: '🧙‍♂️',
+                    person: 'Gandalf (LOTR)',
+                    object: 'His Staff',
+                    action: '"You shall not pass!" — sweeping orcs left',
+                    story: '"Gandalf stands at the bridge of Khazad-dûm. His staff marks the PIVOT point (last element). As each orc approaches (Fast pointer scans left-to-right), if it\'s weak enough (less than pivot), he sweeps it past the barrier (swaps to Slow position). At the end, the Balrog (pivot) takes its rightful place at the boundary. Everything unworthy is left of Gandalf, everything stronger is right."'
+                },
+                realWorld: {
+                    essence: 'Reorganize data around a threshold — elements below go left, above go right.',
+                    synthesis: {
+                        category: 'Binary Classification & Threshold Enforcement',
+                        insight: 'Every Lomuto use case boils down to: "given a threshold (pivot), reorganize so smaller items are accessible first." The same-direction pointer pattern is intuitive because you\'re building a "passed" region from left to right, like checking items off a list. The simplicity comes at the cost of extra swaps, but that\'s often acceptable for clarity and correctness.'
+                    },
+                    cases: [
+                        { icon: '🗄️', title: 'Database Query Optimization', desc: 'When executing a range query like <code>SELECT * WHERE price < 100</code>, the query planner can partition data in-place to separate matching rows from non-matching. The pivot is the threshold (100). Rows below pivot move left (matches), rows above stay right. This is faster than full table scan when combined with partial indexing. PostgreSQL uses partition pruning this way to skip irrelevant data blocks entirely.' },
+                        { icon: '⚖️', title: 'A/B Test User Assignment', desc: 'When splitting users into test/control groups, you need a deterministic partition. Hash each user ID, use threshold as pivot. If <code>hash(user_id) % 100 < 30</code>, assign to test group (30%). Lomuto-style partition on the user list separates groups in-place. This runs during experiment setup for platforms like Optimizely — millions of users partitioned in O(n) with O(1) space.' },
+                        { icon: '📊', title: 'Image Binarization (Thresholding)', desc: 'Computer vision converts grayscale images to black/white for edge detection. Each pixel is compared to a threshold (pivot). Pixels below threshold → black (left), above → white (right). OpenCV\'s <code>cv2.threshold()</code> uses this pattern. Running on 4K images (8M pixels) at 60fps requires in-place partitioning — no memory allocation allowed.' },
+                        { icon: '🎮', title: 'Render Queue Culling', desc: 'Game engines cull objects outside the camera frustum before rendering. Distance to camera is the pivot. Objects closer than far-plane partition left (render), objects beyond partition right (skip). Unity and Unreal run this every frame — partitioning 10,000+ objects in microseconds determines which 500 actually get drawn.' },
+                        { icon: '📈', title: 'Outlier Detection Preprocessing', desc: 'Before statistical analysis, separate inliers from outliers. Calculate threshold (e.g., 3 standard deviations). Partition data: values within threshold go left (analyze), outliers go right (flag for review). Pandas uses this pattern in <code>df[df.col < threshold]</code> — but in-place partition is O(1) space vs O(n) for filtering.' }
+                    ]
+                },
+                invariant: `After processing index j:
+┌─────────────────────────────────────────────────────────────┐
+│  arr[lo..i]     │  arr[i+1..j-1]  │  arr[j..hi-1]  │ pivot │
+│  < pivot        │  >= pivot       │  unprocessed   │       │
+└─────────────────────────────────────────────────────────────┘
+                  ↑                                    ↑
+             boundary (i)                           pivot (hi)`,
+                code: [
+                    { text: 'def lomuto_partition(arr, lo, hi):' },
+                    { text: '    pivot = arr[hi]        # Last element' },
+                    { text: '    i = lo - 1             # Boundary of < region' },
+                    { text: '' },
+                    { text: '    for j in range(lo, hi):' },
+                    { text: '        if arr[j] < pivot:' },
+                    { text: '            i += 1' },
+                    { text: '            arr[i], arr[j] = arr[j], arr[i]' },
+                    { text: '' },
+                    { text: '    # Place pivot at boundary' },
+                    { text: '    arr[i + 1], arr[hi] = arr[hi], arr[i + 1]' },
+                    { text: '    return i + 1' },
+                ],
+                verboseCode: `class LomutoPartition:
+    """
+    Partitions array around a pivot using same-direction pointers.
+    All elements < pivot end up LEFT of it, >= pivot end up RIGHT.
+    
+    Mental Model: Gandalf at the Bridge of Khazad-dûm
+    - His staff marks the PIVOT (last element)
+    - Slow (i) marks the boundary of "passed" orcs
+    - Fast (j) scans each approaching orc
+    - Weak orcs (< pivot) get swept left of the barrier
+    - At the end, Gandalf (pivot) takes his position
+    
+    Invariant: arr[lo..i] < pivot <= arr[i+1..j-1]
+    """
+    
+    def __init__(self, arr: list, lo: int, hi: int):
+        self.arr = arr
+        self.lo = lo
+        self.hi = hi
+        self.pivot = arr[hi]  # Pivot is LAST element
+        self.i = lo - 1       # Boundary starts before array
+        self.j = lo           # Scanner starts at beginning
+        self.swaps = 0
+    
+    def current_element(self):
+        """Get element being examined by Fast pointer."""
+        return self.arr[self.j]
+    
+    def should_swap(self) -> bool:
+        """
+        Check if current element belongs in the LEFT partition.
+        Gandalf asks: "Is this orc weak enough to pass?"
+        """
+        return self.current_element() < self.pivot
+    
+    def expand_left_partition(self):
+        """
+        Move boundary right and swap current element into LEFT region.
+        Gandalf sweeps the weak orc past his barrier.
+        """
+        self.i += 1
+        self.arr[self.i], self.arr[self.j] = self.arr[self.j], self.arr[self.i]
+        self.swaps += 1
+    
+    def place_pivot(self):
+        """
+        Move pivot to its final sorted position.
+        Gandalf plants his staff at the boundary.
+        """
+        self.arr[self.i + 1], self.arr[self.hi] = self.arr[self.hi], self.arr[self.i + 1]
+        return self.i + 1
+    
+    def partition(self) -> int:
+        """
+        Main algorithm: scan all elements, partition around pivot.
+        Returns: final index of pivot (its sorted position)
+        """
+        while self.j < self.hi:
+            if self.should_swap():
+                self.expand_left_partition()
+            self.j += 1
+        
+        return self.place_pivot()
+
+# Usage:
+# partitioner = LomutoPartition([3, 7, 2, 9, 1, 5, 4], 0, 6)
+# pivot_index = partitioner.partition()
+# Array is now partitioned: [smaller...] pivot [larger...]`,
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.i = -1;  // Slow pointer (boundary)
+                    state.j = 0;   // Fast pointer (scanner)
+                    state.pivot = state.arr[state.arr.length - 1];
+                    state.pivotIdx = state.arr.length - 1;
+                    state.swaps = 0;
+                    state.done = false;
+                    state.phase = 'scan'; // 'scan' or 'place'
+                    state.codeLine = 0;
+                },
+                step: function (state) {
+                    if (state.done) return { msg: 'Done!', success: true };
+
+                    if (state.phase === 'scan') {
+                        if (state.j >= state.pivotIdx) {
+                            // Place pivot
+                            state.phase = 'place';
+                            state.i++;
+                            [state.arr[state.i], state.arr[state.pivotIdx]] =
+                                [state.arr[state.pivotIdx], state.arr[state.i]];
+                            state.done = true;
+                            state.codeLine = 10;
+                            return { msg: `✓ Pivot placed at index ${state.i}. Partition complete!`, success: true };
+                        }
+
+                        const current = state.arr[state.j];
+                        if (current < state.pivot) {
+                            state.i++;
+                            [state.arr[state.i], state.arr[state.j]] = [state.arr[state.j], state.arr[state.i]];
+                            state.swaps++;
+                            state.codeLine = 7;
+                            const msg = `${current} < ${state.pivot} → Swap to position ${state.i}`;
+                            state.j++;
+                            return { msg };
+                        } else {
+                            state.codeLine = 5;
+                            const msg = `${current} >= ${state.pivot} → Skip, j++`;
+                            state.j++;
+                            return { msg };
+                        }
+                    }
+                    return { msg: 'Done!', success: true };
+                }
+            },
+
+            hoare: {
+                name: 'Hoare Partition',
+                arr: [8, 3, 7, 1, 9, 2, 6, 5, 4],
+                labels: ['Left (i)', 'Right (j)', 'Pivot', 'Swaps'],
+                mnemonic: {
+                    emoji: '🕴️',
+                    person: 'Neo & Agent Smith (Matrix)',
+                    object: 'A Hallway of Agents',
+                    action: 'Pushing toward each other from opposite ends',
+                    story: '"Neo starts at the left end of a hallway full of agents. Agent Smith starts at the right. Neo walks right, looking for an agent that should be on Smith\'s side (>= pivot). Smith walks left, looking for one that should be on Neo\'s side (< pivot). When both stop, they swap agents. They continue until they meet in the middle — the partition point."'
+                },
+                realWorld: {
+                    essence: 'Partition with minimal swaps by converging from both ends.',
+                    synthesis: {
+                        category: 'Efficient Bidirectional Classification',
+                        insight: 'Hoare excels when swap cost is high (large objects, disk I/O). By approaching from both ends, each swap moves TWO elements to their correct sides simultaneously. The trade-off is complexity: the pivot doesn\'t end up at a predictable position, and off-by-one errors are common. But the 3x reduction in swaps makes it the choice for production systems where cache misses dominate runtime.'
+                    },
+                    cases: [
+                        { icon: '💾', title: 'External Disk Sorting', desc: 'When sorting data larger than RAM, each swap requires disk I/O (milliseconds, not nanoseconds). Hoare\'s 3x fewer swaps translates directly to 3x faster sorting. The Linux <code>sort</code> command uses Hoare-style partitioning for external merge sort. Sorting a 100GB log file: Lomuto might take 6 hours, Hoare takes 2 hours — same O(n log n), but constant factor matters.' },
+                        { icon: '🗃️', title: 'B-Tree Page Splits', desc: 'Database B-trees split pages when they overflow. During splits, keys partition around a median. Each key move is expensive (page write + WAL). PostgreSQL and MySQL use Hoare-style splits because writing 1000 keys takes the same time as 333 — the disk latency dominates, so fewer operations = faster commits.' },
+                        { icon: '📦', title: 'Network Packet Routing', desc: 'High-speed routers classify packets by priority for QoS (Quality of Service). Packets above priority threshold route to fast lane, below to slow lane. Router hardware does this in-place on packet queues. Hoare minimizes memory writes — each write is precious when processing 100Gbps of traffic.' },
+                        { icon: '🧬', title: 'Genome Sequence Alignment', desc: 'Bioinformatics tools partition DNA reads by mapping quality score. High-quality reads go to precise alignment, low-quality to probabilistic matching. With 3 billion base pairs, Hoare\'s fewer swaps save hours. GATK and BWA use Hoare-style partitioning internally for read classification.' },
+                        { icon: '📊', title: 'Quickselect for Median Finding', desc: 'Finding the median requires partitioning until pivot lands at middle index. Hoare\'s efficiency matters because you may partition the same array multiple times (narrowing down to median). NumPy\'s <code>np.median()</code> uses Hoare partition — finding median of 1M elements in 10ms instead of 30ms.' }
+                    ]
+                },
+                invariant: `During partitioning:
+┌─────────────────────────────────────────────────────────────┐
+│  arr[lo..i-1]   │  unprocessed   │  arr[j+1..hi]           │
+│  <= pivot       │                │  >= pivot               │
+└─────────────────────────────────────────────────────────────┘
+       ↑               ↑    ↑               ↑
+      lo              i      j             hi
+                    (scanning right) (scanning left)`,
+                code: [
+                    { text: 'def hoare_partition(arr, lo, hi):' },
+                    { text: '    pivot = arr[lo]        # First element' },
+                    { text: '    i, j = lo - 1, hi + 1' },
+                    { text: '' },
+                    { text: '    while True:' },
+                    { text: '        i += 1' },
+                    { text: '        while arr[i] < pivot: i += 1' },
+                    { text: '' },
+                    { text: '        j -= 1' },
+                    { text: '        while arr[j] > pivot: j -= 1' },
+                    { text: '' },
+                    { text: '        if i >= j: return j' },
+                    { text: '' },
+                    { text: '        arr[i], arr[j] = arr[j], arr[i]' },
+                ],
+                verboseCode: `class HoarePartition:
+    """
+    Partitions array using opposite-direction pointers.
+    More efficient than Lomuto — ~3x fewer swaps on average.
+    
+    Mental Model: Neo vs Agent Smith in a hallway
+    - Neo (i) walks RIGHT looking for agents >= pivot
+    - Smith (j) walks LEFT looking for agents < pivot
+    - When both stop, they swap agents
+    - They continue until they cross paths
+    
+    Key Differences from Lomuto:
+    1. Pivot is FIRST element (not last)
+    2. Both pointers move, not just one
+    3. Pivot does NOT end up at boundary!
+    4. Returns partition POINT, not pivot position
+    
+    Invariant: arr[lo..i-1] <= pivot <= arr[j+1..hi]
+    """
+    
+    def __init__(self, arr: list, lo: int, hi: int):
+        self.arr = arr
+        self.lo = lo
+        self.hi = hi
+        self.pivot = arr[lo]  # Pivot is FIRST element
+        self.i = lo - 1       # Left pointer (starts before array)
+        self.j = hi + 1       # Right pointer (starts after array)
+        self.swaps = 0
+    
+    def scan_right(self):
+        """
+        Neo walks right looking for someone who should be on Smith's side.
+        Stops when arr[i] >= pivot.
+        """
+        self.i += 1
+        while self.arr[self.i] < self.pivot:
+            self.i += 1
+    
+    def scan_left(self):
+        """
+        Smith walks left looking for someone who should be on Neo's side.
+        Stops when arr[j] <= pivot.
+        """
+        self.j -= 1
+        while self.arr[self.j] > self.pivot:
+            self.j -= 1
+    
+    def pointers_crossed(self) -> bool:
+        """Check if Neo and Smith have met or crossed."""
+        return self.i >= self.j
+    
+    def swap_elements(self):
+        """Neo and Smith exchange the misplaced agents."""
+        self.arr[self.i], self.arr[self.j] = self.arr[self.j], self.arr[self.i]
+        self.swaps += 1
+    
+    def partition(self) -> int:
+        """
+        Main algorithm: scan from both ends, swap when both stop.
+        Returns: partition point (NOT pivot's final position!)
+        
+        WARNING: Unlike Lomuto, pivot is NOT at returned index!
+        Use returned value as: quicksort(lo, partition_point),
+                               quicksort(partition_point + 1, hi)
+        """
+        while True:
+            self.scan_right()
+            self.scan_left()
+            
+            if self.pointers_crossed():
+                return self.j  # Partition point
+            
+            self.swap_elements()
+
+# Usage:
+# partitioner = HoarePartition([8, 3, 7, 1, 9, 2, 6, 5, 4], 0, 8)
+# partition_point = partitioner.partition()
+# IMPORTANT: pivot may NOT be at partition_point!`,
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.i = -1;
+                    state.j = state.arr.length;
+                    state.pivot = state.arr[0];
+                    state.swaps = 0;
+                    state.done = false;
+                    state.phase = 'scanRight';
+                    state.codeLine = 0;
+                },
+                step: function (state) {
+                    if (state.done) return { msg: 'Done!', success: true };
+
+                    if (state.phase === 'scanRight') {
+                        state.i++;
+                        state.codeLine = 5;
+                        while (state.i < state.arr.length && state.arr[state.i] < state.pivot) {
+                            state.i++;
+                        }
+                        state.phase = 'scanLeft';
+                        return { msg: `i scans right, stops at ${state.arr[state.i]} (>= ${state.pivot})` };
+                    }
+
+                    if (state.phase === 'scanLeft') {
+                        state.j--;
+                        state.codeLine = 8;
+                        while (state.j >= 0 && state.arr[state.j] > state.pivot) {
+                            state.j--;
+                        }
+
+                        if (state.i >= state.j) {
+                            state.done = true;
+                            state.codeLine = 11;
+                            return { msg: `✓ Pointers crossed at j=${state.j}. Partition complete!`, success: true };
+                        }
+
+                        state.phase = 'swap';
+                        return { msg: `j scans left, stops at ${state.arr[state.j]} (<= ${state.pivot})` };
+                    }
+
+                    if (state.phase === 'swap') {
+                        [state.arr[state.i], state.arr[state.j]] = [state.arr[state.j], state.arr[state.i]];
+                        state.swaps++;
+                        state.codeLine = 13;
+                        state.phase = 'scanRight';
+                        return { msg: `Swap arr[${state.i}] ↔ arr[${state.j}]` };
+                    }
+
+                    return { msg: 'Done!', success: true };
+                }
+            },
+
+            dnf: {
+                name: 'Dutch National Flag (3-Way)',
+                arr: [2, 0, 2, 1, 1, 0, 2, 1, 0],
+                labels: ['Low', 'Mid', 'High', 'Pivot'],
+                mnemonic: {
+                    emoji: '🎩',
+                    person: 'Sorting Hat (Harry Potter)',
+                    object: 'Three House Flags',
+                    action: 'Sorting students into Gryffindor/Hufflepuff/Ravenclaw',
+                    story: '"The Sorting Hat examines each student (Mid pointer). Brave ones (0) swap left to Gryffindor, advance both Low and Mid. Clever ones (2) swap right to Ravenclaw — but WAIT, the new student needs checking, so don\'t advance Mid! Loyal ones (1) stay in Hufflepuff, just advance Mid. The three houses form naturally."'
+                },
+                realWorld: {
+                    essence: 'Partition into THREE regions in a single pass — essential for handling duplicates.',
+                    synthesis: {
+                        category: 'Multi-Category Triage & Duplicate Handling',
+                        insight: 'Standard 2-way partitioning degrades to O(n²) when all elements are equal (each partition is size n-1). Three-way fixes this by grouping equals together — they never need further sorting. Beyond duplicates, any time you have exactly 3 categories (pass/fail/review, low/medium/high), this pattern gives you single-pass classification with perfect load balancing.'
+                    },
+                    cases: [
+                        { icon: '⚙️', title: 'Quicksort Duplicate Optimization', desc: 'Real-world data often has duplicates (timestamps, prices, ratings). Java\'s <code>Arrays.sort()</code> and Python\'s Timsort use 3-way partitioning when duplicates detected. Sorting [1,1,1,2,2,2,3,3,3] with 2-way: O(n²). With 3-way: O(n). The equal elements group together and never recurse.' },
+                        { icon: '🏥', title: 'Emergency Room Triage (ESI)', desc: 'ER patients are classified: Immediate (level 1-2), Delayed (level 3), Minor (level 4-5). As patients arrive, partition the queue in one pass. Immediate cases swap left for fast treatment, Minor swap right for waiting room, Delayed stay in observation. This is life-or-death — O(n) triage means faster care for critical patients.' },
+                        { icon: '📦', title: 'Package Hub Sorting', desc: 'FedEx hubs sort packages: Local (same-city), Regional (same-state), National (cross-country). Single conveyor pass with 3 output chutes. Local diverts left, National diverts right, Regional continues. At 100,000 packages/hour, two-pass sorting would halve throughput. Dutch Flag gives single-pass guarantee.' },
+                        { icon: '🎨', title: 'Image Segmentation Regions', desc: 'Computer vision classifies pixels as Background (0), Edge (1), Foreground (2). Before object detection, partition pixels into 3 arrays for specialized processing. Tesla Autopilot processes 36 camera frames/second — multi-pass segmentation would miss latency budgets. Single-pass is mandatory.' },
+                        { icon: '💳', title: 'Transaction Risk Scoring', desc: 'Payment processors classify transactions: Approve (low risk), Review (medium), Decline (high). Machine learning outputs risk scores, then 3-way partition routes transactions. Stripe processes 1000+ transactions/second — partitioning latency directly affects customer checkout experience.' }
+                    ]
+                },
+                invariant: `During partitioning:
+┌─────────────────────────────────────────────────────────────┐
+│  arr[lo..lt-1]  │  arr[lt..mid-1] │  arr[mid..gt]  │ arr[gt+1..hi] │
+│  < pivot (0s)   │  = pivot (1s)   │  UNKNOWN       │ > pivot (2s)  │
+└─────────────────────────────────────────────────────────────┘
+        ↑                 ↑              ↑               ↑
+       lo                lt             mid              gt`,
+                code: [
+                    { text: 'def three_way_partition(arr, lo, hi):' },
+                    { text: '    pivot = arr[lo]' },
+                    { text: '    lt, mid, gt = lo, lo, hi' },
+                    { text: '' },
+                    { text: '    while mid <= gt:' },
+                    { text: '        if arr[mid] < pivot:      # 0' },
+                    { text: '            swap(arr, lt, mid)' },
+                    { text: '            lt += 1; mid += 1' },
+                    { text: '        elif arr[mid] > pivot:    # 2' },
+                    { text: '            swap(arr, mid, gt)' },
+                    { text: '            gt -= 1    # DON\'T inc mid!' },
+                    { text: '        else:                     # 1' },
+                    { text: '            mid += 1' },
+                    { text: '    return lt, gt' },
+                ],
+                verboseCode: `class DutchNationalFlag:
+    """
+    Partitions array into THREE regions: < pivot, = pivot, > pivot.
+    Essential when array has many duplicates (2-way degrades to O(n²)).
+    
+    Mental Model: The Sorting Hat
+    - Examines each student (Mid pointer)
+    - Brave (0) → Gryffindor (swap left, advance both lt and mid)
+    - Clever (2) → Ravenclaw (swap right, ONLY decrement gt!)
+    - Loyal (1) → Hufflepuff (stay, advance mid only)
+    
+    CRITICAL RULE: After swapping with gt (right), DON'T advance mid!
+    The element you received from the right is UNKNOWN — must check it.
+    
+    Invariant:
+    - arr[lo..lt-1] contains all elements < pivot
+    - arr[lt..mid-1] contains all elements = pivot
+    - arr[mid..gt] is UNKNOWN (being processed)
+    - arr[gt+1..hi] contains all elements > pivot
+    """
+    
+    def __init__(self, arr: list, lo: int = 0, hi: int = None):
+        self.arr = arr
+        self.lo = lo
+        self.hi = hi if hi is not None else len(arr) - 1
+        self.pivot = 1  # Middle value for 0/1/2 sorting
+        
+        self.lt = lo    # Less-than boundary
+        self.mid = lo   # Current element being examined
+        self.gt = self.hi  # Greater-than boundary
+    
+    def current_value(self):
+        return self.arr[self.mid]
+    
+    def is_less(self) -> bool:
+        """Should this element go to the LEFT region?"""
+        return self.current_value() < self.pivot
+    
+    def is_greater(self) -> bool:
+        """Should this element go to the RIGHT region?"""
+        return self.current_value() > self.pivot
+    
+    def swap_with_left(self):
+        """
+        Move current element to less-than region.
+        SAFE to advance mid because element from lt was already processed.
+        """
+        self.arr[self.lt], self.arr[self.mid] = self.arr[self.mid], self.arr[self.lt]
+        self.lt += 1
+        self.mid += 1
+    
+    def swap_with_right(self):
+        """
+        Move current element to greater-than region.
+        DO NOT advance mid! Element from gt is UNKNOWN.
+        """
+        self.arr[self.mid], self.arr[self.gt] = self.arr[self.gt], self.arr[self.mid]
+        self.gt -= 1
+        # mid stays the same — must check the new element!
+    
+    def stay_in_middle(self):
+        """Element equals pivot — already in correct region."""
+        self.mid += 1
+    
+    def partition(self) -> tuple:
+        """
+        Main algorithm: process until mid crosses gt.
+        Returns (lt, gt) — the boundaries of the equal region.
+        
+        After partition:
+        - arr[lo..lt-1] < pivot
+        - arr[lt..gt] = pivot (all duplicates grouped!)
+        - arr[gt+1..hi] > pivot
+        """
+        while self.mid <= self.gt:
+            if self.is_less():
+                self.swap_with_left()
+            elif self.is_greater():
+                self.swap_with_right()
+            else:
+                self.stay_in_middle()
+        
+        return (self.lt, self.gt)
+
+# Usage:
+# dnf = DutchNationalFlag([2, 0, 2, 1, 1, 0, 2, 1, 0])
+# lt, gt = dnf.partition()
+# Array is now [0,0,0, 1,1,1, 2,2,2]
+#                    ↑     ↑
+#                   lt    gt`,
+                init: function (state) {
+                    state.arr = [...this.arr];
+                    state.lt = 0;
+                    state.mid = 0;
+                    state.gt = state.arr.length - 1;
+                    state.pivot = 1;
+                    state.swaps = 0;
+                    state.done = false;
+                    state.codeLine = 0;
+                },
+                step: function (state) {
+                    if (state.done || state.mid > state.gt) {
+                        state.done = true;
+                        return { msg: `✓ Done! [${state.arr}]`, success: true };
+                    }
+
+                    const val = state.arr[state.mid];
+
+                    if (val < state.pivot) {
+                        [state.arr[state.lt], state.arr[state.mid]] = [state.arr[state.mid], state.arr[state.lt]];
+                        state.codeLine = 6;
+                        const msg = `${val} < pivot → Swap to lt, lt++, mid++`;
+                        state.lt++;
+                        state.mid++;
+                        state.swaps++;
+                        return { msg };
+                    } else if (val > state.pivot) {
+                        [state.arr[state.mid], state.arr[state.gt]] = [state.arr[state.gt], state.arr[state.mid]];
+                        state.codeLine = 9;
+                        const msg = `${val} > pivot → Swap to gt, gt-- (DON'T inc mid!)`;
+                        state.gt--;
+                        state.swaps++;
+                        return { msg };
+                    } else {
+                        state.codeLine = 12;
+                        const msg = `${val} = pivot → Stay, mid++`;
+                        state.mid++;
+                        return { msg };
+                    }
+                }
+            },
+
+            merge: {
+                name: 'Merge Sort',
+                arr: [38, 27, 43, 3, 9, 82, 10],
+                labels: ['Left idx', 'Right idx', 'Output idx', 'Comparisons'],
+                mnemonic: {
+                    emoji: '⚔️',
+                    person: "Dumbledore's Army (Harry Potter)",
+                    object: "The Marauder's Map",
+                    action: 'Split into pairs for training, merge back in formation',
+                    story: '"Dumbledore\'s Army splits recursively — first into two groups, then each group into pairs. Each pair practices (sorts themselves). Then pairs merge back: compare the front person from each pair, the better duelist steps into formation first. Keep comparing fronts until everyone is in order. The final army is sorted by skill."'
+                },
+                realWorld: {
+                    essence: 'Divide, sort recursively, merge sorted halves — guaranteed O(n log n), stable.',
+                    synthesis: {
+                        category: 'Stable Sorting & External Data Processing',
+                        insight: 'Merge Sort shines where Quicksort fails: stability (equal elements keep original order), guaranteed worst-case, and external sorting (data too large for memory). The merge step is the key insight — combining two sorted lists is O(n) by always taking the smaller front element. This makes it perfect for streaming data, linked lists, and parallel processing where random access is expensive.'
+                    },
+                    cases: [
+                        { icon: '💾', title: 'External Sorting (Disk-Based)', desc: 'Sorting 1TB of log files when you have 16GB RAM. Split into 64 chunks that fit in memory, sort each chunk in-memory (quicksort), write to disk. Then merge sorted chunks: read first block from each, output smallest, read next block from that file. Linux <code>sort</code> command uses this. The only algorithm that can sort data larger than memory.' },
+                        { icon: '🔀', title: 'Git Merge Operations', desc: 'When merging branches, Git compares sorted commit histories. Each branch is a sorted list (by timestamp). Merge combines them: compare front commits, take earlier one, advance that pointer. Three-way merge (base + 2 branches) extends this. Every <code>git merge</code> you run uses this algorithm — billions of merges per day globally.' },
+                        { icon: '🗄️', title: 'Database Sort-Merge Join', desc: 'Joining two tables on a key: sort both tables by join key, then merge. When sorted, matching rows are adjacent — scan both lists simultaneously, output matches. PostgreSQL uses this for large joins when hash tables don\'t fit in memory. Joining million-row tables: O(n log n) sort + O(n) merge beats O(n²) nested loops.' },
+                        { icon: '🔢', title: 'Counting Inversions', desc: 'Measure how "unsorted" an array is by counting pairs (i,j) where i < j but arr[i] > arr[j]. Modified merge sort counts inversions during merge: when taking from right array, count remaining left elements as inversions. Used in recommendation systems (compare user preferences) and plagiarism detection (document similarity).' },
+                        { icon: '🌐', title: 'MapReduce Distributed Sorting', desc: 'Hadoop and Spark sort petabytes by: Map phase splits data across nodes, each node sorts locally (merge sort). Shuffle phase redistributes by key ranges. Reduce phase merges sorted streams from all nodes. This is how Google sorted 100TB in 2008 (and much more since). Merge sort\'s parallelizability is key — divide step is embarrassingly parallel.' }
+                    ]
+                },
+                invariant: `During merge of left[0..n] and right[0..m]:
+┌─────────────────────────────────────────────────────────────┐
+│  left[0..i-1]   │  left[i..n]    ║  right[0..j-1]  │ right[j..m] │
+│  (merged)       │  (remaining)   ║  (merged)       │ (remaining) │
+└─────────────────────────────────────────────────────────────┘
+        ↑                          ║         ↑
+    already in output              ║    already in output
+
+Output[0..k-1] = sorted merge of processed elements`,
+                code: [
+                    { text: 'def merge_sort(arr):' },
+                    { text: '    if len(arr) <= 1: return arr' },
+                    { text: '' },
+                    { text: '    mid = len(arr) // 2' },
+                    { text: '    left = merge_sort(arr[:mid])' },
+                    { text: '    right = merge_sort(arr[mid:])' },
+                    { text: '' },
+                    { text: '    return merge(left, right)' },
+                    { text: '' },
+                    { text: 'def merge(left, right):' },
+                    { text: '    result = []' },
+                    { text: '    i = j = 0' },
+                    { text: '    while i < len(left) and j < len(right):' },
+                    { text: '        if left[i] <= right[j]:  # <= for stability' },
+                    { text: '            result.append(left[i]); i += 1' },
+                    { text: '        else:' },
+                    { text: '            result.append(right[j]); j += 1' },
+                    { text: '    result.extend(left[i:])' },
+                    { text: '    result.extend(right[j:])' },
+                    { text: '    return result' },
+                ],
+                verboseCode: `class MergeSort:
+    """
+    Divide-and-conquer sorting: split, sort recursively, merge.
+    Guaranteed O(n log n), stable, but requires O(n) extra space.
+    
+    Mental Model: Dumbledore's Army
+    - Split the army recursively until pairs
+    - Each pair sorts themselves (base case)
+    - Merge pairs back: compare front duelists, better one steps forward
+    - Keep merging until full army is in formation
+    
+    Key Properties:
+    - STABLE: Equal elements maintain original order (use <=, not <)
+    - GUARANTEED: No O(n²) worst case like quicksort
+    - EXTERNAL: Only option for data larger than memory
+    - PARALLEL: Divide step is embarrassingly parallel
+    
+    Trade-off: Requires O(n) extra space (not in-place)
+    """
+    
+    def __init__(self, arr: list):
+        self.arr = arr
+        self.comparisons = 0
+    
+    def sort(self) -> list:
+        """
+        Main entry point: recursively divide and merge.
+        """
+        return self._merge_sort(self.arr)
+    
+    def _merge_sort(self, arr: list) -> list:
+        """
+        Recursive divide-and-conquer.
+        Base case: single element is already sorted.
+        """
+        if len(arr) <= 1:
+            return arr
+        
+        # DIVIDE: Split at midpoint (NOT by value like partitioning!)
+        mid = len(arr) // 2
+        left_half = arr[:mid]
+        right_half = arr[mid:]
+        
+        # CONQUER: Recursively sort each half
+        sorted_left = self._merge_sort(left_half)
+        sorted_right = self._merge_sort(right_half)
+        
+        # COMBINE: Merge the sorted halves
+        return self._merge(sorted_left, sorted_right)
+    
+    def _merge(self, left: list, right: list) -> list:
+        """
+        Merge two SORTED arrays into one sorted array.
+        
+        The magic: we only ever compare the FRONT elements.
+        Since both arrays are sorted, the smaller front is the
+        global minimum of remaining elements.
+        
+        Why <= instead of <? STABILITY.
+        If left[i] == right[j], take from left first.
+        This preserves original order of equal elements.
+        """
+        result = []
+        i = j = 0
+        
+        while i < len(left) and j < len(right):
+            self.comparisons += 1
+            
+            if left[i] <= right[j]:  # <= for stability!
+                result.append(left[i])
+                i += 1
+            else:
+                result.append(right[j])
+                j += 1
+        
+        # One array is exhausted — append remaining from the other
+        # (already sorted, so just extend)
+        result.extend(left[i:])
+        result.extend(right[j:])
+        
+        return result
+
+# Usage:
+# sorter = MergeSort([38, 27, 43, 3, 9, 82, 10])
+# sorted_arr = sorter.sort()  # [3, 9, 10, 27, 38, 43, 82]`,
+                init: function (state) {
+                    // For merge visualization, we'll show the merge step
+                    state.left = [3, 27, 38, 43];
+                    state.right = [9, 10, 82];
+                    state.arr = [];
+                    state.i = 0;
+                    state.j = 0;
+                    state.comparisons = 0;
+                    state.done = false;
+                    state.codeLine = 0;
+                },
+                step: function (state) {
+                    if (state.done) return { msg: 'Done!', success: true };
+
+                    if (state.i >= state.left.length && state.j >= state.right.length) {
+                        state.done = true;
+                        return { msg: `✓ Merge complete! [${state.arr}]`, success: true };
+                    }
+
+                    if (state.i >= state.left.length) {
+                        state.arr.push(state.right[state.j]);
+                        state.codeLine = 16;
+                        const msg = `Left exhausted → take ${state.right[state.j]} from right`;
+                        state.j++;
+                        return { msg };
+                    }
+
+                    if (state.j >= state.right.length) {
+                        state.arr.push(state.left[state.i]);
+                        state.codeLine = 14;
+                        const msg = `Right exhausted → take ${state.left[state.i]} from left`;
+                        state.i++;
+                        return { msg };
+                    }
+
+                    state.comparisons++;
+                    const l = state.left[state.i];
+                    const r = state.right[state.j];
+
+                    if (l <= r) {
+                        state.arr.push(l);
+                        state.codeLine = 13;
+                        const msg = `${l} <= ${r} → take ${l} from left`;
+                        state.i++;
+                        return { msg };
+                    } else {
+                        state.arr.push(r);
+                        state.codeLine = 16;
+                        const msg = `${l} > ${r} → take ${r} from right`;
+                        state.j++;
+                        return { msg };
+                    }
+                }
+            }
+        };
+
+        // ═══════════════════════════════════════════════════════════════
+        // STATE
+        // ═══════════════════════════════════════════════════════════════
+
+        let currentAlgo = 'lomuto';
+        let animState = {};
+        let isPlaying = false;
+        let playInterval = null;
+
+        const canvas = document.getElementById('animCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ═══════════════════════════════════════════════════════════════
+        // RENDERING
+        // ═══════════════════════════════════════════════════════════════
+
+        function updateUI(config) {
+            // Mnemonic
+            document.getElementById('mnemonic-emoji').textContent = config.mnemonic.emoji;
+            document.getElementById('mnemonic-person').textContent = config.mnemonic.person;
+            document.getElementById('mnemonic-object').textContent = config.mnemonic.object;
+            document.getElementById('mnemonic-action').textContent = config.mnemonic.action;
+            document.getElementById('mnemonic-story').textContent = config.mnemonic.story;
+
+            // Real world
+            const grid = document.getElementById('realworldGrid');
+            grid.innerHTML = config.realWorld.cases.map(c => `
+                <div class="scenario-box">
+                    <div class="scenario-icon">${c.icon}</div>
+                    <div class="scenario-title">${c.title}</div>
+                    <div class="scenario-desc">${c.desc}</div>
+                </div>
+            `).join('');
+            document.getElementById('patternEssence').innerHTML = config.realWorld.essence;
+            document.getElementById('synthesisCategory').textContent = config.realWorld.synthesis.category;
+            document.getElementById('synthesisInsight').textContent = config.realWorld.synthesis.insight;
+
+            // Invariant
+            document.getElementById('invariantText').textContent = config.invariant;
+
+            // Labels
+            const labels = config.labels;
+            document.getElementById('label1').textContent = labels[0];
+            document.getElementById('label2').textContent = labels[1];
+            document.getElementById('label3').textContent = labels[2];
+            document.getElementById('label4').textContent = labels[3];
+
+            // Code
+            document.getElementById('codeTitle').textContent = config.name;
+            const codeBody = document.getElementById('codeBody');
+            codeBody.innerHTML = '';
+            config.code.forEach((line, idx) => {
+                const div = document.createElement('div');
+                div.className = 'code-line';
+                div.id = `code-line-${idx}`;
+                div.innerHTML = highlightSyntax(line.text);
+                codeBody.appendChild(div);
+            });
+
+            // Verbose code
+            const verboseBody = document.getElementById('codeBodyVerbose');
+            verboseBody.innerHTML = '<pre style="font-family: Consolas, monospace; font-size: 0.75rem; line-height: 1.5; color: #e0e0e0;">' +
+                highlightSyntax(config.verboseCode) + '</pre>';
+        }
+
+        function highlightSyntax(text) {
+            return text
+                .replace(/(#.*)/g, '<span class="comment">$1</span>')
+                .replace(/"""[\s\S]*?"""/g, match => '<span class="string">' + match + '</span>')
+                .replace(/\b(def|if|elif|else|while|for|in|return|and|or|not|range|len|max|min|True|False|None|continue|break|class|self|yield|from|import)\b/g, '<span class="keyword">$1</span>')
+                .replace(/\b(\d+)\b/g, '<span class="number">$1</span>');
+        }
+
+        function highlightCodeLine(lineNum) {
+            document.querySelectorAll('.code-line').forEach((el, idx) => {
+                el.classList.remove('highlight');
+                if (idx === lineNum) el.classList.add('highlight');
+            });
+        }
+
+        function draw() {
+            const config = algoConfigs[currentAlgo];
+            ctx.fillStyle = '#0d1117';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (currentAlgo === 'merge') {
+                drawMerge();
+            } else {
+                drawPartition();
+            }
+
+            // Update state display
+            if (currentAlgo === 'lomuto') {
+                document.getElementById('val1').textContent = animState.i;
+                document.getElementById('val2').textContent = animState.j;
+                document.getElementById('val3').textContent = animState.pivot;
+                document.getElementById('val4').textContent = animState.swaps;
+            } else if (currentAlgo === 'hoare') {
+                document.getElementById('val1').textContent = animState.i;
+                document.getElementById('val2').textContent = animState.j;
+                document.getElementById('val3').textContent = animState.pivot;
+                document.getElementById('val4').textContent = animState.swaps;
+            } else if (currentAlgo === 'dnf') {
+                document.getElementById('val1').textContent = animState.lt;
+                document.getElementById('val2').textContent = animState.mid;
+                document.getElementById('val3').textContent = animState.gt;
+                document.getElementById('val4').textContent = animState.pivot;
+            } else if (currentAlgo === 'merge') {
+                document.getElementById('val1').textContent = animState.i;
+                document.getElementById('val2').textContent = animState.j;
+                document.getElementById('val3').textContent = animState.arr.length;
+                document.getElementById('val4').textContent = animState.comparisons;
+            }
+        }
+
+        function drawPartition() {
+            const arr = animState.arr;
+            const n = arr.length;
+            const cellW = Math.min(40, (canvas.width - 40) / n - 4);
+            const cellH = 40;
+            const startX = (canvas.width - (cellW + 4) * n) / 2;
+            const startY = 60;
+
+            for (let idx = 0; idx < n; idx++) {
+                const x = startX + idx * (cellW + 4);
+                let color = '#1a2030';
+                let stroke = '#444';
+                let highlight = false;
+
+                if (currentAlgo === 'lomuto') {
+                    if (idx <= animState.i) { color = '#2a1a3a'; stroke = '#a78bfa'; }
+                    if (idx === animState.j) { color = '#1a3a3a'; stroke = '#22d3ee'; highlight = true; }
+                    if (idx === animState.pivotIdx) { color = '#3a3a1a'; stroke = '#fbbf24'; }
+                } else if (currentAlgo === 'hoare') {
+                    if (idx === animState.i) { color = '#3a1a3a'; stroke = '#f472b6'; highlight = true; }
+                    if (idx === animState.j) { color = '#1a3a3a'; stroke = '#22d3ee'; highlight = true; }
+                    if (idx === 0) { color = '#3a3a1a'; stroke = '#fbbf24'; }
+                } else if (currentAlgo === 'dnf') {
+                    if (idx < animState.lt) { color = '#1a3a2a'; stroke = '#4ade80'; }
+                    else if (idx > animState.gt) { color = '#3a1a2a'; stroke = '#ef4444'; }
+                    else if (idx < animState.mid) { color = '#3a3a2a'; stroke = '#888'; }
+                    if (idx === animState.mid && idx <= animState.gt) { color = '#3a3a1a'; stroke = '#fbbf24'; highlight = true; }
+                }
+
+                ctx.fillStyle = color;
+                ctx.strokeStyle = stroke;
+                ctx.lineWidth = highlight ? 2.5 : 1;
+                ctx.beginPath();
+                ctx.roundRect(x, startY, cellW, cellH, 5);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = highlight ? '#fff' : '#aaa';
+                ctx.font = 'bold 14px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(arr[idx], x + cellW / 2, startY + cellH / 2);
+
+                ctx.fillStyle = '#555';
+                ctx.font = '10px sans-serif';
+                ctx.fillText(idx, x + cellW / 2, startY + cellH + 15);
+            }
+
+            // Draw pointers
+            if (currentAlgo === 'lomuto') {
+                if (animState.i >= 0) drawPointer(startX, cellW, animState.i, startY, 'i', '#f472b6');
+                drawPointer(startX, cellW, animState.j, startY, 'j', '#22d3ee');
+            } else if (currentAlgo === 'hoare') {
+                drawPointer(startX, cellW, animState.i, startY, 'i', '#f472b6');
+                drawPointer(startX, cellW, animState.j, startY, 'j', '#22d3ee');
+            } else if (currentAlgo === 'dnf') {
+                drawPointer(startX, cellW, animState.lt, startY, 'lt', '#4ade80');
+                drawPointer(startX, cellW, animState.mid, startY, 'mid', '#fbbf24');
+                drawPointerBottom(startX, cellW, animState.gt, startY + cellH, 'gt', '#ef4444');
+            }
+        }
+
+        function drawMerge() {
+            const leftArr = animState.left;
+            const rightArr = animState.right;
+            const outArr = animState.arr;
+
+            const cellW = 35;
+            const cellH = 35;
+
+            // Draw left array
+            ctx.fillStyle = '#f472b6';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('LEFT (sorted)', 100, 20);
+
+            for (let i = 0; i < leftArr.length; i++) {
+                const x = 30 + i * (cellW + 4);
+                const y = 30;
+                const processed = i < animState.i;
+
+                ctx.fillStyle = processed ? '#1a1a1a' : '#2a1a3a';
+                ctx.strokeStyle = processed ? '#333' : '#f472b6';
+                ctx.lineWidth = i === animState.i ? 2 : 1;
+                ctx.beginPath();
+                ctx.roundRect(x, y, cellW, cellH, 4);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = processed ? '#555' : '#fff';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText(leftArr[i], x + cellW / 2, y + cellH / 2 + 1);
+            }
+
+            // Draw right array
+            ctx.fillStyle = '#22d3ee';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText('RIGHT (sorted)', canvas.width - 100, 20);
+
+            for (let j = 0; j < rightArr.length; j++) {
+                const x = canvas.width - 30 - (rightArr.length - j) * (cellW + 4);
+                const y = 30;
+                const processed = j < animState.j;
+
+                ctx.fillStyle = processed ? '#1a1a1a' : '#1a3a3a';
+                ctx.strokeStyle = processed ? '#333' : '#22d3ee';
+                ctx.lineWidth = j === animState.j ? 2 : 1;
+                ctx.beginPath();
+                ctx.roundRect(x, y, cellW, cellH, 4);
+                ctx.fill();
+                ctx.stroke();
+
+                ctx.fillStyle = processed ? '#555' : '#fff';
+                ctx.font = 'bold 12px sans-serif';
+                ctx.fillText(rightArr[j], x + cellW / 2, y + cellH / 2 + 1);
+            }
+
+            // Draw output array
+            ctx.fillStyle = '#4ade80';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.fillText('OUTPUT (merged)', canvas.width / 2, 90);
+
+            const totalLen = leftArr.length + rightArr.length;
+            const outStartX = (canvas.width - totalLen * (cellW + 4)) / 2;
+
+            for (let k = 0; k < totalLen; k++) {
+                const x = outStartX + k * (cellW + 4);
+                const y = 105;
+                const hasValue = k < outArr.length;
+
+                ctx.fillStyle = hasValue ? '#1a3a2a' : '#1a1a1a';
+                ctx.strokeStyle = hasValue ? '#4ade80' : '#333';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(x, y, cellW, cellH, 4);
+                ctx.fill();
+                ctx.stroke();
+
+                if (hasValue) {
+                    ctx.fillStyle = '#4ade80';
+                    ctx.font = 'bold 12px sans-serif';
+                    ctx.fillText(outArr[k], x + cellW / 2, y + cellH / 2 + 1);
+                }
+            }
+        }
+
+        function drawPointer(startX, cellW, idx, startY, label, color) {
+            if (idx < 0 || idx >= animState.arr.length) return;
+            const x = startX + idx * (cellW + 4) + cellW / 2;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, startY - 18);
+            ctx.beginPath();
+            ctx.moveTo(x, startY - 5);
+            ctx.lineTo(x - 5, startY - 12);
+            ctx.lineTo(x + 5, startY - 12);
+            ctx.fill();
+        }
+
+        function drawPointerBottom(startX, cellW, idx, bottomY, label, color) {
+            if (idx < 0 || idx >= animState.arr.length) return;
+            const x = startX + idx * (cellW + 4) + cellW / 2;
+            ctx.fillStyle = color;
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(label, x, bottomY + 25);
+            ctx.beginPath();
+            ctx.moveTo(x, bottomY + 5);
+            ctx.lineTo(x - 5, bottomY + 12);
+            ctx.lineTo(x + 5, bottomY + 12);
+            ctx.fill();
+        }
+
+        function reset() {
+            stopAnim();
+            const config = algoConfigs[currentAlgo];
+            animState = {};
+            config.init(animState);
+            updateUI(config);
+            document.getElementById('messageBox').textContent = 'Click Step or Play to start!';
+            document.getElementById('messageBox').className = 'message-box';
+            highlightCodeLine(-1);
+            draw();
+        }
+
+        function step() {
+            if (animState.done) { stopAnim(); return; }
+            const config = algoConfigs[currentAlgo];
+            const result = config.step(animState);
+            document.getElementById('messageBox').textContent = result.msg;
+            document.getElementById('messageBox').className = result.success ? 'message-box success' : 'message-box';
+            highlightCodeLine(animState.codeLine);
+            draw();
+            if (animState.done) stopAnim();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopAnim();
+            } else {
+                isPlaying = true;
+                document.getElementById('btnPlay').textContent = '⏸ Pause';
+                document.getElementById('btnPlay').classList.add('playing');
+                const speed = 900 - parseInt(document.getElementById('speedSlider').value);
+                playInterval = setInterval(step, speed);
+            }
+        }
+
+        function stopAnim() {
+            isPlaying = false;
+            document.getElementById('btnPlay').textContent = '▶ Play';
+            document.getElementById('btnPlay').classList.remove('playing');
+            if (playInterval) { clearInterval(playInterval); playInterval = null; }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // EVENT LISTENERS
+        // ═══════════════════════════════════════════════════════════════
+
+        document.getElementById('btnStep').addEventListener('click', step);
+        document.getElementById('btnPlay').addEventListener('click', togglePlay);
+        document.getElementById('btnReset').addEventListener('click', reset);
+        document.getElementById('speedSlider').addEventListener('input', () => {
+            if (isPlaying) { stopAnim(); togglePlay(); }
+        });
+
+        // Algorithm buttons
+        document.querySelectorAll('.algo-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.algo-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentAlgo = btn.dataset.algo;
+                reset();
+            });
+        });
+
+        // Tab buttons
+        document.querySelectorAll('.main-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.main-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(`tab-${tab.dataset.tab}`).classList.add('active');
+            });
+        });
+
+        // Code tabs
+        document.querySelectorAll('.code-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                const terse = document.getElementById('codeBody');
+                const verbose = document.getElementById('codeBodyVerbose');
+                if (tab.dataset.codeTab === 'verbose') {
+                    terse.style.display = 'none';
+                    verbose.style.display = 'block';
+                } else {
+                    terse.style.display = 'block';
+                    verbose.style.display = 'none';
+                }
+            });
+        });
+
+        // Initialize
+        reset();
+    </script>
+</body>
+
+</html>

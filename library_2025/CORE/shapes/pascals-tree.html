@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pascal's Triangle — The Hidden Tree</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a0a12 0%, #12121f 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, #fbbf24, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: linear-gradient(145deg, #1a1f35, #13172a);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+        }
+
+        .panel h2 {
+            font-size: 1rem;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-tree h2 {
+            color: #f472b6;
+        }
+
+        .panel-grid h2 {
+            color: #22d3ee;
+        }
+
+        .canvas-container {
+            background: #0d1117;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: linear-gradient(145deg, #2a2f45, #1a1f35);
+            border: 1px solid #3a3f55;
+            color: #e0e0e0;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: linear-gradient(145deg, #3a3f55, #2a2f45);
+            border-color: #4a4f65;
+        }
+
+        button.active {
+            border-color: #a78bfa;
+            box-shadow: 0 0 10px rgba(167, 139, 250, 0.3);
+        }
+
+        .insight {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 3px solid #fbbf24;
+            padding: 12px 15px;
+            margin-top: 20px;
+            border-radius: 0 8px 8px 0;
+            font-size: 0.85rem;
+            color: #ccc;
+        }
+
+        .insight strong {
+            color: #fbbf24;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 15px;
+            font-size: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .dot-unique {
+            background: #4ade80;
+        }
+
+        .dot-overlap {
+            background: #f472b6;
+        }
+
+        .dot-current {
+            background: #fbbf24;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🌳 Pascal's Triangle — The Hidden Tree</h1>
+    <p class="subtitle">Same computation, two visualizations: Why DP works</p>
+
+    <div class="container">
+        <!-- Tree View -->
+        <div class="panel panel-tree">
+            <h2>🌲 Decision Tree View (Exponential)</h2>
+            <div class="canvas-container">
+                <canvas id="treeCanvas" width="400" height="320"></canvas>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot dot-unique"></div> Unique path
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot dot-overlap"></div> Overlapping!
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot dot-current"></div> Current
+                </div>
+            </div>
+        </div>
+
+        <!-- Grid View -->
+        <div class="panel panel-grid">
+            <h2>📊 Grid View (Polynomial)</h2>
+            <div class="canvas-container">
+                <canvas id="gridCanvas" width="400" height="320"></canvas>
+            </div>
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot dot-unique"></div> Computed once
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot dot-current"></div> Computing now
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button id="btnStep">Step →</button>
+        <button id="btnPlay">▶ Play</button>
+        <button id="btnReset">↺ Reset</button>
+        <button id="btnSpeed">Speed: Normal</button>
+    </div>
+
+    <div class="insight">
+        <strong>The Key Insight:</strong> The tree has 2ⁿ paths (exponential), but only n(n+1)/2 unique nodes
+        (polynomial).
+        When you see the same subproblem twice in the tree, that's your signal to use DP!
+        <br><br>
+        <strong>What to visualize:</strong> For any recursive problem, draw the call tree. If branches reconverge → DP
+        applies.
+    </div>
+
+    <script>
+        const treeCanvas = document.getElementById('treeCanvas');
+        const gridCanvas = document.getElementById('gridCanvas');
+        const treeCtx = treeCanvas.getContext('2d');
+        const gridCtx = gridCanvas.getContext('2d');
+
+        const ROWS = 5;
+        let currentRow = 0;
+        let currentCol = 0;
+        let isPlaying = false;
+        let speed = 500;
+        let playInterval = null;
+
+        // Pascal's triangle values
+        const pascal = [];
+        for (let i = 0; i < ROWS; i++) {
+            pascal[i] = [];
+            for (let j = 0; j <= i; j++) {
+                if (j === 0 || j === i) pascal[i][j] = 1;
+                else pascal[i][j] = pascal[i - 1][j - 1] + pascal[i - 1][j];
+            }
+        }
+
+        // Track visited nodes for animation
+        const visited = new Set();
+        const treeVisited = new Set();
+
+        function drawTree() {
+            treeCtx.fillStyle = '#0d1117';
+            treeCtx.fillRect(0, 0, 400, 320);
+
+            const nodeRadius = 18;
+            const startX = 200;
+            const startY = 35;
+            const levelHeight = 55;
+
+            // Draw edges first
+            treeCtx.strokeStyle = '#333';
+            treeCtx.lineWidth = 1;
+
+            for (let row = 0; row < ROWS - 1; row++) {
+                const y = startY + row * levelHeight;
+                const nextY = startY + (row + 1) * levelHeight;
+                const nodesInRow = Math.pow(2, row);
+                const spacing = 350 / (nodesInRow + 1);
+
+                for (let i = 0; i < nodesInRow; i++) {
+                    const x = 25 + spacing * (i + 1);
+                    const nextSpacing = 350 / (nodesInRow * 2 + 1);
+                    const leftX = 25 + nextSpacing * (i * 2 + 1);
+                    const rightX = 25 + nextSpacing * (i * 2 + 2);
+
+                    treeCtx.beginPath();
+                    treeCtx.moveTo(x, y + nodeRadius);
+                    treeCtx.lineTo(leftX, nextY - nodeRadius);
+                    treeCtx.stroke();
+
+                    treeCtx.beginPath();
+                    treeCtx.moveTo(x, y + nodeRadius);
+                    treeCtx.lineTo(rightX, nextY - nodeRadius);
+                    treeCtx.stroke();
+                }
+            }
+
+            // Draw nodes
+            for (let row = 0; row < ROWS; row++) {
+                const y = startY + row * levelHeight;
+                const nodesInRow = Math.pow(2, row);
+                const spacing = 350 / (nodesInRow + 1);
+
+                for (let i = 0; i < nodesInRow; i++) {
+                    const x = 25 + spacing * (i + 1);
+
+                    // Calculate which Pascal cell this maps to
+                    // This is tricky - we need to track the path
+                    // For simplicity, let's color based on whether the position is "overlap"
+                    const pascalCol = countOnes(i, row); // number of right moves
+                    const nodeKey = `${row}-${pascalCol}`;
+
+                    let fillColor = '#1a2030';
+                    let strokeColor = '#444';
+
+                    // Check if this cell has been visited in grid view
+                    if (visited.has(nodeKey)) {
+                        // Check for overlap (same pascal cell reached multiple ways)
+                        const pathsToCell = binomial(row, pascalCol);
+                        if (pathsToCell > 1 && row <= currentRow) {
+                            fillColor = '#4a1a3a';
+                            strokeColor = '#f472b6';
+                        } else {
+                            fillColor = '#1a3a2a';
+                            strokeColor = '#4ade80';
+                        }
+                    }
+
+                    // Current node
+                    if (row === currentRow && pascalCol === currentCol) {
+                        fillColor = '#3a3a1a';
+                        strokeColor = '#fbbf24';
+                    }
+
+                    treeCtx.beginPath();
+                    treeCtx.arc(x, y, nodeRadius, 0, Math.PI * 2);
+                    treeCtx.fillStyle = fillColor;
+                    treeCtx.fill();
+                    treeCtx.strokeStyle = strokeColor;
+                    treeCtx.lineWidth = 2;
+                    treeCtx.stroke();
+
+                    // Label with Pascal value
+                    if (visited.has(nodeKey) || (row === currentRow && pascalCol === currentCol)) {
+                        treeCtx.fillStyle = '#fff';
+                        treeCtx.font = '11px sans-serif';
+                        treeCtx.textAlign = 'center';
+                        treeCtx.textBaseline = 'middle';
+                        treeCtx.fillText(pascal[row][pascalCol], x, y);
+                    }
+                }
+            }
+
+            // Annotations
+            treeCtx.fillStyle = '#666';
+            treeCtx.font = '10px sans-serif';
+            treeCtx.textAlign = 'left';
+            for (let row = 0; row < ROWS; row++) {
+                const y = startY + row * levelHeight;
+                treeCtx.fillText(`2^${row} = ${Math.pow(2, row)} nodes`, 5, y);
+            }
+        }
+
+        function countOnes(num, bits) {
+            // Count how many 1s in binary representation (right moves in tree)
+            let count = 0;
+            for (let i = 0; i < bits; i++) {
+                if (num & (1 << i)) count++;
+            }
+            return count;
+        }
+
+        function binomial(n, k) {
+            if (k > n) return 0;
+            if (k === 0 || k === n) return 1;
+            return pascal[n][k];
+        }
+
+        function drawGrid() {
+            gridCtx.fillStyle = '#0d1117';
+            gridCtx.fillRect(0, 0, 400, 320);
+
+            const cellSize = 50;
+            const startX = 75;
+            const startY = 25;
+
+            for (let row = 0; row < ROWS; row++) {
+                const offsetX = (ROWS - 1 - row) * cellSize / 2;
+
+                for (let col = 0; col <= row; col++) {
+                    const x = startX + offsetX + col * cellSize;
+                    const y = startY + row * cellSize;
+                    const nodeKey = `${row}-${col}`;
+
+                    let fillColor = '#1a2030';
+                    let strokeColor = '#333';
+
+                    if (visited.has(nodeKey)) {
+                        fillColor = '#1a3a2a';
+                        strokeColor = '#4ade80';
+                    }
+
+                    if (row === currentRow && col === currentCol) {
+                        fillColor = '#3a3a1a';
+                        strokeColor = '#fbbf24';
+                    }
+
+                    // Draw cell
+                    gridCtx.fillStyle = fillColor;
+                    gridCtx.strokeStyle = strokeColor;
+                    gridCtx.lineWidth = 2;
+                    gridCtx.beginPath();
+                    gridCtx.roundRect(x, y, cellSize - 4, cellSize - 4, 6);
+                    gridCtx.fill();
+                    gridCtx.stroke();
+
+                    // Draw value
+                    if (visited.has(nodeKey) || (row === currentRow && col === currentCol)) {
+                        gridCtx.fillStyle = '#fff';
+                        gridCtx.font = 'bold 16px sans-serif';
+                        gridCtx.textAlign = 'center';
+                        gridCtx.textBaseline = 'middle';
+                        gridCtx.fillText(pascal[row][col], x + (cellSize - 4) / 2, y + (cellSize - 4) / 2);
+                    }
+
+                    // Draw arrows from dependencies
+                    if (row === currentRow && col === currentCol && row > 0) {
+                        gridCtx.strokeStyle = '#fbbf24';
+                        gridCtx.lineWidth = 2;
+
+                        const prevOffsetX = (ROWS - row) * cellSize / 2;
+
+                        if (col > 0) {
+                            const prevX = startX + prevOffsetX + (col - 1) * cellSize + (cellSize - 4) / 2;
+                            const prevY = startY + (row - 1) * cellSize + (cellSize - 4);
+                            drawArrow(gridCtx, prevX, prevY, x + (cellSize - 4) / 2, y);
+                        }
+                        if (col < row) {
+                            const prevX = startX + prevOffsetX + col * cellSize + (cellSize - 4) / 2;
+                            const prevY = startY + (row - 1) * cellSize + (cellSize - 4);
+                            drawArrow(gridCtx, prevX, prevY, x + (cellSize - 4) / 2, y);
+                        }
+                    }
+                }
+            }
+
+            // Show node count comparison
+            const totalTreeNodes = Math.pow(2, ROWS) - 1;
+            const totalGridNodes = (ROWS * (ROWS + 1)) / 2;
+
+            gridCtx.fillStyle = '#666';
+            gridCtx.font = '11px sans-serif';
+            gridCtx.textAlign = 'center';
+            gridCtx.fillText(`Grid: ${totalGridNodes} cells (polynomial)`, 200, 295);
+            gridCtx.fillText(`Tree: ${totalTreeNodes} nodes (exponential)`, 200, 310);
+        }
+
+        function drawArrow(ctx, fromX, fromY, toX, toY) {
+            const headLength = 8;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.closePath();
+            ctx.fillStyle = '#fbbf24';
+            ctx.fill();
+        }
+
+        function step() {
+            visited.add(`${currentRow}-${currentCol}`);
+
+            // Move to next cell
+            currentCol++;
+            if (currentCol > currentRow) {
+                currentRow++;
+                currentCol = 0;
+            }
+
+            if (currentRow >= ROWS) {
+                currentRow = ROWS - 1;
+                currentCol = ROWS - 1;
+                stopPlay();
+            }
+
+            draw();
+        }
+
+        function reset() {
+            currentRow = 0;
+            currentCol = 0;
+            visited.clear();
+            stopPlay();
+            draw();
+        }
+
+        function draw() {
+            drawTree();
+            drawGrid();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopPlay();
+            } else {
+                isPlaying = true;
+                document.getElementById('btnPlay').textContent = '⏸ Pause';
+                document.getElementById('btnPlay').classList.add('active');
+                playInterval = setInterval(step, speed);
+            }
+        }
+
+        function stopPlay() {
+            isPlaying = false;
+            document.getElementById('btnPlay').textContent = '▶ Play';
+            document.getElementById('btnPlay').classList.remove('active');
+            if (playInterval) {
+                clearInterval(playInterval);
+                playInterval = null;
+            }
+        }
+
+        function toggleSpeed() {
+            const btn = document.getElementById('btnSpeed');
+            if (speed === 500) {
+                speed = 250;
+                btn.textContent = 'Speed: Fast';
+            } else if (speed === 250) {
+                speed = 1000;
+                btn.textContent = 'Speed: Slow';
+            } else {
+                speed = 500;
+                btn.textContent = 'Speed: Normal';
+            }
+
+            if (isPlaying) {
+                clearInterval(playInterval);
+                playInterval = setInterval(step, speed);
+            }
+        }
+
+        document.getElementById('btnStep').addEventListener('click', step);
+        document.getElementById('btnPlay').addEventListener('click', togglePlay);
+        document.getElementById('btnReset').addEventListener('click', reset);
+        document.getElementById('btnSpeed').addEventListener('click', toggleSpeed);
+
+        // Initial draw
+        draw();
+    </script>
+</body>
+
+</html>

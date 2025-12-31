@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algorithmic Patterns Taxonomy</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            color: #e0e0e0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 8px;
+            font-size: 1.8rem;
+            background: linear-gradient(90deg, #f472b6, #818cf8, #22d3ee);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+        }
+
+        .diagram-container {
+            background: #0d1117;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+            overflow-x: auto;
+            margin-bottom: 20px;
+        }
+
+        .mermaid {
+            display: flex;
+            justify-content: center;
+        }
+
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .pattern-card {
+            background: linear-gradient(145deg, #1a1f35, #151928);
+            border-radius: 10px;
+            padding: 15px;
+            border-left: 4px solid;
+        }
+
+        .pattern-card h3 {
+            font-size: 1rem;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pattern-card ul {
+            font-size: 0.85rem;
+            color: #aaa;
+            padding-left: 20px;
+        }
+
+        .pattern-card li {
+            margin: 4px 0;
+        }
+
+        .trigger {
+            font-size: 0.75rem;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            color: #fbbf24;
+            margin-left: 5px;
+        }
+
+        .linear {
+            border-color: #22d3ee;
+        }
+
+        .linear h3 {
+            color: #22d3ee;
+        }
+
+        .tree-graph {
+            border-color: #a78bfa;
+        }
+
+        .tree-graph h3 {
+            color: #a78bfa;
+        }
+
+        .heap-sort {
+            border-color: #f472b6;
+        }
+
+        .heap-sort h3 {
+            color: #f472b6;
+        }
+
+        .dp {
+            border-color: #fb923c;
+        }
+
+        .dp h3 {
+            color: #fb923c;
+        }
+
+        .technique {
+            border-color: #4ade80;
+        }
+
+        .technique h3 {
+            color: #4ade80;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>🧠 Algorithmic Patterns Taxonomy</h1>
+    <p class="subtitle">The "Gang of Four" for LeetCode — 16 Core Patterns That Cover 90% of Problems</p>
+
+    <div class="diagram-container">
+        <div class="mermaid">
+            flowchart TB
+            subgraph LINEAR["📏 LINEAR STRUCTURES"]
+            direction TB
+            TP["Two Pointers"]
+            SW["Sliding Window"]
+            FS["Fast & Slow"]
+            MI["Merge Intervals"]
+            CS["Cyclic Sort"]
+            MS["Monotonic Stack"]
+            PR["Prefix Sum"]
+            end
+
+            subgraph TREE_GRAPH["🌳 TREES & GRAPHS"]
+            direction TB
+            BFS["BFS Level Order"]
+            DFS["DFS Traversal"]
+            TS["Topological Sort"]
+            UF["Union Find"]
+            TR["Trie"]
+            end
+
+            subgraph SELECTION["🎯 SELECTION & SEARCH"]
+            direction TB
+            BS["Binary Search"]
+            TK["Top K / Heap"]
+            KM["K-way Merge"]
+            end
+
+            subgraph COMBINATORIAL["🔀 COMBINATORIAL"]
+            direction TB
+            BT["Backtracking"]
+            DP["Dynamic Programming"]
+            end
+
+            %% Cross-category relationships
+            TP -.->|"extends to"| SW
+            FS -.->|"cycle detect"| UF
+            DFS -->|"powers"| BT
+            DFS -->|"powers"| DP
+            BFS -->|"shortest path"| TS
+            BS -.->|"search in"| TK
+            MS -.->|"optimizes"| SW
+            PR -.->|"enables O(1)"| SW
+
+            classDef linear fill:#0e4a5c,stroke:#22d3ee,stroke-width:2px,color:white
+            classDef treegraph fill:#3b2d6b,stroke:#a78bfa,stroke-width:2px,color:white
+            classDef selection fill:#5c1a4a,stroke:#f472b6,stroke-width:2px,color:white
+            classDef combinatorial fill:#5c3a1a,stroke:#fb923c,stroke-width:2px,color:white
+
+            class TP,SW,FS,MI,CS,MS,PR linear
+            class BFS,DFS,TS,UF,TR treegraph
+            class BS,TK,KM selection
+            class BT,DP combinatorial
+        </div>
+    </div>
+
+    <div class="pattern-grid">
+        <div class="pattern-card linear">
+            <h3>🔹 Two Pointers</h3>
+            <ul>
+                <li>Sorted array + find pair <span class="trigger">TRIGGER</span></li>
+                <li>In-place array modification</li>
+                <li>Palindrome checking</li>
+            </ul>
+        </div>
+        <div class="pattern-card linear">
+            <h3>🔹 Sliding Window</h3>
+            <ul>
+                <li>"Subarray/substring of size K" <span class="trigger">TRIGGER</span></li>
+                <li>Contiguous sequence optimization</li>
+                <li>Variable-size window problems</li>
+            </ul>
+        </div>
+        <div class="pattern-card linear">
+            <h3>🔹 Fast & Slow Pointers</h3>
+            <ul>
+                <li>Cycle detection <span class="trigger">TRIGGER</span></li>
+                <li>Find middle of linked list</li>
+                <li>Happy number, duplicate finding</li>
+            </ul>
+        </div>
+        <div class="pattern-card linear">
+            <h3>🔹 Monotonic Stack</h3>
+            <ul>
+                <li>"Next greater element" <span class="trigger">TRIGGER</span></li>
+                <li>Histogram problems</li>
+                <li>Temperature/stock span</li>
+            </ul>
+        </div>
+        <div class="pattern-card tree-graph">
+            <h3>🔸 BFS (Level Order)</h3>
+            <ul>
+                <li>Shortest path unweighted <span class="trigger">TRIGGER</span></li>
+                <li>Level-by-level processing</li>
+                <li>Minimum steps/moves</li>
+            </ul>
+        </div>
+        <div class="pattern-card tree-graph">
+            <h3>🔸 DFS (Depth First)</h3>
+            <ul>
+                <li>Path finding, all paths <span class="trigger">TRIGGER</span></li>
+                <li>Tree recursion problems</li>
+                <li>Connected components</li>
+            </ul>
+        </div>
+        <div class="pattern-card tree-graph">
+            <h3>🔸 Topological Sort</h3>
+            <ul>
+                <li>Dependencies/prerequisites <span class="trigger">TRIGGER</span></li>
+                <li>Task scheduling</li>
+                <li>Course ordering</li>
+            </ul>
+        </div>
+        <div class="pattern-card tree-graph">
+            <h3>🔸 Union Find</h3>
+            <ul>
+                <li>"Are X and Y connected?" <span class="trigger">TRIGGER</span></li>
+                <li>Group counting</li>
+                <li>Cycle detection in undirected</li>
+            </ul>
+        </div>
+        <div class="pattern-card selection">
+            <h3>🔻 Binary Search</h3>
+            <ul>
+                <li>Sorted + O(log n) needed <span class="trigger">TRIGGER</span></li>
+                <li>Search space reduction</li>
+                <li>Find boundary/transition</li>
+            </ul>
+        </div>
+        <div class="pattern-card selection">
+            <h3>🔻 Top K / Heap</h3>
+            <ul>
+                <li>"K largest/smallest" <span class="trigger">TRIGGER</span></li>
+                <li>Streaming median</li>
+                <li>Priority scheduling</li>
+            </ul>
+        </div>
+        <div class="pattern-card combinatorial">
+            <h3>🔶 Backtracking</h3>
+            <ul>
+                <li>"All combinations/permutations" <span class="trigger">TRIGGER</span></li>
+                <li>Constraint satisfaction</li>
+                <li>N-Queens, Sudoku</li>
+            </ul>
+        </div>
+        <div class="pattern-card combinatorial">
+            <h3>🔶 Dynamic Programming</h3>
+            <ul>
+                <li>Optimal + overlapping subproblems <span class="trigger">TRIGGER</span></li>
+                <li>"Count ways", "min/max cost"</li>
+                <li>Decision at each step</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'dark',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true,
+                curve: 'basis',
+                nodeSpacing: 40,
+                rankSpacing: 50
+            }
+        });
+    </script>
+</body>
+
+</html>
