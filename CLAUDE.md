@@ -17,44 +17,33 @@ The repo blends multiple learning methodologies across different codebases struc
 
 ### Core Directories
 
-- **`library_2025/CORE/`**: Current, well-organized pattern-based learning system
-  - **`patterns/`**: 29 algorithmic patterns with mental models (01-29)
-    - Mental models and 4-stage thinking pipeline
-    - Mermaid diagrams and decision trees
-    - LeetCode problem tables
-    - Real-world use cases
-  - **`applications/`**: Multi-pattern production implementations
-    - `scheduling/`: Weighted intervals, task dependencies, EDF, interval partitioning
-    - `constraint-satisfaction/`: N-Queens, Sudoku, graph coloring, AC-3
-    - `partitions/`: Subset sum, equal partition, K-partition, balanced partition
-    - `optimization/`: TSP B&B, Knapsack B&B, job scheduling, combinations
+- **`patterns/`**: ✅ **MAIN ENTRY POINT** - 29 algorithmic patterns with mental models
+  - Mental models and 4-stage thinking pipeline
+  - Mermaid diagrams and decision trees
+  - LeetCode problem tables organized by difficulty
+  - Real-world use cases with system diagrams
+  - **Start here**: [patterns/README.md](patterns/README.md)
 
-- **`library_2025/`** (legacy subdirectories - being phased out):
-  - `graph_algos/`: Graph algorithms (DFS, BFS, shortest paths, MST, cycle detection, network flow)
-  - `dp/`: Dynamic programming examples
-  - `backtracking_greedy/`: Backtracking and greedy algorithm patterns
-  - `sorting/`: Sorting implementations
-  - `trees/`: Tree-based algorithms and data structures
+- **`applications/`**: ✅ **PRODUCTION SYSTEMS** - Multi-pattern implementations
+  - `scheduling/`: Weighted intervals, task dependencies, EDF, interval partitioning (5 algorithms)
+  - `constraint-satisfaction/`: N-Queens, Sudoku, graph coloring, AC-3 (5 algorithms)
+  - `partitions/`: Subset sum, equal partition, K-partition, balanced partition (4 algorithms)
+  - `optimization/`: TSP B&B, Knapsack B&B, job scheduling, combinations (4 algorithms)
 
-- **`library_2022/`**: Legacy organized study materials (being deprecated)
-  - `graphs/`: Graph theory concepts and techniques
-  - `arrays/`: Array manipulation problems (sorted arrays, two-pointer patterns, etc.)
-  - `recursion/`: Recursive patterns and backtracking
-  - `trees/`: Tree traversals and problems
-  - `mathematics/`: Number theory and mathematical algorithms
+- **`algorithm-books/`**: Reference materials and textbooks (submodule)
 
-- **`algorist-toolbox/`**: Jupyter notebooks and Python scripts (being deprecated)
-  - Recursion patterns (subsets, combinations, n-queens, backtracking)
-  - Tree problems and traversals
-  - Binary trees and BST implementations
-  - Graph complexity analysis
-  - Interactive learning notebooks
+- **`archive/`**: Legacy content (still accessible if needed)
+  - `library_2022/`: Old organized study materials
+  - `library_2025_legacy/`: Old graph_algos, dp, backtracking_greedy, sorting, trees subdirectories
+  - `algorist-toolbox/`: Jupyter notebooks and Python scripts
+  - `behavior_patterns/`: Old pattern implementations (migrated to applications/)
+  - `scheduler/`, `async/`, `data-structures/`, `mindset/`, `design_patterns/`: Misc archived content
 
-- **`behavior_patterns/optimizations/`**: Complex algorithm implementations (migrated to applications/)
-  - Scheduling algorithms (now in `CORE/applications/scheduling/`)
-  - CSP and graph coloring (now in `CORE/applications/constraint-satisfaction/`)
-  - Partitions (now in `CORE/applications/partitions/`)
-  - Branch & bound (now in `CORE/applications/optimization/`)
+- **`docs/`**: Planning and reorganization documentation
+  - `REORGANIZATION_COMPLETE.md`: Summary of all changes
+  - `PATTERN_TEMPLATE.md`: Template for new patterns
+  - `REORGANIZATION_PLAN.md`: Original 37-page plan
+  - `MERGE_STRATEGY.md`: How patterns + code unified
 
 ## Development Commands
 
@@ -108,7 +97,7 @@ python path/to/file.py
 
 ### Pattern Recognition Framework
 
-**29 Algorithmic Patterns** organized by category in `library_2025/CORE/patterns/`:
+**29 Algorithmic Patterns** organized by category in `patterns/`:
 
 **Linear Structures (01-08)**:
 - **01. Sliding Window**: Contiguous subarray optimization
@@ -177,33 +166,33 @@ python path/to/file.py
 
 | Purpose | Location |
 |---------|----------|
-| **Pattern Library** | `library_2025/CORE/patterns/README.md` |
-| Sliding Window pattern | `library_2025/CORE/patterns/01-sliding-window.md` |
-| Two Pointers pattern | `library_2025/CORE/patterns/02-two-pointers.md` |
-| Merge Intervals pattern | `library_2025/CORE/patterns/04-merge-intervals.md` |
-| Binary Search pattern | `library_2025/CORE/patterns/16-binary-search.md` |
-| Backtracking pattern | `library_2025/CORE/patterns/19-backtracking.md` |
-| Dynamic Programming pattern | `library_2025/CORE/patterns/20-dynamic-programming.md` |
-| Greedy pattern | `library_2025/CORE/patterns/21-greedy.md` |
-| **Applications Library** | `library_2025/CORE/applications/README.md` |
-| Scheduling algorithms | `library_2025/CORE/applications/scheduling/` |
-| Task dependencies (Topological Sort + CPM) | `library_2025/CORE/applications/scheduling/task_dependencies.py` |
-| Weighted intervals (DP + Binary Search) | `library_2025/CORE/applications/scheduling/weighted_intervals.py` |
-| N-Queens, Sudoku (CSP + Backtracking) | `library_2025/CORE/applications/constraint-satisfaction/` |
-| Partition problems (DP + Backtracking) | `library_2025/CORE/applications/partitions/` |
-| TSP, Knapsack (Branch & Bound) | `library_2025/CORE/applications/optimization/` |
-| **Legacy** | |
-| Graph algorithms reference | `library_2025/graph_algos/` |
-| Dijkstra's algorithm | `library_2025/graph_algos/path_finding/dijkstra/dijkstra.py` |
-| Minimum Spanning Tree | `library_2025/graph_algos/min_spanning_tree/min_spanning_tree.py` |
-| Binary tree implementation | `algorist-toolbox/binary_tree.py` |
-| Tree traversals | `algorist-toolbox/ip-TREES_traversals.ipynb` |
+| **Pattern Library (START HERE)** | `patterns/README.md` |
+| Sliding Window pattern | `patterns/01-sliding-window.md` |
+| Two Pointers pattern | `patterns/02-two-pointers.md` |
+| Merge Intervals pattern | `patterns/04-merge-intervals.md` |
+| Binary Search pattern | `patterns/16-binary-search.md` |
+| Backtracking pattern | `patterns/19-backtracking.md` |
+| Dynamic Programming pattern | `patterns/20-dynamic-programming.md` |
+| Greedy pattern | `patterns/21-greedy.md` |
+| **Applications Library** | `applications/README.md` |
+| Scheduling algorithms | `applications/scheduling/` |
+| Task dependencies (Topological Sort + CPM) | `applications/scheduling/task_dependencies.py` |
+| Weighted intervals (DP + Binary Search) | `applications/scheduling/weighted_intervals.py` |
+| N-Queens, Sudoku (CSP + Backtracking) | `applications/constraint-satisfaction/` |
+| Partition problems (DP + Backtracking) | `applications/partitions/` |
+| TSP, Knapsack (Branch & Bound) | `applications/optimization/` |
+| **Legacy (Archived)** | |
+| Graph algorithms reference | `archive/library_2025_legacy/graph_algos/` |
+| Dijkstra's algorithm | `archive/library_2025_legacy/graph_algos/path_finding/dijkstra/dijkstra.py` |
+| Minimum Spanning Tree | `archive/library_2025_legacy/graph_algos/min_spanning_tree/min_spanning_tree.py` |
+| Binary tree implementation | `archive/algorist-toolbox/binary_tree.py` |
+| Tree traversals | `archive/algorist-toolbox/ip-TREES_traversals.ipynb` |
 
 ## Learning Resources
 
 ### Current Learning System (2025)
 
-**Primary Resource**: `library_2025/CORE/` (Patterns + Applications)
+**Primary Resource**: Root-level `patterns/` and `applications/` directories
 
 **Learning Path**:
 1. **Patterns First** (01-29): Study individual algorithmic patterns
@@ -256,14 +245,14 @@ See `library_2025/README.md` for detailed curriculum breakdown with daily sessio
 
 ### Add a New Pattern
 
-1. Create pattern file in `library_2025/CORE/patterns/` using `PATTERN_TEMPLATE.md` as guide
+1. Create pattern file in `patterns/` using `docs/PATTERN_TEMPLATE.md` as guide
 2. Include: mental model, 4-stage pipeline, decision trees, LeetCode problems, real-world uses
 3. Update `patterns/README.md` with pattern entry and cross-references
 4. If complex multi-pattern, consider adding to `applications/` instead
 
 ### Add a New Application
 
-1. Create subdirectory in `library_2025/CORE/applications/`
+1. Create subdirectory in `applications/`
 2. Add production implementations with mental model comments
 3. Create comprehensive README explaining which patterns combine
 4. Include real-world use cases and system diagrams
@@ -271,19 +260,18 @@ See `library_2025/README.md` for detailed curriculum breakdown with daily sessio
 
 ### Study a Specific Topic (Current Approach)
 
-1. **Find the pattern**: Check `library_2025/CORE/patterns/README.md` decision tree
+1. **Find the pattern**: Check `patterns/README.md` decision tree
 2. **Read pattern file**: `patterns/XX-pattern-name.md` for mental model
 3. **Practice problems**: LeetCode table at end of pattern file
 4. **See real-world usage**: Check `applications/` for multi-pattern examples
 5. **Cross-reference**: Pattern files link to relevant applications
 
-### Study a Specific Topic (Legacy Approach)
+### Study a Specific Topic (Legacy Approach - Archived)
 
-1. Check `library_2025/README.md` for curriculum week/day
-2. Find implementation in `library_2025/graph_algos/`, `library_2025/dp/`, etc.
-3. Check `behavior_patterns/optimizations/` for advanced implementations
-4. Review `algorist-toolbox/` for interactive Jupyter exploration (deprecated)
-5. Check `library_2022/` for additional reference implementations (deprecated)
+1. Check `archive/library_2025_legacy/` for old graph_algos, dp, etc.
+2. Check `archive/behavior_patterns/optimizations/` for old implementations
+3. Review `archive/algorist-toolbox/` for Jupyter notebooks
+4. Check `archive/library_2022/` for older reference implementations
 
 ## Code Style & Linting
 

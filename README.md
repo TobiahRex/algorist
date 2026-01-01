@@ -1,12 +1,86 @@
-# Algorist
+# Algorist - Algorithmic Pattern Mastery
 
-> In modern usage, an algorist can also refer to someone who is skilled in designing and working with algorithms, which are step-by-step procedures for solving problems or accomplishing task
+> *Learn to think like a senior engineer: Pattern recognition → Mental models → Production systems*
 
-<img src="https://imgur.com/wJvMvQ9.png" style="width: 700px; margin: auto">
+---
 
-This repo is dedicated to studying the concepts and algorithms that enable powerful expressivity as a Software Engineer. We strive to not focus on DSA as a method by which we get a job, or pass an exam. We instead strive to focus on DSA as a workshop where we explore the art of expressing our ideas across real-world use cases by leveraging the practicing of LeetCode problems. 
+## 🚀 Quick Start
 
+**New here? Start at [patterns/README.md](./patterns/README.md)**
 
-You'll find in this repo a lot of explanations, diagrams, questions and explorations. My overall goal was to personalize the experience with rich visualizations and mapping everything I learn to real-world use cases so that I can more easily pattern-match live on the job. 
+1. **Learn Patterns**: Study [29 algorithmic patterns](./patterns/) with mental models
+2. **Build Systems**: Explore [production applications](./applications/) combining patterns
+3. **Practice**: Solve LeetCode problems organized by pattern
 
-To be honest, I've found great value in this approach. I retain more information for longer. I've actively recalled several situations where I could appply these techniques and patterns to real-world use cases. Overall this journey is about empowering us to believe we can build incredibly awesome products and systems by following the patterns. 
+---
+
+## 📚 Main Resources
+
+### 🎯 [Patterns](./patterns/) - Learn to Think
+
+**29 algorithmic patterns** teaching you to recognize and solve problems:
+
+- 📏 **Linear Structures** (01-08): Sliding Window, Two Pointers, Fast/Slow, Merge Intervals, Cyclic Sort, Monotonic Stack, Prefix Sum, Line Sweep
+- 🌳 **Trees & Graphs** (09-15): Tree Traversals, BFS, DFS, Topological Sort, Union Find, Trie, Shortest Path
+- 🎯 **Search** (16-18): Binary Search, Top K/Heap, K-way Merge
+- 🔀 **Combinatorial** (19-24): Backtracking, DP, Greedy, Branch & Bound, CSP, Partitions
+- 🔧 **Advanced** (25-29): Bit Manipulation, String Matching, Segment Tree, Fenwick Tree, Suffix Array
+
+**Each pattern includes**:
+- ⚡ Self-check questions (can I recognize this?)
+- 🧠 Mental model & 4-stage thinking pipeline
+- 🎯 Decision trees (when to apply)
+- 💭 Internal monologue (how to think through it)
+- 📊 Mermaid diagrams
+- 🏭 Real-world production uses
+- 📝 LeetCode problems by difficulty
+
+**[→ Start Learning Patterns](./patterns/README.md)**
+
+---
+
+### 🏭 [Applications](./applications/) - Learn to Build
+
+**Production implementations** showing how patterns combine:
+
+- 🗓️ **[Scheduling](./applications/scheduling/)**: Weighted intervals, task dependencies, EDF, interval partitioning (Greedy + DP + Graphs)
+- 🧩 **[Constraint Satisfaction](./applications/constraint-satisfaction/)**: N-Queens, Sudoku, graph coloring, AC-3 (Backtracking + CSP)
+- ⚖️ **[Partitions](./applications/partitions/)**: Subset sum, equal partition, K-partition, balanced partition (DP + Backtracking)
+- 🎯 **[Optimization](./applications/optimization/)**: TSP B&B, Knapsack B&B, job scheduling (Branch & Bound + DP)
+
+**[→ Explore Applications](./applications/README.md)**
+
+---
+
+## 🗺️ Repository Structure
+
+```
+algorist/
+├── patterns/              # 29 algorithmic patterns (START HERE!)
+├── applications/          # Multi-pattern production systems
+├── algorithm-books/       # Reference materials (submodule)
+├── archive/               # Legacy content
+└── docs/                  # Documentation
+```
+
+**Only 5 directories at root - clean and obvious!**
+
+---
+
+## 📖 Quick Navigation
+
+**Primary**: [Patterns](./patterns/) · [Applications](./applications/)
+
+**Docs**: [CLAUDE.md](./CLAUDE.md) · [Reorganization](./docs/REORGANIZATION_COMPLETE.md)
+
+**Popular Patterns**:
+[01 Sliding Window](./patterns/01-sliding-window.md) ·
+[02 Two Pointers](./patterns/02-two-pointers.md) ·
+[10 BFS](./patterns/10-bfs.md) ·
+[19 Backtracking](./patterns/19-backtracking.md) ·
+[20 DP](./patterns/20-dynamic-programming.md) ·
+[21 Greedy](./patterns/21-greedy.md)
+
+---
+
+**Ready to start? → [patterns/README.md](./patterns/README.md)** 🚀
