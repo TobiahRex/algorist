@@ -181,9 +181,6 @@ sequenceDiagram
     RateLimiter->>RequestWindow: Check requests in last 60s
     RequestWindow-->>RateLimiter: Count = 101 (limit: 100)
     RateLimiter-->>Client: 429 Too Many Requests ✗
-
-    style RateLimiter fill:#1e3a5f,stroke:#22d3ee,stroke-width:2px
-    style RequestWindow fill:#3d2a5c,stroke:#a78bfa,stroke-width:2px
 ```
 
 **Implementation concept:**
