@@ -17,64 +17,66 @@ Every pattern follows the same cognitive progression:
 
 ## 📚 Pattern Files (29 Total)
 
+**NEW**: Each pattern now includes a **code-to-visual mapping** companion file following the [CODE_MAPPING_GUIDE](../../../world/forge-prep/docs/forge/visual-interpretations/CODE_MAPPING_GUIDE.md) methodology for sticky learning.
+
 ### 📏 LINEAR STRUCTURES (8 patterns)
 
-| # | Pattern | Description | Status |
-|---|---------|-------------|--------|
-| 01 | [Sliding Window](./01-sliding-window.md) | Contiguous subsequence optimization | ✅ COMPLETE |
-| 02 | [Two Pointers](./02-two-pointers.md) | Sorted input, pairs/triplets | ✅ COMPLETE |
-| 03 | [Fast & Slow Pointers](./03-fast-slow-pointers.md) | Cycle detection | ✅ COMPLETE |
-| 04 | [Merge Intervals](./04-merge-intervals.md) | Overlapping ranges | ✅ COMPLETE |
-| 05 | [Cyclic Sort](./05-cyclic-sort.md) | [1..n] in-place sorting | ✅ COMPLETE |
-| 06 | [Monotonic Stack](./06-monotonic-stack.md) | Next greater/smaller | ✅ COMPLETE |
-| 07 | [Prefix Sum](./07-prefix-sum.md) | Static range queries | ✅ COMPLETE |
-| 08 | [Line Sweep](./08-line-sweep.md) | Event-based intervals | ✅ COMPLETE |
+| # | Pattern | Description | Files | Status |
+|---|---------|-------------|-------|--------|
+| 01 | [Sliding Window](./01-sliding-window/) | Contiguous subsequence optimization | [Pattern](./01-sliding-window/01-sliding-window.md) · [Code Map](./01-sliding-window/01-sliding-window-code-map.md) | ✅ COMPLETE |
+| 02 | [Two Pointers](./02-two-pointers/) | Sorted input, pairs/triplets | [Pattern](./02-two-pointers/02-two-pointers.md) · [Code Map](./02-two-pointers/02-two-pointers-code-map.md) | ✅ COMPLETE |
+| 03 | [Fast & Slow Pointers](./03-fast-slow-pointers/) | Cycle detection | [Pattern](./03-fast-slow-pointers/03-fast-slow-pointers.md) · [Code Map](./03-fast-slow-pointers/03-fast-slow-pointers-code-map.md) | ✅ COMPLETE |
+| 04 | [Merge Intervals](./04-merge-intervals/) | Overlapping ranges | [Pattern](./04-merge-intervals/04-merge-intervals.md) · [Code Map](./04-merge-intervals/04-merge-intervals-code-map.md) | ✅ COMPLETE |
+| 05 | [Cyclic Sort](./05-cyclic-sort/) | [1..n] in-place sorting | [Pattern](./05-cyclic-sort/05-cyclic-sort.md) · [Code Map](./05-cyclic-sort/05-cyclic-sort-code-map.md) | ✅ COMPLETE |
+| 06 | [Monotonic Stack](./06-monotonic-stack/) | Next greater/smaller | [Pattern](./06-monotonic-stack/06-monotonic-stack.md) · [Code Map](./06-monotonic-stack/06-monotonic-stack-code-map.md) | ✅ COMPLETE |
+| 07 | [Prefix Sum](./07-prefix-sum/) | Static range queries | [Pattern](./07-prefix-sum/07-prefix-sum.md) · [Code Map](./07-prefix-sum/07-prefix-sum-code-map.md) | ✅ COMPLETE |
+| 08 | [Line Sweep](./08-line-sweep/) | Event-based intervals | [Pattern](./08-line-sweep/08-line-sweep.md) · [Code Map](./08-line-sweep/08-line-sweep-code-map.md) | ✅ COMPLETE |
 
 ### 🌳 TREES & GRAPHS (7 patterns)
 
-| # | Pattern | Description | Status |
-|---|---------|-------------|--------|
-| 09 | [Tree Traversals](./09-tree-traversals.md) | Pre/In/Post-Order DFS | ✅ COMPLETE |
-| 10 | [BFS](./10-bfs.md) | Level-order, shortest path | ✅ COMPLETE |
-| 11 | [DFS](./11-dfs.md) | Exhaustive search | ✅ COMPLETE |
-| 12 | [Topological Sort](./12-topological-sort.md) | DAG ordering | ✅ COMPLETE |
-| 13 | [Union Find](./13-union-find.md) | Connected components | ✅ COMPLETE |
-| 14 | [Trie](./14-trie.md) | Prefix matching | ✅ COMPLETE |
-| 15 | [Shortest Path](./15-shortest-path.md) | Dijkstra, Bellman-Ford | ✅ COMPLETE |
+| # | Pattern | Description | Files | Status |
+|---|---------|-------------|-------|--------|
+| 09 | [Tree Traversals](./09-tree-traversals/) | Pre/In/Post-Order DFS | [Pattern](./09-tree-traversals/09-tree-traversals.md) · [Code Map](./09-tree-traversals/09-tree-traversals-code-map.md) | ✅ COMPLETE |
+| 10 | [BFS](./10-bfs/) | Level-order, shortest path | [Pattern](./10-bfs/10-bfs.md) · [Code Map](./10-bfs/10-bfs-code-map.md) | ✅ COMPLETE |
+| 11 | [DFS](./11-dfs/) | Exhaustive search | [Pattern](./11-dfs/11-dfs.md) · [Code Map](./11-dfs/11-dfs-code-map.md) | ✅ COMPLETE |
+| 12 | [Topological Sort](./12-topological-sort/) | DAG ordering | [Pattern](./12-topological-sort/12-topological-sort.md) · [Code Map](./12-topological-sort/12-topological-sort-code-map.md) | ✅ COMPLETE |
+| 13 | [Union Find](./13-union-find/) | Connected components | [Pattern](./13-union-find/13-union-find.md) · [Code Map](./13-union-find/13-union-find-code-map.md) | ✅ COMPLETE |
+| 14 | [Trie](./14-trie/) | Prefix matching | [Pattern](./14-trie/14-trie.md) · [Code Map](./14-trie/14-trie-code-map.md) | ✅ COMPLETE |
+| 15 | [Shortest Path](./15-shortest-path/) | Dijkstra, Bellman-Ford | [Pattern](./15-shortest-path/15-shortest-path.md) · [Code Map](./15-shortest-path/15-shortest-path-code-map.md) | ✅ COMPLETE |
 
 ### 🎯 SELECTION & SEARCH (3 patterns)
 
-| # | Pattern | Description | Status |
-|---|---------|-------------|--------|
-| 16 | [Binary Search](./16-binary-search.md) | Sorted data O(log n) | ✅ COMPLETE |
-| 17 | [Top K / Heap](./17-top-k-heap.md) | Priority, streaming | ✅ COMPLETE |
-| 18 | [K-way Merge](./18-k-way-merge.md) | Sorted lists merge | ✅ COMPLETE |
+| # | Pattern | Description | Files | Status |
+|---|---------|-------------|-------|--------|
+| 16 | [Binary Search](./16-binary-search/) | Sorted data O(log n) | [Pattern](./16-binary-search/16-binary-search.md) · [Code Map](./16-binary-search/16-binary-search-code-map.md) | ✅ COMPLETE |
+| 17 | [Top K / Heap](./17-top-k-heap/) | Priority, streaming | [Pattern](./17-top-k-heap/17-top-k-heap.md) · [Code Map](./17-top-k-heap/17-top-k-heap-code-map.md) | ✅ COMPLETE |
+| 18 | [K-way Merge](./18-k-way-merge/) | Sorted lists merge | [Pattern](./18-k-way-merge/18-k-way-merge.md) · [Code Map](./18-k-way-merge/18-k-way-merge-code-map.md) | ✅ COMPLETE |
 
 ### 🔀 COMBINATORIAL & OPTIMIZATION (6 patterns)
 
-| # | Pattern | Description | Status |
-|---|---------|-------------|--------|
-| 19 | [Backtracking](./19-backtracking.md) | Exhaustive + pruning | ✅ COMPLETE |
-| 20 | [Dynamic Programming](./20-dynamic-programming.md) | Overlapping subproblems | ✅ COMPLETE |
-| 21 | [Greedy](./21-greedy.md) | Local → global optimal | ✅ COMPLETE |
-| 22 | [Branch & Bound](./22-branch-and-bound.md) | Optimization + pruning | ✅ COMPLETE |
-| 23 | [Constraint Satisfaction](./23-constraint-satisfaction.md) | Variables + domains | ✅ COMPLETE |
-| 24 | [Partitions](./24-partitions.md) | Equal sum splits | ✅ COMPLETE |
+| # | Pattern | Description | Files | Status |
+|---|---------|-------------|-------|--------|
+| 19 | [Backtracking](./19-backtracking/) | Exhaustive + pruning | [Pattern](./19-backtracking/19-backtracking.md) · [Code Map](./19-backtracking/19-backtracking-code-map.md) | ✅ COMPLETE |
+| 20 | [Dynamic Programming](./20-dynamic-programming/) | Overlapping subproblems | [Pattern](./20-dynamic-programming/20-dynamic-programming.md) · [Code Map](./20-dynamic-programming/20-dynamic-programming-code-map.md) | ✅ COMPLETE |
+| 21 | [Greedy](./21-greedy/) | Local → global optimal | [Pattern](./21-greedy/21-greedy.md) · [Code Map](./21-greedy/21-greedy-code-map.md) | ✅ COMPLETE |
+| 22 | [Branch & Bound](./22-branch-and-bound/) | Optimization + pruning | [Pattern](./22-branch-and-bound/22-branch-and-bound.md) · [Code Map](./22-branch-and-bound/22-branch-and-bound-code-map.md) | ✅ COMPLETE |
+| 23 | [Constraint Satisfaction](./23-constraint-satisfaction/) | Variables + domains | [Pattern](./23-constraint-satisfaction/23-constraint-satisfaction.md) · [Code Map](./23-constraint-satisfaction/23-constraint-satisfaction-code-map.md) | ✅ COMPLETE |
+| 24 | [Partitions](./24-partitions/) | Equal sum splits | [Pattern](./24-partitions/24-partitions.md) · [Code Map](./24-partitions/24-partitions-code-map.md) | ✅ COMPLETE |
 
 ### 🔧 ADVANCED TECHNIQUES (2 patterns)
 
-| # | Pattern | Description | Status |
-|---|---------|-------------|--------|
-| 25 | [Bit Manipulation](./25-bit-manipulation.md) | Bitwise operations | ✅ COMPLETE |
-| 26 | [String Matching](./26-string-matching.md) | KMP, Rabin-Karp | ✅ COMPLETE |
+| # | Pattern | Description | Files | Status |
+|---|---------|-------------|-------|--------|
+| 25 | [Bit Manipulation](./25-bit-manipulation/) | Bitwise operations | [Pattern](./25-bit-manipulation/25-bit-manipulation.md) · [Code Map](./25-bit-manipulation/25-bit-manipulation-code-map.md) | ✅ COMPLETE |
+| 26 | [String Matching](./26-string-matching/) | KMP, Rabin-Karp | [Pattern](./26-string-matching/26-string-matching.md) · [Code Map](./26-string-matching/26-string-matching-code-map.md) | ✅ COMPLETE |
 
 ### 📊 ADVANCED DATA STRUCTURES (3 patterns)
 
-| # | Pattern | Description | Status |
-|---|---------|-------------|--------|
-| 27 | [Segment Tree](./27-segment-tree.md) | Range queries + updates | ✅ COMPLETE |
-| 28 | [Fenwick Tree](./28-fenwick-tree.md) | Prefix sums + updates | ✅ COMPLETE |
-| 29 | [Suffix Array](./29-suffix-array.md) | Substring matching | ✅ COMPLETE |
+| # | Pattern | Description | Files | Status |
+|---|---------|-------------|-------|--------|
+| 27 | [Segment Tree](./27-segment-tree/) | Range queries + updates | [Pattern](./27-segment-tree/27-segment-tree.md) · [Code Map](./27-segment-tree/27-segment-tree-code-map.md) | ✅ COMPLETE |
+| 28 | [Fenwick Tree](./28-fenwick-tree/) | Prefix sums + updates | [Pattern](./28-fenwick-tree/28-fenwick-tree.md) · [Code Map](./28-fenwick-tree/28-fenwick-tree-code-map.md) | ✅ COMPLETE |
+| 29 | [Suffix Array](./29-suffix-array/) | Substring matching | [Pattern](./29-suffix-array/29-suffix-array.md) · [Code Map](./29-suffix-array/29-suffix-array-code-map.md) | ✅ COMPLETE |
 
 ---
 
@@ -82,9 +84,17 @@ Every pattern follows the same cognitive progression:
 
 ### For Learning a New Pattern
 1. **Read the pattern file** (01-29) to activate the mental model
-2. **Focus on Internal Monologue section** - how to think through problems
-3. **Study Thought Narratives** - solving problems as if first time
-4. **Practice LeetCode problems** from the pattern file (organized by difficulty)
+2. **Study the code-map file** - connect visual metaphors to actual code (sticky learning!)
+3. **Focus on Internal Monologue section** - how to think through problems
+4. **Study Thought Narratives** - solving problems as if first time
+5. **Practice LeetCode problems** from the pattern file (organized by difficulty)
+
+### For Deep Understanding (Code-to-Visual Mapping)
+1. **Start with the visual** - Read pattern file's mermaid diagrams
+2. **Read the code** - Study implementation examples in pattern file
+3. **Use the code-map** - See exact line-by-line visual-to-code correspondence
+4. **Test yourself** - Can you explain code using visual metaphor?
+5. **Trace an example** - Step through execution with both visual and code side-by-side
 
 ### For Interview Prep
 1. **Review Self-Check questions** at top of each pattern
@@ -321,14 +331,14 @@ graph LR
 
 ## 🚀 Quick Reference
 
-**Pattern by Number**: [01](./01-sliding-window.md) · [02](./02-two-pointers.md) · [03](./03-fast-slow-pointers.md) · [04](./04-merge-intervals.md) · [05](./05-cyclic-sort.md) · [06](./06-monotonic-stack.md) · [07](./07-prefix-sum.md) · [08](./08-line-sweep.md) · [09](./09-tree-traversals.md) · [10](./10-bfs.md) · [11](./11-dfs.md) · [12](./12-topological-sort.md) · [13](./13-union-find.md) · [14](./14-trie.md) · [15](./15-shortest-path.md) · [16](./16-binary-search.md) · [17](./17-top-k-heap.md) · [18](./18-k-way-merge.md) · [19](./19-backtracking.md) · [20](./20-dynamic-programming.md) · [21](./21-greedy.md) · [22](./22-branch-and-bound.md) · [23](./23-constraint-satisfaction.md) · [24](./24-partitions.md) · [25](./25-bit-manipulation.md) · [26](./26-string-matching.md) · [27](./27-segment-tree.md) · [28](./28-fenwick-tree.md) · [29](./29-suffix-array.md)
+**Pattern by Number**: [01](./01-sliding-window/) · [02](./02-two-pointers/) · [03](./03-fast-slow-pointers/) · [04](./04-merge-intervals/) · [05](./05-cyclic-sort/) · [06](./06-monotonic-stack/) · [07](./07-prefix-sum/) · [08](./08-line-sweep/) · [09](./09-tree-traversals/) · [10](./10-bfs/) · [11](./11-dfs/) · [12](./12-topological-sort/) · [13](./13-union-find/) · [14](./14-trie/) · [15](./15-shortest-path/) · [16](./16-binary-search/) · [17](./17-top-k-heap/) · [18](./18-k-way-merge/) · [19](./19-backtracking/) · [20](./20-dynamic-programming/) · [21](./21-greedy/) · [22](./22-branch-and-bound/) · [23](./23-constraint-satisfaction/) · [24](./24-partitions/) · [25](./25-bit-manipulation/) · [26](./26-string-matching/) · [27](./27-segment-tree/) · [28](./28-fenwick-tree/) · [29](./29-suffix-array/)
 
 **By Category**:
-- 📏 **Linear**: [01-08](./01-sliding-window.md)
-- 🌳 **Trees & Graphs**: [09-15](./09-tree-traversals.md)
-- 🎯 **Search**: [16-18](./16-binary-search.md)
-- 🔀 **Combinatorial**: [19-24](./19-backtracking.md)
-- 🔧 **Advanced**: [25-29](./25-bit-manipulation.md)
+- 📏 **Linear**: [01-08](./01-sliding-window/)
+- 🌳 **Trees & Graphs**: [09-15](./09-tree-traversals/)
+- 🎯 **Search**: [16-18](./16-binary-search/)
+- 🔀 **Combinatorial**: [19-24](./19-backtracking/)
+- 🔧 **Advanced**: [25-29](./25-bit-manipulation/)
 
 ---
 
@@ -341,4 +351,4 @@ graph LR
 - [Visual Shapes](../shapes/) - Core algorithm shapes
 - [Applications](../../applications/) - Multi-pattern projects
 
-**⚡ Start Learning**: [01. Sliding Window](./01-sliding-window.md)
+**⚡ Start Learning**: [01. Sliding Window](./01-sliding-window/) ([Pattern](./01-sliding-window/01-sliding-window.md) · [Code Map](./01-sliding-window/01-sliding-window-code-map.md))
