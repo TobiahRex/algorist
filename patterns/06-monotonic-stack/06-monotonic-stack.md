@@ -322,8 +322,6 @@ sequenceDiagram
     Market->>SpanCalculator: Day 4: price=85
     Note over SpanCalculator: Pop 70, pop 60<br/>span = 4-1 = 3
     SpanCalculator-->>Dashboard: span=3 (includes days 2,3,4)
-
-    style SpanCalculator fill:#1e3a5f,stroke:#22d3ee,stroke-width:2px
 ```
 
 **Why monotonic stack?**
